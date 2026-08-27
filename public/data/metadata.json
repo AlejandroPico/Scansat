@@ -1,0 +1,7 @@
+{
+  "updatedAt": "2026-08-27T18:31:41Z",
+  "recordCount": 11,
+  "source": "CelesTrak NORAD GP active (respaldo mínimo; CI instala la instantánea completa)",
+  "format": "CCSDS OMM JSON",
+  "propagator": "SGP4"
+}

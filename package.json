@@ -1,0 +1,27 @@
+{
+  "name": "scansat",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "predev": "npm run assets:prepare",
+    "build": "vite build",
+    "prebuild": "npm run assets:prepare",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test",
+    "validate": "node scripts/validate.mjs",
+    "assets:prepare": "node scripts/prepare-assets.mjs",
+    "data:update": "node scripts/update-orbital-data.mjs"
+  },
+  "dependencies": {
+    "d3-geo": "3.1.1",
+    "satellite.js": "7.1.0",
+    "three": "0.185.1",
+    "topojson-client": "3.1.0",
+    "world-atlas": "2.0.2"
+  },
+  "devDependencies": {
+    "vite": "8.2.2"
+  }
+}

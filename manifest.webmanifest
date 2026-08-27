@@ -1,0 +1,10 @@
+{
+  "name": "ScanSat — Atlas orbital 3D",
+  "short_name": "ScanSat",
+  "description": "Seguimiento tridimensional de satélites y misiones espaciales.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#06090d",
+  "theme_color": "#06090d",
+  "icons": [{ "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

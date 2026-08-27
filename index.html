@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es" data-theme="night">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#06090d" />
+    <meta name="description" content="Atlas 3D en tiempo real de satélites, constelaciones y misiones espaciales." />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <title>ScanSat — Atlas orbital 3D</title>
+  </head>
+  <body>
+    <svg class="svg-sprite" aria-hidden="true">
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></symbol>
+      <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6.5 7.3V19l-3 1v-7.7L4 5Z"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M3.5 5.5A3.5 3.5 0 0 1 7 2h4v17H7a3.5 3.5 0 0 0-3.5 3V5.5ZM20.5 5.5A3.5 3.5 0 0 0 17 2h-4v17h4a3.5 3.5 0 0 1 3.5 3V5.5Z"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 10v7M12 7h.01"/></symbol>
+      <symbol id="i-theme" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c-5 3-11-2-9-9Z"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z"/></symbol>
+      <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+      <symbol id="i-orbit" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><ellipse cx="12" cy="12" rx="10" ry="4.5" transform="rotate(-28 12 12)"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M18.4 9A7.5 7.5 0 0 0 5.7 6.7L4 9M5.6 15A7.5 7.5 0 0 0 18.3 17.3L20 15"/></symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+    </svg>
+
+    <div id="app">
+      <header class="topbar">
+        <button class="icon-button mobile-only" id="menu-toggle" aria-label="Abrir controles" aria-expanded="false">
+          <svg><use href="#i-menu"/></svg>
+        </button>
+        <a class="brand" href="./" aria-label="ScanSat, inicio">
+          <span class="brand-mark" aria-hidden="true"><span></span></span>
+          <span class="brand-copy"><strong>ScanSat</strong><small>Atlas orbital</small></span>
+          <span class="version-badge">α 0.1.0</span>
+        </a>
+        <nav class="body-switch" aria-label="Centro de observación">
+          <button class="body-button active" data-view="earth">Tierra</button>
+          <button class="body-button" data-view="moon">Luna</button>
+          <button class="body-button" data-view="solar">Sistema solar</button>
+        </nav>
+        <div class="top-actions">
+          <span class="utc-clock" id="utc-clock">--:--:-- UTC</span>
+          <button class="icon-button" id="time-toggle" aria-label="Pausar simulación" title="Pausar tiempo">
+            <svg><use href="#i-pause"/></svg>
+          </button>
+          <button class="icon-button" id="theme-button" aria-label="Cambiar tema" title="Tema">
+            <svg><use href="#i-theme"/></svg>
+          </button>
+          <button class="icon-button" id="library-button" aria-label="Abrir biblioteca" title="Biblioteca">
+            <svg><use href="#i-book"/></svg>
+          </button>
+          <button class="icon-button" id="about-button" aria-label="Acerca de ScanSat" title="Acerca de">
+            <svg><use href="#i-info"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="control-panel" id="control-panel" aria-label="Controles del mapa">
+          <div class="panel-scroll">
+            <section class="search-section">
+              <label class="search-box">
+                <svg><use href="#i-search"/></svg>
+                <input id="catalog-search" type="search" placeholder="Buscar satélite o NORAD…" autocomplete="off" />
+                <kbd>/</kbd>
+              </label>
+              <div class="search-results" id="search-results" hidden></div>
+            </section>
+
+            <section class="panel-section catalog-summary">
+              <div class="section-kicker">CATÁLOGO PÚBLICO</div>
+              <div class="catalog-count-row">
+                <strong id="catalog-count">—</strong>
+                <span>objetos activos</span>
+              </div>
+              <div class="data-status"><span class="status-dot loading" id="data-dot"></span><span id="data-label">Preparando catálogo orbital…</span></div>
+              <div class="progress-track" id="load-progress"><span></span></div>
+            </section>
+
+            <section class="panel-section" id="layers-section">
+              <button class="section-heading" type="button" aria-expanded="true">
+                <span><svg><use href="#i-layers"/></svg> Capas terrestres</span><svg class="chevron"><use href="#i-chevron"/></svg>
+              </button>
+              <div class="section-content layer-grid">
+                <button class="layer-card active" data-layer="satellite"><span class="layer-preview satellite"></span><span><strong>Satélite</strong><small>Blue Marble</small></span></button>
+                <button class="layer-card" data-layer="political"><span class="layer-preview political"></span><span><strong>Político plano</strong><small>Fronteras</small></span></button>
+                <button class="layer-card" data-layer="night"><span class="layer-preview night"></span><span><strong>Noche</strong><small>Black Marble</small></span></button>
+              </div>
+              <label class="switch-row"><span>Atmósfera</span><input id="atmosphere-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Órbita seleccionada</span><input id="orbit-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Cobertura estimada</span><input id="coverage-toggle" type="checkbox"><span class="switch"></span></label>
+            </section>
+
+            <section class="panel-section" id="filters-section">
+              <button class="section-heading" type="button" aria-expanded="true">
+                <span><svg><use href="#i-filter"/></svg> Filtros orbitales</span><svg class="chevron"><use href="#i-chevron"/></svg>
+              </button>
+              <div class="section-content">
+                <div class="filter-title"><span>Órbita</span><button id="reset-filters" type="button">Restablecer</button></div>
+                <div class="orbit-filters" id="orbit-filters">
+                  <label><input type="checkbox" value="LEO" checked><span class="filter-color leo"></span><span>LEO</span><small id="count-leo">—</small></label>
+                  <label><input type="checkbox" value="MEO" checked><span class="filter-color meo"></span><span>MEO</span><small id="count-meo">—</small></label>
+                  <label><input type="checkbox" value="GEO" checked><span class="filter-color geo"></span><span>GEO</span><small id="count-geo">—</small></label>
+                  <label><input type="checkbox" value="HEO" checked><span class="filter-color heo"></span><span>HEO / otra</span><small id="count-heo">—</small></label>
+                </div>
+                <div class="filter-title constellation-title"><span>Constelaciones y función</span></div>
+                <div class="constellation-list" id="constellation-list"></div>
+              </div>
+            </section>
+          </div>
+          <div class="panel-footer">
+            <span>Fuente orbital</span>
+            <a href="https://celestrak.org/" target="_blank" rel="noreferrer">CelesTrak ↗</a>
+          </div>
+        </aside>
+
+        <section class="viewport" id="viewport" aria-label="Visualización orbital tridimensional">
+          <div id="scene-container"></div>
+          <div class="view-label">
+            <span class="eyebrow" id="view-eyebrow">TIERRA · ÓRBITA BAJA A GEOESTACIONARIA</span>
+            <h1 id="view-title">Tráfico orbital en tiempo real</h1>
+            <p id="view-description">Posiciones propagadas con SGP4 a partir del catálogo público.</p>
+          </div>
+          <div class="scene-legend" id="scene-legend">
+            <span><i class="leo"></i>LEO</span><span><i class="meo"></i>MEO</span><span><i class="geo"></i>GEO</span><span><i class="heo"></i>HEO</span>
+          </div>
+          <div class="scene-tools">
+            <button class="tool-button" id="home-view" title="Restablecer vista" aria-label="Restablecer vista"><svg><use href="#i-target"/></svg></button>
+            <button class="tool-button" id="toggle-rotation" title="Rotación automática" aria-label="Alternar rotación automática"><svg><use href="#i-orbit"/></svg></button>
+          </div>
+          <div class="scale-note" id="scale-note">Altitudes orbitales comprimidas para facilitar la lectura.</div>
+        </section>
+
+        <aside class="detail-panel" id="detail-panel" aria-label="Ficha del objeto" aria-hidden="true">
+          <div class="detail-header">
+            <div><span class="detail-kicker" id="detail-kicker">SATÉLITE</span><h2 id="detail-name">—</h2></div>
+            <button class="icon-button plain" id="detail-close" aria-label="Cerrar ficha"><svg><use href="#i-close"/></svg></button>
+          </div>
+          <div class="detail-scroll">
+            <div class="detail-identity">
+              <span class="identity-dot" id="detail-dot"></span>
+              <div><strong id="detail-constellation">—</strong><small id="detail-id">—</small></div>
+            </div>
+            <div class="metric-grid">
+              <article><span>ALTITUD</span><strong id="metric-altitude">—</strong><small>kilómetros</small></article>
+              <article><span>VELOCIDAD</span><strong id="metric-speed">—</strong><small>km/s</small></article>
+              <article><span>INCLINACIÓN</span><strong id="metric-inclination">—</strong><small>grados</small></article>
+              <article><span>PERIODO</span><strong id="metric-period">—</strong><small>minutos</small></article>
+            </div>
+            <section class="detail-section"><h3>Posición actual</h3><dl><div><dt>Latitud</dt><dd id="metric-lat">—</dd></div><div><dt>Longitud</dt><dd id="metric-lon">—</dd></div><div><dt>Órbita</dt><dd id="metric-orbit">—</dd></div><div><dt>Epoch</dt><dd id="metric-epoch">—</dd></div></dl></section>
+            <section class="detail-section orbital-elements"><h3>Elementos orbitales</h3><dl><div><dt>Perigeo</dt><dd id="metric-perigee">—</dd></div><div><dt>Apogeo</dt><dd id="metric-apogee">—</dd></div><div><dt>Excentricidad</dt><dd id="metric-eccentricity">—</dd></div><div><dt>Ascensión del nodo</dt><dd id="metric-raan">—</dd></div><div><dt>Argumento del perigeo</dt><dd id="metric-arg-perigee">—</dd></div><div><dt>Anomalía media</dt><dd id="metric-mean-anomaly">—</dd></div><div><dt>Movimiento medio</dt><dd id="metric-mean-motion">—</dd></div><div><dt>Coeficiente B*</dt><dd id="metric-bstar">—</dd></div></dl></section>
+            <section class="detail-section"><h3>Perfil</h3><p id="detail-summary">Selecciona un objeto para consultar sus datos orbitales.</p></section>
+          </div>
+          <div class="detail-actions">
+            <button class="primary-button" id="focus-object"><svg><use href="#i-target"/></svg> Seguir objeto</button>
+            <button class="secondary-button" id="open-library-entry"><svg><use href="#i-book"/></svg> Ver en biblioteca</button>
+          </div>
+        </aside>
+      </main>
+
+      <footer class="statusbar">
+        <div><span class="status-dot live"></span><span id="simulation-status">SIMULACIÓN EN VIVO</span></div>
+        <div class="status-center"><span>Visibles <strong id="visible-count">—</strong></span><span>Seleccionado <strong id="selected-label">Ninguno</strong></span></div>
+        <div><span id="fps-label">WEBGL</span><span class="desktop-only"> · SGP4 / OMM</span></div>
+      </footer>
+    </div>
+
+    <dialog class="app-dialog library-dialog" id="library-dialog">
+      <div class="dialog-shell">
+        <header><div><span class="dialog-kicker">ENCICLOPEDIA ORBITAL</span><h2>Biblioteca ScanSat</h2><p>Constelaciones, observatorios, estaciones y misiones que definen nuestra presencia en el espacio.</p></div><button class="icon-button plain dialog-close" aria-label="Cerrar biblioteca"><svg><use href="#i-close"/></svg></button></header>
+        <div class="library-toolbar"><label class="search-box"><svg><use href="#i-search"/></svg><input id="library-search" type="search" placeholder="Buscar en la biblioteca…"></label><div class="library-tabs" id="library-tabs"></div></div>
+        <div class="library-content"><div class="library-grid" id="library-grid"></div><article class="library-article" id="library-article"><div class="empty-article"><svg><use href="#i-book"/></svg><p>Selecciona una ficha para ampliar la información.</p></div></article></div>
+      </div>
+    </dialog>
+
+    <dialog class="app-dialog about-dialog" id="about-dialog">
+      <div class="dialog-shell compact">
+        <header><div><span class="dialog-kicker">ACERCA DEL PROYECTO</span><h2>ScanSat</h2></div><button class="icon-button plain dialog-close" aria-label="Cerrar acerca de"><svg><use href="#i-close"/></svg></button></header>
+        <div class="about-hero"><span class="about-mark"><span></span></span><div><strong>Atlas orbital tridimensional</strong><small>Versión 0.1.0 · Alfa</small></div></div>
+        <p>ScanSat reúne en una sola superficie el catálogo público de objetos espaciales activos, sus órbitas propagadas y una biblioteca de constelaciones y misiones. La vista del sistema solar es esquemática; el seguimiento terrestre utiliza elementos orbitales OMM y el propagador SGP4.</p>
+        <div class="about-links"><a href="https://alejandropico.github.io/" target="_blank" rel="noreferrer">Portfolio <span>↗</span></a><a href="https://github.com/AlejandroPico/Scansat" target="_blank" rel="noreferrer">Repositorio <span>↗</span></a></div>
+        <div class="credits"><strong>Datos y atribuciones</strong><p>Elementos orbitales: CelesTrak / 18 SDS. Texturas terrestres: NASA. Propagación: satellite.js. Fronteras: Natural Earth.</p><p>Herramienta educativa y de visualización. No debe emplearse para navegación ni operaciones espaciales.</p></div>
+      </div>
+    </dialog>
+
+    <div class="theme-menu" id="theme-menu" hidden>
+      <button data-theme-choice="auto" class="active"><span>Automático</span><small>Según la hora local</small></button>
+      <button data-theme-choice="morning"><span>Mañana</span><small>Claro y frío</small></button>
+      <button data-theme-choice="afternoon"><span>Tarde</span><small>Cálido y contrastado</small></button>
+      <button data-theme-choice="night"><span>Noche</span><small>Observatorio oscuro</small></button>
+    </div>
+
+    <div class="toast-region" id="toast-region" aria-live="polite"></div>
+    <script type="module" src="/src/app.js"></script>
+  </body>
+</html>
