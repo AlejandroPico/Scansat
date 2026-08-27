@@ -1,0 +1,282 @@
+{
+  "updatedAt": "2026-08-27T00:00:00.000Z",
+  "center": "Sun (500@10)",
+  "frame": "J2000 ecliptic",
+  "units": "km and km/s",
+  "source": "NASA/JPL Horizons API",
+  "objects": [
+    {
+      "id": "voyager-1",
+      "name": "Voyager 1",
+      "command": "-31",
+      "agency": "NASA / JPL",
+      "color": "#ffd47d",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": -4805259756.877081,
+        "y": -20427507926.90449,
+        "z": 14779743628.81337
+      },
+      "velocityKmS": {
+        "x": -2.070264565931677,
+        "y": -13.6113610934716,
+        "z": 9.832300671031398
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "voyager-2",
+      "name": "Voyager 2",
+      "command": "-32",
+      "agency": "NASA / JPL",
+      "color": "#ffb667",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": 5954788628.203314,
+        "y": -15748996531.65608,
+        "z": -13385201800.92938
+      },
+      "velocityKmS": {
+        "x": 4.203434170334624,
+        "y": -9.340532331463189,
+        "z": -11.3173204573805
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "new-horizons",
+      "name": "New Horizons",
+      "command": "-98",
+      "agency": "NASA / APL",
+      "color": "#9ac8ff",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": 3102640102.253166,
+        "y": -9278561321.632113,
+        "z": 341170267.66366
+      },
+      "velocityKmS": {
+        "x": 5.308862406371111,
+        "y": -12.49292425673455,
+        "z": 0.4916598122330571
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "parker",
+      "name": "Parker Solar Probe",
+      "command": "-96",
+      "agency": "NASA / APL",
+      "color": "#ff8c45",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": 53753401.2815975,
+        "y": -4240154.984143579,
+        "z": -3155699.169289994
+      },
+      "velocityKmS": {
+        "x": -43.06830263435367,
+        "y": 27.69764626951857,
+        "z": 2.864960601125709
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "solar-orbiter",
+      "name": "Solar Orbiter",
+      "command": "-144",
+      "agency": "ESA / NASA",
+      "color": "#ffbd73",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": 40369712.00190598,
+        "y": -31143369.1826673,
+        "z": 960.6924581564963
+      },
+      "velocityKmS": {
+        "x": 49.14880068560879,
+        "y": 33.80445215128297,
+        "z": 12.7121188693422
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "jwst",
+      "name": "James Webb Space Telescope",
+      "command": "-170",
+      "agency": "NASA / ESA / CSA",
+      "color": "#f2a65a",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": 136007315.5764546,
+        "y": -68710596.08732615,
+        "z": 189362.154108461
+      },
+      "velocityKmS": {
+        "x": 13.13684740345457,
+        "y": 26.9350613781223,
+        "z": 0.09760378898228161
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "euclid",
+      "name": "Euclid",
+      "command": "-680",
+      "agency": "ESA",
+      "color": "#c59cff",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": 136015693.6605845,
+        "y": -68984592.61964175,
+        "z": 11494.06448337808
+      },
+      "velocityKmS": {
+        "x": 13.04077782767465,
+        "y": 26.77186065787136,
+        "z": -0.1476060136215409
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "bepicolombo",
+      "name": "BepiColombo",
+      "command": "-121",
+      "agency": "ESA / JAXA",
+      "color": "#d0b08c",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": -49291370.44654468,
+        "y": 22869250.09472479,
+        "z": 6371665.001257983
+      },
+      "velocityKmS": {
+        "x": -29.67650740314668,
+        "y": -41.42650246061672,
+        "z": -0.6549875715981894
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "europa-clipper",
+      "name": "Europa Clipper",
+      "command": "-159",
+      "agency": "NASA / JPL",
+      "color": "#9dd7ff",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": 81221141.91426566,
+        "y": -142160963.0777691,
+        "z": -4368861.954797894
+      },
+      "velocityKmS": {
+        "x": 20.19216576411366,
+        "y": 25.64980061086681,
+        "z": -0.392128843279389
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "juice",
+      "name": "JUICE",
+      "command": "-28",
+      "agency": "ESA",
+      "color": "#d9bc8d",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": 168129376.1434276,
+        "y": -64936227.36869656,
+        "z": -221314.3929318637
+      },
+      "velocityKmS": {
+        "x": -0.439489976002545,
+        "y": 26.37650924533697,
+        "z": 0.07271986651699969
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "lucy",
+      "name": "Lucy",
+      "command": "-49",
+      "agency": "NASA / SwRI",
+      "color": "#d8c08e",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": -557811615.9236815,
+        "y": -489255130.6716923,
+        "z": -36850328.92266542
+      },
+      "velocityKmS": {
+        "x": 0.6999380658838379,
+        "y": -9.606530803638925,
+        "z": 0.1666917372108112
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "psyche",
+      "name": "Psyche",
+      "command": "-255",
+      "agency": "NASA / JPL",
+      "color": "#e4a6d7",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": 57792388.19804306,
+        "y": 223499900.5311048,
+        "z": -10530853.00528471
+      },
+      "velocityKmS": {
+        "x": -23.92387936544446,
+        "y": 12.22143173909947,
+        "z": -0.1529853694706551
+      },
+      "source": "NASA/JPL Horizons"
+    },
+    {
+      "id": "roadster",
+      "name": "SpaceX Roadster",
+      "command": "-143205",
+      "agency": "SpaceX",
+      "color": "#ef6b6b",
+      "kind": "spacecraft",
+      "snapshotAt": "2026-08-27T00:00:00.000Z",
+      "epoch": "A.D. 2026-Aug-27 00:00:00.0000",
+      "positionKm": {
+        "x": 226034626.4645452,
+        "y": -84497427.68738699,
+        "z": 1741972.682137579
+      },
+      "velocityKmS": {
+        "x": 4.495504974320151,
+        "y": 20.25313124366202,
+        "z": 0.3349741274802227
+      },
+      "source": "NASA/JPL Horizons"
+    }
+  ]
+}

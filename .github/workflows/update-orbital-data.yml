@@ -1,4 +1,4 @@
-name: Refresh orbital catalog
+name: Refresh orbital and spacecraft catalogs
 
 on:
   schedule:
@@ -27,7 +27,7 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci
-      - name: Fetch one valid CelesTrak snapshot
+      - name: Fetch valid CelesTrak and NASA/JPL snapshots
         run: npm run data:update
       - name: Validate
         run: npm run validate
@@ -39,6 +39,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/active.json public/data/metadata.json
-          git commit -m "data: refresh public orbital catalog"
+          git add public/data/active.json public/data/debris.json public/data/metadata.json public/data/spacecraft.json
+          git commit -m "data: refresh orbital and JPL ephemerides"
           git push origin main

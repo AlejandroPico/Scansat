@@ -27,19 +27,6 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci
-      - name: Refresh orbital snapshot
-        run: npm run data:update
-      - name: Persist a newer valid snapshot
-        run: |
-          if git diff --quiet -- public/data; then
-            echo "Orbital catalog is already current."
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add public/data/active.json public/data/metadata.json
-            git commit -m "data: refresh public orbital catalog"
-            git push origin main
-          fi
       - name: Test and validate
         run: npm test && npm run validate
       - name: Build

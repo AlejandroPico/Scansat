@@ -1,7 +1,14 @@
 {
-  "updatedAt": "2026-08-27T18:56:25.777Z",
-  "recordCount": 16472,
-  "source": "CelesTrak NORAD GP active",
+  "updatedAt": "2026-08-27T19:50:54.683Z",
+  "activeCount": 16472,
+  "debrisCount": 2646,
+  "recordCount": 19118,
+  "source": "CelesTrak NORAD GP active + three principal debris clouds",
+  "debrisGroups": [
+    "fengyun-1c-debris",
+    "iridium-33-debris",
+    "cosmos-2251-debris"
+  ],
   "format": "CCSDS OMM JSON",
   "propagator": "SGP4"
 }

@@ -1,7 +1,7 @@
 {
   "name": "scansat",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
@@ -12,7 +12,9 @@
     "test": "node --test",
     "validate": "node scripts/validate.mjs",
     "assets:prepare": "node scripts/prepare-assets.mjs",
-    "data:update": "node scripts/update-orbital-data.mjs"
+    "data:update": "node scripts/update-orbital-data.mjs && node scripts/update-space-data.mjs",
+    "data:update:orbits": "node scripts/update-orbital-data.mjs",
+    "data:update:space": "node scripts/update-space-data.mjs"
   },
   "dependencies": {
     "d3-geo": "3.1.1",

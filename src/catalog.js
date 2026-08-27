@@ -68,7 +68,7 @@ export function classifyObject(name = '') {
   return 'other';
 }
 
-export function prepareRecord(omm, satrec) {
+export function prepareRecord(omm, satrec, catalogKind = 'active') {
   const name = String(omm.OBJECT_NAME || `NORAD ${omm.NORAD_CAT_ID || '—'}`).trim();
   const metrics = orbitalMetrics(omm);
   const group = classifyObject(name);
@@ -84,6 +84,8 @@ export function prepareRecord(omm, satrec) {
     ...metrics,
     satrec,
     omm,
+    catalogKind,
+    isDebris: catalogKind === 'debris',
     position: null,
   };
 }
@@ -92,7 +94,8 @@ export function describeRecord(record) {
   const libraryMatch = LIBRARY_ENTRIES.find((entry) => entry.keywords.some((word) => record.name.toUpperCase().includes(word)));
   if (libraryMatch) return libraryMatch.short;
   const orbitLabel = ORBIT_STYLES[record.orbit]?.label.toLowerCase() || 'órbita terrestre';
-  return `${record.name} es un objeto activo del catálogo público, clasificado en ${orbitLabel}. Sus coordenadas se calculan para el instante mostrado mediante propagación SGP4.`;
+  const type = record.isDebris ? 'fragmento de basura espacial rastreado' : 'objeto del catálogo público';
+  return `${record.name} es un ${type}, clasificado en ${orbitLabel}. Sus coordenadas se calculan para el instante mostrado mediante propagación SGP4.`;
 }
 
 export const LIBRARY_CATEGORIES = [
@@ -236,43 +239,43 @@ export const LIBRARY_ENTRIES = [
     id: 'voyager-1', title: 'Voyager 1', subtitle: 'Misión interestelar', category: 'deep-space', accent: '#ffd47d',
     keywords: ['VOYAGER 1'], searchName: null,
     short: 'Sonda de 1977 que continúa alejándose del Sol más allá de la heliosfera.',
-    body: 'Voyager 1 no se representa con SGP4. En el modo Sistema Solar aparece como marcador direccional y de contexto: las distancias planetarias y de las sondas se comprimen de forma no lineal.',
-    facts: [['Destino', 'Medio interestelar'], ['Agencia', 'NASA / JPL'], ['Lanzamiento', '1977'], ['Vista', 'Esquemática']],
+    body: 'Voyager 1 no se representa con SGP4. ScanSat obtiene su vector heliocéntrico de NASA/JPL Horizons y conserva su enorme distancia en kilómetros físicos mediante un origen flotante alrededor del foco.',
+    facts: [['Destino', 'Medio interestelar'], ['Agencia', 'NASA / JPL'], ['Lanzamiento', '1977'], ['Efeméride', 'JPL Horizons']],
   },
   {
     id: 'voyager-2', title: 'Voyager 2', subtitle: 'Misión interestelar', category: 'deep-space', accent: '#ffb667',
     keywords: ['VOYAGER 2'], searchName: null,
     short: 'Única sonda que visitó Urano y Neptuno; continúa su trayectoria interestelar.',
-    body: 'La trayectoria real de Voyager 2 exige efemérides de espacio profundo. Esta primera versión la sitúa de forma esquemática y la separa claramente del catálogo SGP4 terrestre.',
-    facts: [['Destino', 'Medio interestelar'], ['Agencia', 'NASA / JPL'], ['Lanzamiento', '1977'], ['Vista', 'Esquemática']],
+    body: 'La trayectoria real de Voyager 2 exige efemérides de espacio profundo. ScanSat utiliza un vector J2000 de NASA/JPL Horizons y la separa claramente del catálogo SGP4 terrestre.',
+    facts: [['Destino', 'Medio interestelar'], ['Agencia', 'NASA / JPL'], ['Lanzamiento', '1977'], ['Efeméride', 'JPL Horizons']],
   },
   {
     id: 'new-horizons', title: 'New Horizons', subtitle: 'Exploración del cinturón de Kuiper', category: 'deep-space', accent: '#9ac8ff',
     keywords: ['NEW HORIZONS'], searchName: null,
     short: 'Sonda que sobrevoló Plutón y Arrokoth y prosigue hacia el exterior del sistema solar.',
-    body: 'New Horizons se incluye en el mapa general de misiones profundas. Su posición es contextual en esta versión y no debe interpretarse como una efeméride operativa.',
-    facts: [['Región', 'Cinturón de Kuiper'], ['Agencia', 'NASA'], ['Lanzamiento', '2006'], ['Vista', 'Esquemática']],
+    body: 'New Horizons se incluye mediante su vector heliocéntrico J2000 de NASA/JPL Horizons. La escena mantiene su distancia física aunque utiliza un icono para conservar la legibilidad.',
+    facts: [['Región', 'Cinturón de Kuiper'], ['Agencia', 'NASA'], ['Lanzamiento', '2006'], ['Efeméride', 'JPL Horizons']],
   },
   {
     id: 'parker', title: 'Parker Solar Probe', subtitle: 'Observatorio solar', category: 'deep-space', accent: '#ff8c45',
     keywords: ['PARKER SOLAR'], searchName: null,
     short: 'Sonda solar en una órbita muy excéntrica que realiza aproximaciones extremas al Sol.',
-    body: 'Parker estudia la corona y el viento solar. Su marcador en el sistema solar comunica el tipo de misión; las efemérides precisas se incorporarán en una fase posterior.',
-    facts: [['Centro orbital', 'Sol'], ['Agencia', 'NASA'], ['Lanzamiento', '2018'], ['Órbita', 'Heliocéntrica excéntrica']],
+    body: 'Parker estudia la corona y el viento solar. Su posición procede de NASA/JPL Horizons y se muestra con un icono propio sobre una escena heliocéntrica de escala física.',
+    facts: [['Centro orbital', 'Sol'], ['Agencia', 'NASA'], ['Lanzamiento', '2018'], ['Efeméride', 'JPL Horizons']],
   },
   {
     id: 'juice', title: 'JUICE', subtitle: 'Explorador de lunas de Júpiter', category: 'deep-space', accent: '#d9bc8d',
     keywords: ['JUICE'], searchName: null,
     short: 'Misión europea en ruta al sistema joviano para estudiar Ganímedes, Calisto y Europa.',
-    body: 'JUICE aparece como misión interplanetaria en tránsito. La biblioteca diferencia estas trayectorias de las órbitas terrestres derivadas del catálogo OMM.',
-    facts: [['Destino', 'Júpiter'], ['Agencia', 'ESA'], ['Lanzamiento', '2023'], ['Tipo', 'Misión interplanetaria']],
+    body: 'JUICE aparece como misión interplanetaria en tránsito mediante una efeméride heliocéntrica de NASA/JPL Horizons. La biblioteca diferencia estas trayectorias de las órbitas terrestres OMM.',
+    facts: [['Destino', 'Júpiter'], ['Agencia', 'ESA'], ['Lanzamiento', '2023'], ['Efeméride', 'JPL Horizons']],
   },
   {
     id: 'roadster', title: 'Tesla Roadster', subtitle: 'Carga de demostración Falcon Heavy', category: 'deep-space', accent: '#ef6b6b',
     keywords: ['ROADSTER'], searchName: null,
     short: 'Carga de demostración situada en una órbita heliocéntrica que cruza aproximadamente la región orbital de Marte.',
-    body: 'El Roadster no orbita entre la Tierra y Marte como un satélite de ambos cuerpos: sigue su propia órbita alrededor del Sol. ScanSat lo sitúa en el contexto heliocéntrico correcto.',
-    facts: [['Centro orbital', 'Sol'], ['Lanzamiento', '2018'], ['Vehículo', 'Falcon Heavy'], ['Vista', 'Esquemática']],
+    body: 'El Roadster no orbita entre la Tierra y Marte como un satélite de ambos cuerpos: sigue su propia órbita alrededor del Sol. ScanSat usa la efeméride del objetivo SpaceX Roadster de JPL Horizons.',
+    facts: [['Centro orbital', 'Sol'], ['Lanzamiento', '2018'], ['Vehículo', 'Falcon Heavy'], ['Efeméride', 'JPL Horizons']],
   },
 ];
 

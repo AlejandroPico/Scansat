@@ -1,79 +1,70 @@
 # ScanSat
 
-**Versión 0.1.0 · Alfa**
+Atlas tridimensional del tráfico orbital público y de la exploración del sistema solar.
 
-ScanSat es un atlas orbital tridimensional para explorar satélites activos, constelaciones, estaciones espaciales y misiones más allá de la Tierra desde una única interfaz. El foco inicial está en el tráfico alrededor de la Tierra: la aplicación incluye una instantánea completa del conjunto público **Active Satellites** de CelesTrak y propaga cada órbita al instante visualizado mediante **SGP4**.
+**Versión actual: `0.2.0-alpha`**
 
-**Web:** [alejandropico.github.io/Scansat](https://alejandropico.github.io/Scansat/)
+- Aplicación: <https://alejandropico.github.io/Scansat/>
+- Portfolio: <https://alejandropico.github.io/Portfolio/>
+- Repositorio: <https://github.com/AlejandroPico/Scansat>
 
-## Qué incluye la alfa 0.1.0
+## Qué incluye la versión 0.2.0
 
-- Globo 3D interactivo con navegación por ratón, táctil y zoom.
-- **16.472 objetos activos** en la instantánea inicial OMM del 27 de agosto de 2026.
-- Posiciones propagadas en tiempo real con `satellite.js` y el modelo SGP4.
-- Compatibilidad con identificadores NORAD de seis o más cifras mediante **CCSDS OMM JSON**, evitando la limitación histórica del formato TLE.
-- Capas de Tierra: satélite, político plano y noche.
-- Filtros por régimen orbital: LEO, MEO, GEO y HEO/otros.
-- Filtros automáticos para Starlink, OneWeb, Amazon Leo/Kuiper, Qianfan, Guowang, GPS, Galileo, GLONASS, BeiDou, meteorología, ciencia, observación terrestre, estaciones y comunicaciones.
-- Búsqueda por nombre, número NORAD o designador internacional.
-- Selección directa de puntos con ficha orbital, posición actual, altitud, velocidad, inclinación, periodo, órbita y epoch.
-- Trazado de la órbita seleccionada y huella máxima de visibilidad estimada.
-- Vista Tierra, entorno lunar y sistema solar esquemático con misiones de espacio profundo.
-- Biblioteca inicial de constelaciones, navegación, estaciones, observación y sondas.
-- Temas Mañana, Tarde, Noche y Automático según la hora local.
-- Diseño adaptable a escritorio, móvil y móvil horizontal.
-- Favicon propio, manifiesto instalable y panel Acerca de.
+ScanSat ya no separa Tierra, Luna y sistema solar en escenas diferentes. Todo comparte una escena continua con coordenadas en kilómetros y foco inicial en la Tierra:
 
-## Precisión y escalas
+- doble clic sobre un cuerpo, punto de Lagrange, sonda o satélite para centrarlo;
+- selector de foco para navegar directamente a planetas, lunas, misiones o un NORAD;
+- radios planetarios y distancias orbitales físicas, sin comprimir GEO, la Luna o los planetas;
+- posiciones planetarias calculadas con los elementos aproximados 1800–2050 publicados por NASA/JPL;
+- Sol con radio físico: su tamaño angular cambia correctamente al observarlo desde otros planetas;
+- Tierra con rotación sideral 1×, iluminación solar, terminador día/noche, luces urbanas y nubes;
+- catálogo terrestre OMM propagado con SGP4 y marcadores circulares de pocos píxeles;
+- capa de basura espacial con las nubes públicas FENGYUN 1C, IRIDIUM 33 y COSMOS 2251;
+- puntos Sol–Tierra L1–L5 y observatorios de L1/L2, incluido James Webb;
+- efemérides heliocéntricas de sondas destacadas obtenidas de NASA/JPL Horizons;
+- orbitadores lunares y marcianos con periodos 1× aproximados, no animaciones aceleradas;
+- lugares de alunizaje, rovers de la Luna y Marte, y aterrizadores históricos de Venus;
+- texturas planetarias auténticas de NASA/JPL/USGS y modelos oficiales de NASA 3D Resources;
+- biblioteca de constelaciones, navegación, meteorología, ciencia, estaciones y espacio profundo.
 
-La posición de los objetos terrestres se calcula desde los elementos OMM de CelesTrak con SGP4. Es una visualización científica y educativa, no una herramienta de navegación u operación espacial.
+Los iconos de planetas y misiones lejanas mantienen un tamaño legible en pantalla. Son ayudas de interfaz: las mallas de los cuerpos y sus posiciones no se agrandan artificialmente.
 
-Para que LEO, MEO, GEO y las órbitas elípticas puedan entenderse simultáneamente, las **altitudes se comprimen de forma no lineal**. La Tierra mantiene su forma, pero la distancia visual de cada punto no constituye una escala lineal.
+## Datos y precisión
 
-Las vistas lunar y del sistema solar son **esquemáticas en esta primera alfa**. Muestran cuerpos, tipos de órbita y contexto de misión, pero todavía no consumen efemérides SPICE/Horizons. Esta distinción también se indica dentro de la interfaz.
+| Capa | Fuente | Modelo |
+|---|---|---|
+| Objetos terrestres activos | CelesTrak / 18 SDS, CCSDS OMM JSON | SGP4 mediante `satellite.js` |
+| Residuos destacados | CelesTrak, tres grandes nubes públicas | SGP4 mediante `satellite.js` |
+| Planetas | NASA/JPL Solar System Dynamics | Elementos keplerianos aproximados, válidos para visualización entre 1800 y 2050 |
+| Sondas y observatorios | NASA/JPL Horizons API | Vectores heliocéntricos J2000, refrescados por GitHub Actions |
+| Lunas y orbitadores locales | Parámetros orbitales publicados | Aproximación kepleriana/circular a velocidad temporal 1× |
+| Texturas | NASA 3D Resources, NASA/JPL, USGS | Mapas equirectangulares y modelos GLB oficiales |
 
-## Datos orbitales
+El catálogo puede mostrar objetos militares **públicamente catalogados** —por ejemplo, designaciones `USA` o `COSMOS`—, pero ScanSat no incorpora información secreta, restringida ni fuera de fuentes abiertas.
 
-El archivo `public/data/active.json` procede de:
+Las posiciones son educativas y no deben utilizarse para navegación, predicción de conjunciones ni operaciones espaciales. Para cálculos científicos de alta precisión debe consultarse directamente JPL Horizons u otra efeméride operacional.
 
-```text
-https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=JSON
-```
+## Controles
 
-La aplicación no solicita miles de elementos desde cada navegador. GitHub Actions obtiene una sola instantánea cada ocho horas como máximo, la valida y solo la incorpora cuando es correcta y diferente. Si CelesTrak limita temporalmente una descarga, se conserva el último catálogo válido.
-
-## Arquitectura
-
-```text
-Scansat/
-├── .github/workflows/       # despliegue y actualización orbital
-├── public/
-│   ├── data/                # instantánea OMM y metadatos
-│   └── textures/            # Tierra y Luna optimizadas
-├── scripts/                 # actualización y validación
-├── src/
-│   ├── app.js               # estado e interfaz
-│   ├── catalog.js           # clasificación y biblioteca
-│   ├── data-service.js      # carga progresiva del catálogo
-│   ├── scene.js             # motor 3D y propagación
-│   └── styles.css           # sistema visual adaptable
-├── tests/                   # pruebas de clasificación orbital
-├── favicon.svg
-└── index.html
-```
+- Arrastrar: orbitar la cámara alrededor del foco.
+- Rueda o gesto: viajar desde escala orbital hasta escala planetaria/solar.
+- Clic: abrir la ficha de un objeto.
+- Doble clic: convertirlo en el nuevo foco.
+- Selector superior: buscar un planeta, una luna, una misión o un identificador NORAD.
+- Botón de diana: restablecer la cámara alrededor del foco actual.
+- Botón de órbita: saltar al Sol para obtener una visión general.
+- Pausa: congela el instante simulado; en vivo el tiempo transcurre a 1×.
 
 ## Desarrollo local
 
-Requiere Node.js 24 o superior.
+Requiere Node.js 24 o compatible.
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-El paso previo descarga una vez las texturas cartográficas públicas necesarias; no se almacenan binarios redundantes en el repositorio.
-
-Comprobación completa:
+Comprobación de producción:
 
 ```bash
 npm test
@@ -81,25 +72,42 @@ npm run validate
 npm run build
 ```
 
-## Fuentes y atribuciones
+Actualización manual de datos:
 
-- Elementos orbitales: [CelesTrak](https://celestrak.org/) a partir de datos públicos de 18 SDS/USSF.
-- Propagación: [satellite.js](https://github.com/shashwatak/satellite-js).
-- Fronteras: [Natural Earth](https://www.naturalearthdata.com/) mediante `world-atlas`.
-- Textura nocturna: NASA Earth Observatory, Black Marble 2016.
-- Texturas diurna y lunar: recursos de ejemplo de Three.js basados en cartografía pública de NASA.
-- Renderizado 3D: [Three.js](https://threejs.org/).
+```bash
+npm run data:update
+```
 
-## Próximas fases
+`assets:prepare` descarga durante el desarrollo o el build las texturas y modelos oficiales. Se excluyen del repositorio para evitar duplicar binarios de terceros; GitHub Actions los vuelve a preparar antes de desplegar.
 
-1. Efemérides reales NASA JPL Horizons/SPICE para sondas, Lagrange y órbitas planetarias.
-2. Catálogos lunares, marcianos y de otros cuerpos con fuentes específicas.
-3. Lanzamientos en curso, etapas y trayectorias de ascenso cuando exista telemetría pública.
-4. Planos y generaciones detalladas de megaconstelaciones.
-5. Huellas de cobertura por carga útil, elevación mínima y banda de frecuencia.
-6. Estaciones terrestres, pasos visibles y observación desde una ubicación elegida.
-7. Línea temporal, reentradas, lanzamientos recientes y evolución histórica.
+## Automatización y despliegue
 
-## Autor
+- `.github/workflows/deploy-pages.yml` prueba, compila y publica `dist/` en GitHub Pages con cada cambio en `main`.
+- `.github/workflows/update-orbital-data.yml` refresca el catálogo CelesTrak y las efemérides JPL tres veces al día.
+- Las instantáneas solo se escriben cuando superan validaciones mínimas, de modo que un fallo remoto no sustituye datos válidos.
 
-Proyecto de [Alejandro Pico](https://alejandropico.github.io/). Código y seguimiento en [GitHub](https://github.com/AlejandroPico/Scansat).
+## Arquitectura
+
+- Vite y JavaScript ES modules.
+- Three.js con `logarithmicDepthBuffer` y origen flotante alrededor del foco actual.
+- `satellite.js` para OMM/SGP4.
+- D3 Geo, TopoJSON y Natural Earth para la capa política.
+- GitHub Pages y GitHub Actions para despliegue y refresco de datos.
+
+## Hoja de ruta
+
+- teselas cartográficas progresivas para llegar a escala de calle sin inflar el paquete inicial;
+- trayectorias de lanzamientos y eventos de vuelo en vivo cuando exista una fuente pública fiable;
+- más nubes de residuos y catálogos adicionales con licencias compatibles;
+- efemérides de más misiones planetarias y asteroides;
+- modelos 3D detallados para estaciones, sondas, rovers y telescopios;
+- escalas temporales configurables y comparación entre fechas.
+
+## Historial
+
+- **0.2.0-alpha** — escena solar continua, escalas físicas, navegación por foco, JPL Horizons, Lagrange/JWST, terminador terrestre, basura espacial y misiones de superficie.
+- **0.1.0-alpha** — primera versión con globo terrestre, catálogo activo CelesTrak, filtros, fichas y vistas esquemáticas separadas.
+
+## Licencia y atribución
+
+Código del proyecto bajo licencia MIT. Las fuentes de datos y recursos visuales conservan sus respectivas condiciones y atribuciones. NASA 3D Resources indica que sus activos son de libre descarga y uso; deben respetarse las directrices de uso de imágenes y marca de NASA.
