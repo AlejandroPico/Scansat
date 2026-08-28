@@ -33,7 +33,7 @@ async function fetchVector(target) {
   let response;
   for (let attempt = 0; attempt < 3; attempt += 1) {
     response = await fetch(url, {
-      headers: { 'user-agent': 'ScanSat/0.2.1 (+https://github.com/AlejandroPico/Scansat)' },
+      headers: { 'user-agent': 'ScanSat/0.3.0 (+https://github.com/AlejandroPico/Scansat)' },
       signal: AbortSignal.timeout(90_000),
     });
     if (response.ok && response.headers.get('content-type')?.includes('json')) break;

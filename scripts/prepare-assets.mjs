@@ -7,7 +7,9 @@ const assets = [
   ['public/textures/earth-night.png', 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_lights_2048.png'],
   ['public/textures/earth-roughness.jpg', 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_bump_roughness_clouds_4096.jpg'],
   ['public/textures/earth-clouds.png', 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png'],
-  ['public/textures/moon.jpg', `${nasaRoot}/Moon/Moon.jpg`],
+  ['public/textures/moon-color.jpg', 'https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_2k.jpg'],
+  ['public/textures/moon-height.jpg', 'https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/ldem_3_8bit.jpg'],
+  ['public/textures/sun-surface.jpg', 'https://svs.gsfc.nasa.gov/vis/a030000/a030300/a030362/euvi_aia304_2012_carrington_print.jpg'],
   ['public/textures/venus.jpg', `${nasaRoot}/Venus/Venus.jpg`],
   ['public/textures/mars.jpg', `${nasaRoot}/Mars/Mars.jpg`],
   ['public/textures/jupiter.jpg', `${nasaRoot}/Jupiter/Jupiter.jpg`],
@@ -25,7 +27,7 @@ for (const [relativePath, url] of assets) {
   } catch { /* El recurso todavía no existe. */ }
 
   const response = await fetch(url, {
-    headers: { 'user-agent': 'ScanSat/0.2.1 (+https://github.com/AlejandroPico/Scansat)' },
+    headers: { 'user-agent': 'ScanSat/0.3.0 (+https://github.com/AlejandroPico/Scansat)' },
     signal: AbortSignal.timeout(120_000),
   });
   if (!response.ok) throw new Error(`No se pudo descargar ${url} (${response.status}).`);

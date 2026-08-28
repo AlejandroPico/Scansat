@@ -1,5 +1,14 @@
 export const EARTH_RADIUS_KM = 6378.137;
 export const EARTH_MU = 398600.4418;
+export const CURRENT_GP_WINDOW_DAYS = 14;
+
+export function isCatalogDateReliable(referenceDate, simulationDate, windowDays = CURRENT_GP_WINDOW_DAYS) {
+  if (!referenceDate) return true;
+  const reference = referenceDate instanceof Date ? referenceDate : new Date(referenceDate);
+  const simulation = simulationDate instanceof Date ? simulationDate : new Date(simulationDate);
+  if (Number.isNaN(reference.valueOf()) || Number.isNaN(simulation.valueOf())) return false;
+  return Math.abs(simulation - reference) <= windowDays * 86_400_000;
+}
 
 export const ORBIT_STYLES = {
   LEO: { label: 'Órbita terrestre baja', color: '#5ad7ff' },

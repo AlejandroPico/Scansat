@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { classifyObject, orbitalMetrics } from '../src/catalog.js';
+import { classifyObject, isCatalogDateReliable, orbitalMetrics } from '../src/catalog.js';
 
 test('clasifica las constelaciones principales', () => {
   assert.equal(classifyObject('STARLINK-12345'), 'starlink');
@@ -21,4 +21,11 @@ test('calcula un periodo orbital coherente', () => {
   const metrics = orbitalMetrics({ MEAN_MOTION: 16, ECCENTRICITY: 0 });
   assert.equal(metrics.periodMinutes, 90);
   assert.ok(metrics.meanAltitude > 200 && metrics.meanAltitude < 400);
+});
+
+test('oculta elementos GP actuales fuera de su ventana fiable', () => {
+  const epoch = new Date('2026-08-28T00:00:00Z');
+  assert.equal(isCatalogDateReliable(epoch, new Date('2026-09-10T23:59:59Z')), true);
+  assert.equal(isCatalogDateReliable(epoch, new Date('2026-09-12T00:00:01Z')), false);
+  assert.equal(isCatalogDateReliable(epoch, new Date('1957-10-04T00:00:00Z')), false);
 });

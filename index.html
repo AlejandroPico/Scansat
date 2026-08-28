@@ -13,11 +13,20 @@
     <svg class="svg-sprite" aria-hidden="true">
       <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
       <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol>
+      <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
       <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/></symbol>
       <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 5h16l-6.5 7.3V19l-3 1v-7.7L4 5Z"/></symbol>
       <symbol id="i-book" viewBox="0 0 24 24"><path d="M3.5 5.5A3.5 3.5 0 0 1 7 2h4v17H7a3.5 3.5 0 0 0-3.5 3V5.5ZM20.5 5.5A3.5 3.5 0 0 0 17 2h-4v17h4a3.5 3.5 0 0 1 3.5 3V5.5Z"/></symbol>
       <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 10v7M12 7h.01"/></symbol>
       <symbol id="i-theme" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c-5 3-11-2-9-9Z"/></symbol>
+      <symbol id="i-auto" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M18.4 9A7.5 7.5 0 0 0 5.7 6.7L4 9M5.6 15A7.5 7.5 0 0 0 18.3 17.3L20 15"/><path d="M12 8v4l2.5 1.5"/></symbol>
+      <symbol id="i-morning" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></symbol>
+      <symbol id="i-afternoon" viewBox="0 0 24 24"><path d="M3 17h18M5 17a7 7 0 0 1 14 0M12 4v3M4.9 9.9 7 12M19.1 9.9 17 12"/></symbol>
+      <symbol id="i-night" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c-5 3-11-2-9-9Z"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2ZM7 2v4M17 2v4M3 9h18"/></symbol>
+      <symbol id="i-back" viewBox="0 0 24 24"><path d="m11 7-5 5 5 5M18 7l-5 5 5 5"/></symbol>
+      <symbol id="i-forward" viewBox="0 0 24 24"><path d="m6 7 5 5-5 5M13 7l5 5-5 5"/></symbol>
       <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
       <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z"/></symbol>
       <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></symbol>
@@ -30,24 +39,24 @@
 
     <div id="app">
       <header class="topbar">
-        <button class="icon-button mobile-only" id="menu-toggle" aria-label="Abrir controles" aria-expanded="false">
-          <svg><use href="#i-menu"/></svg>
-        </button>
-        <a class="brand" href="./" aria-label="ScanSat, inicio">
-          <span class="brand-mark" aria-hidden="true"><span></span></span>
-          <span class="brand-copy"><strong>ScanSat</strong><small>Atlas orbital</small></span>
-          <span class="version-badge">α 0.2.1</span>
-        </a>
         <button class="focus-picker" id="focus-picker" type="button" aria-haspopup="true" aria-expanded="false">
           <svg><use href="#i-target"/></svg><span>FOCO</span><strong id="focus-label">Tierra</strong><svg class="chevron"><use href="#i-chevron"/></svg>
         </button>
         <div class="top-actions">
-          <span class="utc-clock" id="utc-clock">--:--:-- UTC</span>
-          <button class="icon-button" id="time-toggle" aria-label="Pausar simulación" title="Pausar tiempo">
-            <svg><use href="#i-pause"/></svg>
+          <button class="icon-button utility-trigger" id="catalog-button" data-utility="catalog" aria-label="Abrir base de datos" aria-expanded="false" title="Base de datos">
+            <svg><use href="#i-database"/></svg>
+          </button>
+          <button class="icon-button utility-trigger" id="layers-button" data-utility="layers" aria-label="Abrir capas" aria-expanded="false" title="Capas">
+            <svg><use href="#i-layers"/></svg>
+          </button>
+          <button class="icon-button utility-trigger" id="filters-button" data-utility="filters" aria-label="Abrir filtros" aria-expanded="false" title="Filtros">
+            <svg><use href="#i-filter"/></svg>
+          </button>
+          <button class="time-button utility-trigger" id="time-button" data-utility="time" aria-label="Abrir control temporal" aria-expanded="false" title="Fecha y tiempo de simulación">
+            <svg><use href="#i-clock"/></svg><span class="utc-clock" id="utc-clock">--:--:-- UTC</span>
           </button>
           <button class="icon-button" id="theme-button" aria-label="Cambiar tema" title="Tema">
-            <svg><use href="#i-theme"/></svg>
+            <svg><use id="theme-icon-use" href="#i-auto"/></svg>
           </button>
           <button class="icon-button" id="library-button" aria-label="Abrir biblioteca" title="Biblioteca">
             <svg><use href="#i-book"/></svg>
@@ -59,9 +68,13 @@
       </header>
 
       <main class="workspace">
-        <aside class="control-panel" id="control-panel" aria-label="Controles del mapa">
+        <aside class="control-panel" id="control-panel" aria-label="Controles del mapa" aria-hidden="true">
+          <header class="utility-panel-header">
+            <div><span class="section-kicker">HERRAMIENTAS</span><h2 id="utility-panel-title">Base de datos</h2></div>
+            <button class="icon-button plain" id="control-panel-close" aria-label="Cerrar herramientas"><svg><use href="#i-close"/></svg></button>
+          </header>
           <div class="panel-scroll">
-            <section class="search-section">
+            <section class="search-section" data-utility-section="catalog">
               <label class="search-box">
                 <svg><use href="#i-search"/></svg>
                 <input id="catalog-search" type="search" placeholder="Buscar satélite o NORAD…" autocomplete="off" />
@@ -70,7 +83,7 @@
               <div class="search-results" id="search-results" hidden></div>
             </section>
 
-            <section class="panel-section catalog-summary">
+            <section class="panel-section catalog-summary" data-utility-section="catalog">
               <div class="section-kicker">CATÁLOGO PÚBLICO</div>
               <div class="catalog-count-row">
                 <strong id="catalog-count">—</strong>
@@ -84,12 +97,12 @@
               <div class="progress-track" id="load-progress"><span></span></div>
             </section>
 
-            <section class="panel-section" id="layers-section">
+            <section class="panel-section" id="layers-section" data-utility-section="layers">
               <button class="section-heading" type="button" aria-expanded="true">
                 <span><svg><use href="#i-layers"/></svg> Capas y objetos</span><svg class="chevron"><use href="#i-chevron"/></svg>
               </button>
               <div class="section-content layer-grid">
-                <button class="layer-card active" data-layer="satellite"><span class="layer-preview satellite"></span><span><strong>Satélite</strong><small>Blue Marble</small></span></button>
+                <button class="layer-card active" data-layer="satellite"><span class="layer-preview satellite"></span><span><strong>Satélite</strong><small>NASA Blue Marble</small></span></button>
                 <button class="layer-card" data-layer="political"><span class="layer-preview political"></span><span><strong>Político plano</strong><small>Fronteras</small></span></button>
                 <button class="layer-card" data-layer="night"><span class="layer-preview night"></span><span><strong>Noche</strong><small>Black Marble</small></span></button>
               </div>
@@ -101,7 +114,7 @@
               <label class="switch-row"><span>Cobertura estimada</span><input id="coverage-toggle" type="checkbox"><span class="switch"></span></label>
             </section>
 
-            <section class="panel-section" id="filters-section">
+            <section class="panel-section" id="filters-section" data-utility-section="filters">
               <button class="section-heading" type="button" aria-expanded="true">
                 <span><svg><use href="#i-filter"/></svg> Filtros orbitales</span><svg class="chevron"><use href="#i-chevron"/></svg>
               </button>
@@ -117,8 +130,27 @@
                 <div class="constellation-list" id="constellation-list"></div>
               </div>
             </section>
+
+            <section class="panel-section time-section" id="time-section" data-utility-section="time">
+              <div class="time-now"><span>INSTANTE SIMULADO</span><strong id="time-panel-clock">—</strong></div>
+              <label class="time-field"><span>Fecha y hora UTC</span><input id="simulation-date-input" type="datetime-local" min="1957-10-04T00:00" max="2050-12-31T23:59" step="1"></label>
+              <div class="time-actions primary-time-actions">
+                <button class="secondary-button" id="time-apply" type="button"><svg><use href="#i-calendar"/></svg> Aplicar fecha</button>
+                <button class="secondary-button" id="time-live" type="button"><svg><use href="#i-refresh"/></svg> Volver a ahora</button>
+              </div>
+              <div class="time-step-grid" aria-label="Desplazar el instante simulado">
+                <button type="button" data-time-step="-86400000"><svg><use href="#i-back"/></svg><span>1 día</span></button>
+                <button type="button" data-time-step="-3600000"><svg><use href="#i-back"/></svg><span>1 hora</span></button>
+                <button type="button" data-time-step="3600000"><span>1 hora</span><svg><use href="#i-forward"/></svg></button>
+                <button type="button" data-time-step="86400000"><span>1 día</span><svg><use href="#i-forward"/></svg></button>
+              </div>
+              <label class="time-field"><span>Velocidad</span><select id="time-rate-select"><option value="-86400">−86.400×</option><option value="-3600">−3.600×</option><option value="-60">−60×</option><option value="1" selected>1× real</option><option value="60">60×</option><option value="3600">3.600×</option><option value="86400">86.400×</option></select></label>
+              <button class="primary-button time-toggle" id="time-toggle" type="button"><svg><use href="#i-pause"/></svg><span>Pausar simulación</span></button>
+              <div class="time-archive-status" id="time-archive-status"><span class="status-dot live"></span><p>El catálogo GP actual es fiable para este instante.</p></div>
+              <p class="time-note">El sistema solar puede recorrerse entre 1957 y 2050. Los satélites terrestres solo se muestran cerca de la época de sus elementos orbitales actuales; el archivo histórico se incorporará como una fuente independiente.</p>
+            </section>
           </div>
-          <div class="panel-footer">
+          <div class="panel-footer" data-utility-section="catalog">
             <span>Fuente orbital</span>
             <a href="https://celestrak.org/" target="_blank" rel="noreferrer">CelesTrak ↗</a>
           </div>
@@ -186,18 +218,18 @@
     <dialog class="app-dialog about-dialog" id="about-dialog">
       <div class="dialog-shell compact">
         <header><div><span class="dialog-kicker">ACERCA DEL PROYECTO</span><h2>ScanSat</h2></div><button class="icon-button plain dialog-close" aria-label="Cerrar acerca de"><svg><use href="#i-close"/></svg></button></header>
-        <div class="about-hero"><span class="about-mark"><span></span></span><div><strong>Atlas orbital y planetario</strong><small>Versión 0.2.1 · Alfa</small></div></div>
-        <p>ScanSat ofrece una escena continua del sistema solar con foco inicial en la Tierra. Las órbitas planetarias usan elementos aproximados de JPL; los objetos terrestres se propagan con SGP4 y las sondas destacadas usan vectores de NASA/JPL Horizons.</p>
+        <div class="about-hero"><span class="about-mark"><span></span></span><div><strong>ScanSat · Atlas orbital y planetario</strong><small>Versión 0.3.0 · Alfa</small></div></div>
+        <p>ScanSat ofrece una escena continua del sistema solar con foco inicial en la Tierra. Las órbitas planetarias usan elementos aproximados de JPL; los objetos terrestres se propagan con SGP4 y las sondas destacadas usan vectores de NASA/JPL Horizons. La navegación temporal oculta el catálogo GP actual cuando la fecha elegida queda fuera de su periodo fiable.</p>
         <div class="about-links"><a href="https://alejandropico.github.io/Portfolio/" target="_blank" rel="noreferrer">Portfolio <span>↗</span></a><a href="https://github.com/AlejandroPico/Scansat" target="_blank" rel="noreferrer">Repositorio <span>↗</span></a></div>
-        <div class="credits"><strong>Datos y atribuciones</strong><p>Órbitas terrestres y basura: CelesTrak / 18 SDS. Efemérides: NASA/JPL Horizons. Texturas planetarias: NASA, JPL, USGS y NASA 3D Resources. Propagación: satellite.js. Fronteras: Natural Earth.</p><p>Los iconos conservan legibilidad en pantalla, pero cuerpos y distancias utilizan kilómetros físicos. Herramienta educativa; no apta para navegación ni operaciones espaciales.</p></div>
+        <div class="credits"><strong>Datos y atribuciones</strong><p>Órbitas terrestres y basura: CelesTrak / 18 SDS. Efemérides: NASA/JPL Horizons. Tierra: NASA Blue/Black Marble. Luna: LROC/LOLA. Sol: STEREO y SDO/AIA. Otras texturas: NASA, JPL, USGS y NASA 3D Resources. Propagación: satellite.js. Fronteras: Natural Earth.</p><p>Los iconos conservan legibilidad en pantalla, pero cuerpos y distancias utilizan kilómetros físicos. Herramienta educativa; no apta para navegación ni operaciones espaciales.</p></div>
       </div>
     </dialog>
 
     <div class="theme-menu" id="theme-menu" hidden>
-      <button data-theme-choice="auto" class="active"><span>Automático</span><small>Según la hora local</small></button>
-      <button data-theme-choice="morning"><span>Mañana</span><small>Claro y frío</small></button>
-      <button data-theme-choice="afternoon"><span>Tarde</span><small>Cálido y contrastado</small></button>
-      <button data-theme-choice="night"><span>Noche</span><small>Observatorio oscuro</small></button>
+      <button data-theme-choice="auto" class="active"><svg><use href="#i-auto"/></svg><span><strong>Automático</strong><small>Según la hora local</small></span></button>
+      <button data-theme-choice="morning"><svg><use href="#i-morning"/></svg><span><strong>Mañana</strong><small>Claro y frío</small></span></button>
+      <button data-theme-choice="afternoon"><svg><use href="#i-afternoon"/></svg><span><strong>Tarde</strong><small>Cálido y contrastado</small></span></button>
+      <button data-theme-choice="night"><svg><use href="#i-night"/></svg><span><strong>Noche</strong><small>Observatorio oscuro</small></span></button>
     </div>
 
     <div class="target-menu" id="target-menu" hidden>

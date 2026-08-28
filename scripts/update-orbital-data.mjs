@@ -1,7 +1,7 @@
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
-const version = '0.2.1';
+const version = '0.3.0';
 const debrisPaths = Array.from({ length: 4 }, (_, index) => `public/data/debris-${index + 1}.json`);
 
 const feeds = [

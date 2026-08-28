@@ -5,7 +5,7 @@ import { degreesLat, degreesLong, eciToGeodetic, gstime, propagate } from './sat
 import { geoEquirectangular, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
 import countriesTopology from 'world-atlas/countries-110m.json';
-import { EARTH_RADIUS_KM, GROUP_STYLES, ORBIT_STYLES } from './catalog.js';
+import { EARTH_RADIUS_KM, GROUP_STYLES, ORBIT_STYLES, isCatalogDateReliable } from './catalog.js';
 import {
   AU_KM,
   CELESTIAL_BODIES,
@@ -111,11 +111,14 @@ function makeIconTexture(kind, color) {
     context.beginPath(); context.arc(0, 0, 15, 0, Math.PI * 2); context.fill();
     context.globalAlpha = 0.58; context.beginPath(); context.arc(0, 0, 31, 0, Math.PI * 2); context.stroke();
   } else {
-    context.rotate(Math.PI / 4);
-    context.strokeRect(-14, -14, 28, 28);
-    context.fillRect(-8, -8, 16, 16);
-    context.beginPath(); context.moveTo(-38, -12); context.lineTo(-18, -12); context.lineTo(-18, 12); context.lineTo(-38, 12); context.closePath(); context.stroke();
-    context.beginPath(); context.moveTo(18, -12); context.lineTo(38, -12); context.lineTo(38, 12); context.lineTo(18, 12); context.closePath(); context.stroke();
+    context.lineWidth = 2.5;
+    context.shadowBlur = 5;
+    context.strokeRect(-8, -11, 16, 22);
+    context.fillRect(-4, -7, 8, 14);
+    context.strokeRect(-31, -8, 18, 16);
+    context.strokeRect(13, -8, 18, 16);
+    context.beginPath(); context.moveTo(-13, 0); context.lineTo(-8, 0); context.moveTo(8, 0); context.lineTo(13, 0); context.stroke();
+    context.beginPath(); context.moveTo(0, -11); context.lineTo(7, -21); context.arc(10, -24, 4, Math.PI * 0.75, Math.PI * 1.75); context.stroke();
   }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -132,7 +135,7 @@ function makeSprite(item, kind = 'spacecraft') {
     toneMapped: false,
   });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.setScalar(kind === 'body' ? 0.024 : 0.03);
+  sprite.scale.setScalar(kind === 'body' ? 0.024 : kind === 'spacecraft' ? 0.022 : 0.027);
   sprite.renderOrder = 20;
   sprite.userData.item = item;
   return sprite;
@@ -170,6 +173,10 @@ function makeAtmosphereMaterial(color = '#50c8ff') {
 
 function makeEarthMaterial(dayMap, nightMap) {
   return new THREE.ShaderMaterial({
+    transparent: false,
+    depthWrite: true,
+    depthTest: true,
+    side: THREE.FrontSide,
     uniforms: {
       dayMap: { value: dayMap },
       nightMap: { value: nightMap },
@@ -194,6 +201,7 @@ function makeEarthMaterial(dayMap, nightMap) {
       varying vec3 vNormalW;
       void main() {
         vec3 dayColor = texture2D(dayMap, vUvMap).rgb;
+        dayColor = pow(dayColor, vec3(0.94)) * vec3(1.03, 1.04, 1.07);
         vec3 nightColor = texture2D(nightMap, vUvMap).rgb * 1.55;
         float directLight = dot(normalize(vNormalW), normalize(sunDirection));
         float terminator = smoothstep(-0.13, 0.17, directLight);
@@ -206,20 +214,53 @@ function makeEarthMaterial(dayMap, nightMap) {
   });
 }
 
-function makeSunMaterial() {
+function makeSunMaterial(surfaceMap) {
   return new THREE.ShaderMaterial({
-    uniforms: { time: { value: 0 } },
+    uniforms: { time: { value: 0 }, surfaceMap: { value: surfaceMap } },
     vertexShader: `varying vec2 vUvMap; void main(){vUvMap=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
     fragmentShader: `
-      uniform float time; varying vec2 vUvMap;
-      float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      uniform float time; uniform sampler2D surfaceMap; varying vec2 vUvMap;
+      float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
+      float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);}
+      float fbm(vec2 p){float v=0.0,a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p=p*2.03+17.13;a*=.5;}return v;}
       void main(){
-        vec2 p=vUvMap*vec2(18.0,9.0); float n=hash(floor(p))+hash(floor(p*2.3))*.35;
-        float bands=.08*sin(vUvMap.y*120.0+time*.08);
-        vec3 color=mix(vec3(1.0,.34,.045),vec3(1.0,.88,.35),clamp(n*.65+.4+bands,0.0,1.0));
+        vec2 uv=vec2(fract(vUvMap.x+time*.000025),vUvMap.y);
+        vec3 observed=texture2D(surfaceMap,uv).rgb;
+        float detail=fbm(uv*vec2(48.0,24.0)+vec2(time*.018,-time*.009));
+        float cells=fbm(uv*vec2(150.0,75.0)-vec2(time*.01,0.0));
+        float signal=clamp(dot(observed,vec3(.333))*1.3+detail*.5+cells*.17,.0,1.35);
+        vec3 deep=vec3(.58,.035,.002), mid=vec3(1.0,.25,.018), hot=vec3(1.0,.92,.46);
+        vec3 color=mix(deep,mid,smoothstep(.08,.7,signal));
+        color=mix(color,hot,smoothstep(.62,1.18,signal));
         gl_FragColor=vec4(color,1.0);
       }`,
   });
+}
+
+function makeSunGlowMaterial() {
+  return new THREE.ShaderMaterial({
+    transparent: true,
+    side: THREE.BackSide,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    uniforms: { glowColor: { value: new THREE.Color('#ff7b24') } },
+    vertexShader: `varying vec3 vNormalW;varying vec3 vWorld;void main(){vNormalW=normalize(mat3(modelMatrix)*normal);vec4 world=modelMatrix*vec4(position,1.0);vWorld=world.xyz;gl_Position=projectionMatrix*viewMatrix*world;}`,
+    fragmentShader: `uniform vec3 glowColor;varying vec3 vNormalW;varying vec3 vWorld;void main(){vec3 viewDir=normalize(cameraPosition-vWorld);float rim=pow(max(0.0,.88-dot(vNormalW,viewDir)),2.35);gl_FragColor=vec4(glowColor,rim*.92);}`,
+  });
+}
+
+function makeCoronaTexture() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 512;
+  const context = canvas.getContext('2d');
+  const gradient = context.createRadialGradient(256, 256, 90, 256, 256, 255);
+  gradient.addColorStop(0, 'rgba(255,225,144,.9)');
+  gradient.addColorStop(0.28, 'rgba(255,137,47,.34)');
+  gradient.addColorStop(0.62, 'rgba(255,78,18,.1)');
+  gradient.addColorStop(1, 'rgba(255,45,5,0)');
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, 512, 512);
+  return new THREE.CanvasTexture(canvas);
 }
 
 function makeOrbitLine(points, color = '#6f8896', opacity = 0.22) {
@@ -248,6 +289,11 @@ export class OrbitalScene {
     this.onFocus = onFocus;
     this.simulationDate = new Date();
     this.running = true;
+    this.timeScale = 1;
+    this.catalogReferenceDate = null;
+    this.catalogReliable = true;
+    this.activePointRecords = [];
+    this.debrisPointRecords = [];
     this.records = [];
     this.visibleRecords = [];
     this.activeVisible = [];
@@ -355,10 +401,10 @@ export class OrbitalScene {
     this.scene.add(this.stars);
   }
 
-  loadTexture(name) {
+  loadTexture(name, useSrgb = true) {
     if (!name) return null;
     const texture = this.textureLoader.load(`${BASE_URL}textures/${name}`);
-    texture.colorSpace = THREE.SRGBColorSpace;
+    if (useSrgb) texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
     return texture;
   }
@@ -374,7 +420,7 @@ export class OrbitalScene {
       if (definition.id === 'earth') axialTilt.rotation.x = -OBLIQUITY;
 
       let material;
-      if (definition.id === 'sun') material = makeSunMaterial();
+      if (definition.id === 'sun') material = makeSunMaterial(this.loadTexture('sun-surface.jpg'));
       else if (definition.id === 'earth') {
         this.earthTextures = {
           satellite: this.loadTexture('earth-day.jpg'),
@@ -384,10 +430,12 @@ export class OrbitalScene {
         material = makeEarthMaterial(this.earthTextures.satellite, this.earthTextures.night);
         this.earthMaterial = material;
       } else {
-        const textureName = ['mercury', 'uranus'].includes(definition.id) ? null : definition.texture;
+        const textureName = definition.id === 'moon' ? 'moon-color.jpg' : ['mercury', 'uranus'].includes(definition.id) ? null : definition.texture;
+        const bumpMap = definition.id === 'moon' ? this.loadTexture('moon-height.jpg', false) : null;
         material = new THREE.MeshStandardMaterial({
           map: this.loadTexture(textureName), color: textureName ? '#ffffff' : definition.color,
-          roughness: definition.id === 'venus' ? 0.88 : 0.94, metalness: 0,
+          bumpMap, bumpScale: bumpMap ? 7.5 : 0,
+          roughness: definition.id === 'venus' ? 0.88 : 0.94, metalness: 0, depthWrite: true, depthTest: true,
         });
       }
 
@@ -401,6 +449,23 @@ export class OrbitalScene {
       spin.add(surface);
       this.interactive.push(surface);
 
+      if (definition.id === 'sun') {
+        const glow = new THREE.Mesh(
+          new THREE.SphereGeometry(definition.radiusKm * 1.075, 96, 64),
+          makeSunGlowMaterial(),
+        );
+        spin.add(glow);
+        const corona = new THREE.Sprite(new THREE.SpriteMaterial({
+          map: makeCoronaTexture(), transparent: true, depthWrite: false, depthTest: true,
+          blending: THREE.AdditiveBlending, toneMapped: false, opacity: 0.86,
+        }));
+        corona.scale.setScalar(definition.radiusKm * 3.5);
+        corona.renderOrder = -1;
+        spin.add(corona);
+        this.sunGlow = glow;
+        this.sunCorona = corona;
+      }
+
       if (definition.id === 'earth') {
         this.earth = surface;
         this.earthSpin = spin;
@@ -413,28 +478,35 @@ export class OrbitalScene {
         const cloudMap = this.loadTexture('earth-clouds.png');
         this.clouds = new THREE.Mesh(
           new THREE.SphereGeometry(definition.radiusKm * 1.006, 96, 64),
-          new THREE.MeshStandardMaterial({ map: cloudMap, transparent: true, opacity: 0.28, depthWrite: false, roughness: 1 }),
+          new THREE.MeshStandardMaterial({ color: '#ffffff', alphaMap: cloudMap, transparent: true, opacity: 0.52, depthWrite: false, roughness: 1 }),
         );
         spin.add(this.clouds);
       }
 
       if (definition.rings) {
         const ringCanvas = document.createElement('canvas');
-        ringCanvas.width = 1024; ringCanvas.height = 64;
+        ringCanvas.width = 1024; ringCanvas.height = 1024;
         const context = ringCanvas.getContext('2d');
-        const gradient = context.createLinearGradient(0, 0, 1024, 0);
-        gradient.addColorStop(0, 'rgba(164,143,103,0)');
-        gradient.addColorStop(0.12, 'rgba(198,181,145,.52)');
-        gradient.addColorStop(0.38, 'rgba(120,105,80,.82)');
-        gradient.addColorStop(0.48, 'rgba(10,10,10,.12)');
-        gradient.addColorStop(0.56, 'rgba(215,200,165,.78)');
-        gradient.addColorStop(0.93, 'rgba(164,143,103,.18)');
-        gradient.addColorStop(1, 'rgba(164,143,103,0)');
-        context.fillStyle = gradient; context.fillRect(0, 0, 1024, 64);
+        const gradient = context.createRadialGradient(512, 512, 0, 512, 512, 512);
+        gradient.addColorStop(0, 'rgba(0,0,0,0)');
+        gradient.addColorStop(0.505, 'rgba(0,0,0,0)');
+        gradient.addColorStop(0.515, 'rgba(151,135,105,.14)');
+        gradient.addColorStop(0.585, 'rgba(198,183,151,.36)');
+        gradient.addColorStop(0.61, 'rgba(48,42,35,.11)');
+        gradient.addColorStop(0.64, 'rgba(225,213,184,.82)');
+        gradient.addColorStop(0.76, 'rgba(177,159,126,.7)');
+        gradient.addColorStop(0.815, 'rgba(87,75,59,.18)');
+        gradient.addColorStop(0.845, 'rgba(29,26,24,.045)');
+        gradient.addColorStop(0.87, 'rgba(197,181,146,.62)');
+        gradient.addColorStop(0.965, 'rgba(132,116,91,.23)');
+        gradient.addColorStop(1, 'rgba(0,0,0,0)');
+        context.fillStyle = gradient; context.fillRect(0, 0, 1024, 1024);
         const ringTexture = new THREE.CanvasTexture(ringCanvas);
+        ringTexture.colorSpace = THREE.SRGBColorSpace;
+        ringTexture.anisotropy = Math.min(8, this.renderer.capabilities.getMaxAnisotropy());
         const ring = new THREE.Mesh(
-          new THREE.RingGeometry(definition.radiusKm * 1.18, definition.radiusKm * 2.32, 180),
-          new THREE.MeshBasicMaterial({ map: ringTexture, transparent: true, side: THREE.DoubleSide, depthWrite: false, opacity: 0.9 }),
+          new THREE.RingGeometry(definition.radiusKm * 1.18, definition.radiusKm * 2.32, 256),
+          new THREE.MeshBasicMaterial({ map: ringTexture, transparent: true, side: THREE.DoubleSide, depthWrite: false, alphaTest: 0.015, opacity: 0.96, toneMapped: false }),
         );
         ring.rotation.x = Math.PI / 2;
         axialTilt.rotation.z = THREE.MathUtils.degToRad(26.73);
@@ -490,8 +562,8 @@ export class OrbitalScene {
       size, sizeAttenuation: false, map: this.dotTexture, alphaTest: 0.04, transparent: true,
       opacity, vertexColors: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
     });
-    this.activePoints = new THREE.Points(new THREE.BufferGeometry(), material(2.05, 0.96));
-    this.debrisPoints = new THREE.Points(new THREE.BufferGeometry(), material(1.25, 0.62));
+    this.activePoints = new THREE.Points(new THREE.BufferGeometry(), material(2.25, 1));
+    this.debrisPoints = new THREE.Points(new THREE.BufferGeometry(), material(1.15, 0.58));
     this.activePoints.renderOrder = 8;
     this.debrisPoints.renderOrder = 7;
     this.scene.add(this.activePoints, this.debrisPoints);
@@ -548,6 +620,11 @@ export class OrbitalScene {
 
   setCatalog(records) {
     this.records = records;
+    const epochs = records
+      .map((record) => Date.parse(String(record.epoch || '').endsWith('Z') ? record.epoch : `${record.epoch}Z`))
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
+    this.catalogReferenceDate = epochs.length ? new Date(epochs[Math.floor(epochs.length / 2)]) : null;
     this.setFilters({ orbits: new Set(Object.keys(ORBIT_STYLES)), groups: new Set(Object.keys(GROUP_STYLES)), debris: this.showDebris });
     this.updateCatalogPositions(this.simulationDate);
   }
@@ -630,6 +707,27 @@ export class OrbitalScene {
     this.running = running;
   }
 
+  setTimeScale(scale) {
+    if (Number.isFinite(scale) && scale !== 0) this.timeScale = scale;
+  }
+
+  catalogSupports(date) {
+    return isCatalogDateReliable(this.catalogReferenceDate, date);
+  }
+
+  setSimulationDate(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.valueOf())) return false;
+    this.simulationDate = new Date(date);
+    this.catalogReliable = this.catalogSupports(this.simulationDate);
+    if (!this.catalogReliable && this.focus.type === 'object' && this.focus.item?.satrec) {
+      this.focus = { type: 'body', id: 'earth' };
+      this.selected = this.bodyNodes.get('earth').surface.userData.item;
+      this.onFocus?.(this.selected);
+    }
+    this.updateWorld(this.simulationDate, true);
+    return true;
+  }
+
   setAutoRotate() {
     // La cámara nunca rota automáticamente: el tiempo físico gobierna los cuerpos.
     this.controls.autoRotate = false;
@@ -648,6 +746,7 @@ export class OrbitalScene {
 
   focusItem(item, notify = true) {
     if (!item) return false;
+    if (item.satrec && !this.catalogReliable) return false;
     if (this.bodyNodes.has(item.id)) return this.focusBody(item.id, notify);
     if (item.satrec || item.kind === 'spacecraft' || item.kind === 'lagrange') {
       this.focus = { type: 'object', item };
@@ -685,7 +784,7 @@ export class OrbitalScene {
   }
 
   selectRecord(record, focus = false) {
-    if (!record) return false;
+    if (!record || !this.catalogReliable) return false;
     this.selected = record;
     this.onSelect?.(record);
     this.drawSelectedOrbit(record);
@@ -803,6 +902,10 @@ export class OrbitalScene {
     for (const [id, body] of this.bodyNodes) {
       body.root.position.copy(this.rawPositions.get(id)).sub(origin);
       if (id === 'earth') body.spin.rotation.y = gstime(date);
+      else if (body.definition.type === 'moon' && body.definition.parent) {
+        const towardParent = this.rawPositions.get(body.definition.parent).clone().sub(this.rawPositions.get(id)).normalize();
+        body.spin.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), towardParent);
+      }
       else if (body.definition.rotationHours) {
         const elapsedHours = (julianDate(date) - 2_451_545) * 24;
         body.spin.rotation.y = elapsedHours / body.definition.rotationHours * Math.PI * 2;
@@ -829,12 +932,31 @@ export class OrbitalScene {
   updateCatalogPositions(date, force = false) {
     if (!this.activePoints || (!force && performance.now() - this.lastPropagation < 1_250)) return;
     this.lastPropagation = performance.now();
+    this.catalogReliable = this.catalogSupports(date);
+    if (!this.catalogReliable) {
+      this.activePointRecords = [];
+      this.debrisPointRecords = [];
+      for (const record of [...this.activeVisible, ...this.debrisVisible]) record.position = null;
+      for (const points of [this.activePoints, this.debrisPoints]) {
+        points.geometry.dispose();
+        points.geometry = new THREE.BufferGeometry();
+      }
+      if (this.selectedOrbit) {
+        this.scene.remove(this.selectedOrbit);
+        this.selectedOrbit.geometry.dispose();
+        this.selectedOrbit.material.dispose();
+        this.selectedOrbit = null;
+      }
+      this.updateVisibility();
+      return;
+    }
     const earth = this.rawPositions.get('earth');
     const origin = this.focusOrigin || earth || new THREE.Vector3();
     const gmst = gstime(date);
     const update = (records, points, debris = false) => {
       const positions = new Float32Array(records.length * 3);
       const colors = new Float32Array(records.length * 3);
+      const pointRecords = [];
       let valid = 0;
       for (const record of records) {
         const state = propagate(record.satrec, date);
@@ -854,34 +976,34 @@ export class OrbitalScene {
           longitude: degreesLong(geodetic.longitude),
           speed: velocity,
         };
-        records[valid] = record;
+        pointRecords.push(record);
         valid += 1;
       }
-      records.length = valid;
       const geometry = new THREE.BufferGeometry();
       geometry.setAttribute('position', new THREE.BufferAttribute(positions.slice(0, valid * 3), 3));
       geometry.setAttribute('color', new THREE.BufferAttribute(colors.slice(0, valid * 3), 3));
       points.geometry.dispose();
       points.geometry = geometry;
+      return pointRecords;
     };
-    update(this.activeVisible, this.activePoints, false);
-    update(this.debrisVisible, this.debrisPoints, true);
+    this.activePointRecords = update(this.activeVisible, this.activePoints, false);
+    this.debrisPointRecords = update(this.debrisVisible, this.debrisPoints, true);
+    if (force && this.selected?.satrec) this.drawSelectedOrbit(this.selected);
     if (this.selected?.satrec) this.onFrame?.(this.selected, this.getStatus());
   }
 
   updateVisibility() {
     const cameraDistance = this.camera.position.length();
     const focusBody = this.focus.type === 'body' ? this.focus.id : null;
-    this.activePoints.visible = cameraDistance < 8e6;
-    this.debrisPoints.visible = this.showDebris && cameraDistance < 8e6;
+    this.activePoints.visible = this.catalogReliable && cameraDistance < 8e6;
+    this.debrisPoints.visible = this.catalogReliable && this.showDebris && cameraDistance < 8e6;
     for (const node of this.surfaceNodes) {
       const body = this.bodyNodes.get(node.bodyId);
       const threshold = body.definition.radiusKm * 18;
       node.sprite.visible = this.showSurface && focusBody === node.bodyId && cameraDistance < threshold;
     }
-    for (const node of [...this.specialNodes, ...this.spacecraftNodes, ...this.localOrbiterNodes]) {
-      node.sprite.visible = this.showMissions;
-    }
+    for (const node of this.specialNodes) node.sprite.visible = this.showMissions;
+    for (const node of [...this.spacecraftNodes, ...this.localOrbiterNodes]) node.sprite.visible = this.catalogReliable && this.showMissions;
     for (const line of this.moonOrbitNodes) {
       const parent = line.userData.parent;
       line.visible = focusBody === parent || cameraDistance > 80_000;
@@ -894,7 +1016,7 @@ export class OrbitalScene {
       this.selectedOrbit.geometry.dispose();
       this.selectedOrbit.material.dispose();
     }
-    if (!record?.satrec) return;
+    if (!record?.satrec || !this.catalogReliable) return;
     const points = [];
     const earth = this.rawPositions.get('earth');
     const origin = this.focusOrigin || earth;
@@ -913,7 +1035,9 @@ export class OrbitalScene {
     return {
       focus: this.focus,
       distanceKm: this.camera.position.length(),
-      visible: this.visibleRecords.length,
+      visible: this.catalogReliable ? this.activePointRecords.length + this.debrisPointRecords.length : 0,
+      catalogReliable: this.catalogReliable,
+      catalogReferenceDate: this.catalogReferenceDate,
     };
   }
 
@@ -927,8 +1051,8 @@ export class OrbitalScene {
       this.activePoints, this.debrisPoints, ...this.interactive.filter((object) => object.visible),
     ], false);
     for (const hit of intersections) {
-      if (hit.object === this.activePoints) return this.activeVisible[hit.index];
-      if (hit.object === this.debrisPoints) return this.debrisVisible[hit.index];
+      if (hit.object === this.activePoints) return this.activePointRecords[hit.index];
+      if (hit.object === this.debrisPoints) return this.debrisPointRecords[hit.index];
       if (hit.object.userData.item) return hit.object.userData.item;
     }
     return null;
@@ -990,7 +1114,7 @@ export class OrbitalScene {
   animate() {
     requestAnimationFrame(() => this.animate());
     const delta = Math.min(this.clock.getDelta(), 0.1);
-    if (this.running) this.simulationDate = new Date(this.simulationDate.getTime() + delta * 1000);
+    if (this.running) this.simulationDate = new Date(this.simulationDate.getTime() + delta * 1000 * this.timeScale);
     const now = performance.now();
     if (now - this.lastPositionUpdate > 250) {
       this.updateWorld(this.simulationDate);

@@ -17,12 +17,19 @@ const state = {
   records: [],
   selected: null,
   running: true,
+  timeScale: 1,
+  utilityPanel: null,
+  catalogReliable: true,
   orbitFilters: new Set(['LEO', 'MEO', 'GEO', 'HEO']),
   groupFilters: new Set(Object.keys(GROUP_STYLES)),
   libraryCategory: 'all',
   librarySelected: null,
 };
 let lastStatusUpdate = 0;
+const UTILITY_TITLES = { catalog: 'Base de datos', layers: 'Capas y objetos', filters: 'Filtros orbitales', time: 'Fecha y tiempo' };
+const THEME_ICONS = { auto: 'auto', morning: 'morning', afternoon: 'afternoon', night: 'night' };
+const MIN_SIMULATION_DATE = new Date('1957-10-04T00:00:00Z');
+const MAX_SIMULATION_DATE = new Date('2050-12-31T23:59:59Z');
 
 const scene = new OrbitalScene($('#scene-container'), {
   onSelect: (item) => showDetail(item),
@@ -247,7 +254,11 @@ function searchCatalog(query) {
   }
   for (const record of records) {
     resultsBox.appendChild(makeResultButton(record, `NORAD ${record.id} · ${record.isDebris ? 'basura' : record.orbit}`, () => {
-      scene.selectRecord(record, true); resultsBox.hidden = true; $('#catalog-search').value = record.name; closeMobilePanel();
+      if (!scene.selectRecord(record, true)) {
+        toast('Selecciona “Volver a ahora” para localizar objetos del catálogo GP actual.', 'warning');
+        return;
+      }
+      resultsBox.hidden = true; $('#catalog-search').value = record.name; closeMobilePanel();
     }));
   }
   if (!special.length && !records.length) resultsBox.innerHTML = '<div class="no-results">No hay coincidencias en el catálogo público.</div>';
@@ -276,8 +287,15 @@ function renderTargetMenu(query = '') {
       button.type = 'button';
       button.innerHTML = `<span class="target-glyph" style="--target-color:${item.color || '#80dfff'}"></span><span><strong>${item.name}</strong><small>${item.satrec ? `NORAD ${item.id}` : item.agency || item.parent || item.kind}</small></span>`;
       button.addEventListener('click', () => {
-        if (item.satrec) scene.selectRecord(item, true);
-        else { scene.focusItem(item); showDetail(item); }
+        if (item.satrec) {
+          if (!scene.selectRecord(item, true)) {
+            toast('El catálogo GP actual se oculta fuera de su periodo fiable.', 'warning');
+            return;
+          }
+        } else {
+          scene.focusItem(item);
+          showDetail(item);
+        }
         closeTargetMenu();
       });
       container.appendChild(button);
@@ -305,8 +323,16 @@ function updateStatus(status) {
   const now = performance.now();
   if (now - lastStatusUpdate < 200) return;
   lastStatusUpdate = now;
+  state.catalogReliable = status.catalogReliable !== false;
   $('#visible-count').textContent = formatNumber(status.visible);
   $('#scale-note').textContent = `Distancia al foco: ${formatDistance(status.distanceKm)} · radios y órbitas en kilómetros físicos`;
+  const archiveStatus = $('#time-archive-status');
+  archiveStatus.classList.toggle('warning', !state.catalogReliable);
+  $('.status-dot', archiveStatus).className = `status-dot ${state.catalogReliable ? 'live' : ''}`;
+  $('p', archiveStatus).textContent = state.catalogReliable
+    ? 'El catálogo GP actual es fiable para este instante.'
+    : 'Los GP actuales no son válidos para esta fecha: se ocultan para no mostrar órbitas falsas.';
+  updatePlaybackStatus();
 }
 
 function renderLibrary() {
@@ -358,9 +384,30 @@ function openLibrary(entry = null) {
   if (entry) showLibraryArticle(entry); else renderLibrary();
 }
 
+function closeUtilityPanel() {
+  $('#control-panel').classList.remove('open');
+  $('#control-panel').setAttribute('aria-hidden', 'true');
+  $$('.utility-trigger').forEach((button) => button.setAttribute('aria-expanded', 'false'));
+  state.utilityPanel = null;
+}
+
+function openUtilityPanel(name) {
+  const panel = $('#control-panel');
+  if (panel.classList.contains('open') && state.utilityPanel === name) {
+    closeUtilityPanel();
+    return;
+  }
+  state.utilityPanel = name;
+  $('#utility-panel-title').textContent = UTILITY_TITLES[name] || 'Herramientas';
+  $$('[data-utility-section]').forEach((section) => section.classList.toggle('utility-active', section.dataset.utilitySection === name));
+  $$('.utility-trigger').forEach((button) => button.setAttribute('aria-expanded', String(button.dataset.utility === name)));
+  panel.classList.add('open');
+  panel.setAttribute('aria-hidden', 'false');
+  if (name === 'catalog') setTimeout(() => $('#catalog-search').focus(), 220);
+}
+
 function closeMobilePanel() {
-  $('#control-panel').classList.remove('mobile-open');
-  $('#menu-toggle').setAttribute('aria-expanded', 'false');
+  closeUtilityPanel();
 }
 
 function themeForHour() {
@@ -374,7 +421,49 @@ function applyTheme(choice) {
   document.documentElement.dataset.theme = choice === 'auto' ? themeForHour() : choice;
   localStorage.setItem('scansat-theme', choice);
   $$('#theme-menu button').forEach((button) => button.classList.toggle('active', button.dataset.themeChoice === choice));
+  $('#theme-icon-use').setAttribute('href', `#i-${THEME_ICONS[choice] || 'auto'}`);
+  $('#theme-button').setAttribute('title', `Tema: ${choice === 'auto' ? 'automático' : choice}`);
   $('#theme-menu').hidden = true;
+}
+
+function formatSimulationInstant(date) {
+  return date.toISOString().replace('T', ' ').slice(0, 19) + ' UTC';
+}
+
+function setRunning(running) {
+  state.running = running;
+  scene.setRunning(running);
+  const button = $('#time-toggle');
+  button.innerHTML = `${icon(running ? 'pause' : 'play')}<span>${running ? 'Pausar simulación' : 'Reanudar simulación'}</span>`;
+  button.setAttribute('aria-label', running ? 'Pausar simulación' : 'Reanudar simulación');
+  updatePlaybackStatus();
+}
+
+function updatePlaybackStatus() {
+  if (!state.catalogReliable) {
+    $('#simulation-status').textContent = 'MODO HISTÓRICO · SIN GP ARCHIVADO';
+    return;
+  }
+  if (!state.running) {
+    $('#simulation-status').textContent = 'SIMULACIÓN EN PAUSA';
+    return;
+  }
+  const rate = state.timeScale.toLocaleString('es-ES');
+  $('#simulation-status').textContent = `SIMULACIÓN ${rate}×`;
+}
+
+function setSimulationInstant(date, { pause = true } = {}) {
+  if (!(date instanceof Date) || Number.isNaN(date.valueOf())) {
+    toast('La fecha indicada no es válida.', 'warning');
+    return;
+  }
+  if (date < MIN_SIMULATION_DATE || date > MAX_SIMULATION_DATE) {
+    toast('El intervalo disponible va del 4 de octubre de 1957 al 31 de diciembre de 2050.', 'warning');
+    return;
+  }
+  scene.setSimulationDate(date);
+  $('#simulation-date-input').value = date.toISOString().slice(0, 19);
+  if (pause) setRunning(false);
 }
 
 function bindInterface() {
@@ -385,11 +474,11 @@ function bindInterface() {
     if (!$('#target-menu').hidden) { renderTargetMenu($('#target-search').value); $('#target-search').focus(); }
   });
   $('#target-search').addEventListener('input', (event) => renderTargetMenu(event.target.value));
-  $('#menu-toggle').addEventListener('click', () => {
-    const panel = $('#control-panel');
-    const open = panel.classList.toggle('mobile-open');
-    $('#menu-toggle').setAttribute('aria-expanded', String(open));
-  });
+  $$('.utility-trigger').forEach((button) => button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    openUtilityPanel(button.dataset.utility);
+  }));
+  $('#control-panel-close').addEventListener('click', closeUtilityPanel);
   $$('.section-heading').forEach((button) => button.addEventListener('click', () => {
     const expanded = button.getAttribute('aria-expanded') !== 'false';
     button.setAttribute('aria-expanded', String(!expanded));
@@ -422,7 +511,7 @@ function bindInterface() {
     if (!event.target.closest('#focus-picker') && !event.target.closest('#target-menu')) closeTargetMenu();
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) { event.preventDefault(); $('#catalog-search').focus(); }
+    if (event.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) { event.preventDefault(); openUtilityPanel('catalog'); }
     if (event.key === 'Escape') { closeMobilePanel(); closeTargetMenu(); }
   });
   $('#detail-close').addEventListener('click', closeDetail);
@@ -432,15 +521,25 @@ function bindInterface() {
   $('#open-library-entry').addEventListener('click', () => openLibrary(findLibraryEntry(state.selected)));
   $('#home-view').addEventListener('click', () => scene.resetCamera());
   $('#solar-overview').addEventListener('click', () => scene.focusBody('sun'));
-  $('#time-toggle').addEventListener('click', (event) => {
-    state.running = !state.running;
-    scene.setRunning(state.running);
-    event.currentTarget.innerHTML = icon(state.running ? 'pause' : 'play');
-    event.currentTarget.setAttribute('aria-label', state.running ? 'Pausar simulación' : 'Reanudar simulación');
-    $('#simulation-status').textContent = state.running ? 'SIMULACIÓN 1× EN VIVO' : 'SIMULACIÓN EN PAUSA';
+  $('#time-toggle').addEventListener('click', () => setRunning(!state.running));
+  $('#time-apply').addEventListener('click', () => setSimulationInstant(new Date(`${$('#simulation-date-input').value}Z`)));
+  $('#time-live').addEventListener('click', () => {
+    state.timeScale = 1;
+    $('#time-rate-select').value = '1';
+    scene.setTimeScale(1);
+    setSimulationInstant(new Date(), { pause: false });
+    setRunning(true);
   });
-  $('#library-button').addEventListener('click', () => openLibrary());
-  $('#about-button').addEventListener('click', () => $('#about-dialog').showModal());
+  $$('[data-time-step]').forEach((button) => button.addEventListener('click', () => {
+    setSimulationInstant(new Date(scene.simulationDate.getTime() + Number(button.dataset.timeStep)));
+  }));
+  $('#time-rate-select').addEventListener('change', (event) => {
+    state.timeScale = Number(event.target.value) || 1;
+    scene.setTimeScale(state.timeScale);
+    updatePlaybackStatus();
+  });
+  $('#library-button').addEventListener('click', () => { closeUtilityPanel(); openLibrary(); });
+  $('#about-button').addEventListener('click', () => { closeUtilityPanel(); $('#about-dialog').showModal(); });
   $$('.dialog-close').forEach((button) => button.addEventListener('click', () => button.closest('dialog').close()));
   $$('.app-dialog').forEach((dialog) => dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); }));
   $('#library-search').addEventListener('input', renderLibrary);
@@ -486,7 +585,10 @@ async function initializeCatalog() {
 }
 
 function updateClock() {
-  $('#utc-clock').textContent = `${scene.simulationDate.toLocaleTimeString('es-ES', { timeZone: 'UTC', hour12: false })} UTC`;
+  const instant = formatSimulationInstant(scene.simulationDate);
+  $('#utc-clock').textContent = instant;
+  $('#time-panel-clock').textContent = instant;
+  if (document.activeElement !== $('#simulation-date-input')) $('#simulation-date-input').value = scene.simulationDate.toISOString().slice(0, 19);
   setTimeout(updateClock, 250);
 }
 

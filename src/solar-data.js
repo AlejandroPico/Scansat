@@ -37,11 +37,11 @@ const PLANET_ELEMENTS = {
 };
 
 export const CELESTIAL_BODIES = [
-  { id: 'sun', name: 'Sol', parent: null, radiusKm: 696_340, color: '#ffbd65', texture: 'sun.jpg', rotationHours: 609.12, type: 'star' },
+  { id: 'sun', name: 'Sol', parent: null, radiusKm: 696_340, color: '#ffbd65', texture: 'sun-surface.jpg', rotationHours: 609.12, type: 'star' },
   { id: 'mercury', name: 'Mercurio', parent: 'sun', radiusKm: 2_439.7, color: '#a7a39d', texture: 'mercury.jpg', rotationHours: 1407.6, type: 'planet' },
   { id: 'venus', name: 'Venus', parent: 'sun', radiusKm: 6_051.8, color: '#d7aa69', texture: 'venus.jpg', rotationHours: -5832.5, type: 'planet' },
   { id: 'earth', name: 'Tierra', parent: 'sun', radiusKm: 6_378.137, color: '#5ab9e8', texture: 'earth-day.jpg', rotationHours: 23.9344696, type: 'planet' },
-  { id: 'moon', name: 'Luna', parent: 'earth', radiusKm: 1_737.4, color: '#c7c6c2', texture: 'moon.jpg', orbitKm: 384_400, periodDays: 27.321661, inclination: 5.145, rotationHours: 655.7199, type: 'moon' },
+  { id: 'moon', name: 'Luna', parent: 'earth', radiusKm: 1_737.4, color: '#c7c6c2', texture: 'moon-color.jpg', orbitKm: 384_400, periodDays: 27.321661, inclination: 5.145, rotationHours: 655.7199, type: 'moon' },
   { id: 'mars', name: 'Marte', parent: 'sun', radiusKm: 3_389.5, color: '#bf694c', texture: 'mars.jpg', rotationHours: 24.6229, type: 'planet' },
   { id: 'phobos', name: 'Fobos', parent: 'mars', radiusKm: 11.267, color: '#8d8174', orbitKm: 9_376, periodDays: 0.31891, inclination: 1.093, rotationHours: 7.6538, type: 'moon' },
   { id: 'deimos', name: 'Deimos', parent: 'mars', radiusKm: 6.2, color: '#9e9183', orbitKm: 23_463, periodDays: 1.26244, inclination: 0.93, rotationHours: 30.2986, type: 'moon' },
@@ -190,4 +190,3 @@ export function lagrangePosition(point, earthPositionKm) {
     z: earthPositionKm.z,
   };
 }
-
