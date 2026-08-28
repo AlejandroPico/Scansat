@@ -25,7 +25,7 @@ for (const [relativePath, url] of assets) {
   } catch { /* El recurso todavía no existe. */ }
 
   const response = await fetch(url, {
-    headers: { 'user-agent': 'ScanSat/0.2.0 (+https://github.com/AlejandroPico/Scansat)' },
+    headers: { 'user-agent': 'ScanSat/0.2.1 (+https://github.com/AlejandroPico/Scansat)' },
     signal: AbortSignal.timeout(120_000),
   });
   if (!response.ok) throw new Error(`No se pudo descargar ${url} (${response.status}).`);

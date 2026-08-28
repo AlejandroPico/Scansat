@@ -39,6 +39,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/active.json public/data/debris.json public/data/metadata.json public/data/spacecraft.json
+          git add public/data/active.json public/data/debris-*.json public/data/metadata.json public/data/spacecraft.json
           git commit -m "data: refresh orbital and JPL ephemerides"
           git push origin main

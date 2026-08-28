@@ -3,7 +3,11 @@ import { prepareRecord } from './catalog.js';
 
 const CATALOG_PATHS = [
   { path: `${import.meta.env.BASE_URL}data/active.json`, kind: 'active', required: true },
-  { path: `${import.meta.env.BASE_URL}data/debris.json`, kind: 'debris', required: false },
+  ...Array.from({ length: 4 }, (_, index) => ({
+    path: `${import.meta.env.BASE_URL}data/debris-${index + 1}.json`,
+    kind: 'debris',
+    required: false,
+  })),
 ];
 const METADATA_PATH = `${import.meta.env.BASE_URL}data/metadata.json`;
 const SPACECRAFT_PATH = `${import.meta.env.BASE_URL}data/spacecraft.json`;

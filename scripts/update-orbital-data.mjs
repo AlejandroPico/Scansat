@@ -1,5 +1,8 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+
+const version = '0.2.1';
+const debrisPaths = Array.from({ length: 4 }, (_, index) => `public/data/debris-${index + 1}.json`);
 
 const feeds = [
   { kind: 'active', group: 'active', minimum: 5_000 },
@@ -11,7 +14,7 @@ const feeds = [
 async function download(group) {
   const source = `https://celestrak.org/NORAD/elements/gp.php?GROUP=${group}&FORMAT=JSON`;
   const response = await fetch(source, {
-    headers: { 'user-agent': 'ScanSat/0.2.0 (+https://github.com/AlejandroPico/Scansat)' },
+    headers: { 'user-agent': `ScanSat/${version} (+https://github.com/AlejandroPico/Scansat)` },
     signal: AbortSignal.timeout(120_000),
   });
   if (!response.ok) throw new Error(`CelesTrak respondió ${response.status} para ${group}.`);
@@ -42,8 +45,13 @@ for (const feed of downloadedDebris) {
 }
 let debris = [...debrisById.values()];
 if (downloadedDebris.length !== 3) {
-  try { debris = JSON.parse(await readFile(resolve('public/data/debris.json'), 'utf8')); }
-  catch { debris = []; }
+  try {
+    const parts = await Promise.all(debrisPaths.map((path) => readFile(resolve(path), 'utf8')));
+    debris = parts.flatMap((part) => JSON.parse(part));
+  } catch {
+    try { debris = JSON.parse(await readFile(resolve('public/data/debris.json'), 'utf8')); }
+    catch { debris = []; }
+  }
 }
 
 async function writeWhenChanged(path, value) {
@@ -58,7 +66,15 @@ async function writeWhenChanged(path, value) {
 }
 
 const changedActive = await writeWhenChanged('public/data/active.json', active);
-const changedDebris = debris.length > 100 ? await writeWhenChanged('public/data/debris.json', debris) : false;
+let changedDebris = false;
+if (debris.length > 100) {
+  const chunkSize = Math.ceil(debris.length / debrisPaths.length);
+  const writes = await Promise.all(debrisPaths.map((path, index) => (
+    writeWhenChanged(path, debris.slice(index * chunkSize, (index + 1) * chunkSize))
+  )));
+  changedDebris = writes.some(Boolean);
+  await rm(resolve('public/data/debris.json'), { force: true });
+}
 if (changedActive || changedDebris) {
   await writeFile(resolve('public/data/metadata.json'), `${JSON.stringify({
     updatedAt: new Date().toISOString(),

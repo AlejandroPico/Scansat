@@ -2,13 +2,13 @@
 
 Atlas tridimensional del tráfico orbital público y de la exploración del sistema solar.
 
-**Versión actual: `0.2.0-alpha`**
+**Versión actual: `0.2.1-alpha`**
 
 - Aplicación: <https://alejandropico.github.io/Scansat/>
 - Portfolio: <https://alejandropico.github.io/Portfolio/>
 - Repositorio: <https://github.com/AlejandroPico/Scansat>
 
-## Qué incluye la versión 0.2.0
+## Qué incluye la versión 0.2.1
 
 ScanSat ya no separa Tierra, Luna y sistema solar en escenas diferentes. Todo comparte una escena continua con coordenadas en kilómetros y foco inicial en la Tierra:
 
@@ -85,6 +85,7 @@ npm run data:update
 - `.github/workflows/deploy-pages.yml` prueba, compila y publica `dist/` en GitHub Pages con cada cambio en `main`.
 - `.github/workflows/update-orbital-data.yml` refresca el catálogo CelesTrak y las efemérides JPL tres veces al día.
 - Las instantáneas solo se escriben cuando superan validaciones mínimas, de modo que un fallo remoto no sustituye datos válidos.
+- La instantánea de residuos se divide en cuatro partes validadas para que ningún límite de transporte pueda truncar el catálogo durante el despliegue.
 
 ## Arquitectura
 
@@ -105,6 +106,7 @@ npm run data:update
 
 ## Historial
 
+- **0.2.1-alpha** — corrige el despliegue del catálogo de residuos mediante instantáneas particionadas y verificadas en CI.
 - **0.2.0-alpha** — escena solar continua, escalas físicas, navegación por foco, JPL Horizons, Lagrange/JWST, terminador terrestre, basura espacial y misiones de superficie.
 - **0.1.0-alpha** — primera versión con globo terrestre, catálogo activo CelesTrak, filtros, fichas y vistas esquemáticas separadas.
 
