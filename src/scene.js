@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import { physicalShader } from './shader-support.js';
+import { closestPointOnRay } from './picking.js';
+import { CosmicScene } from './cosmic-scene.js';
+import { LY_KM, COSMIC_OBJECTS, OBSERVABLE_RADIUS_KM, renderingUnit, scaleLevel, segmentOccluded } from './cosmic-data.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { degreesLat, degreesLong, eciToGeodetic, gstime, propagate } from './satellite-core.js';
@@ -87,42 +91,12 @@ function makeDotTexture() {
 }
 
 function makeIconTexture(kind, color) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 96;
-  canvas.height = 96;
-  const context = canvas.getContext('2d');
-  context.translate(48, 48);
-  context.strokeStyle = color;
-  context.fillStyle = color;
-  context.lineWidth = 4;
-  context.shadowColor = color;
-  context.shadowBlur = 10;
-  if (kind === 'lagrange') {
-    context.beginPath(); context.arc(0, 0, 24, 0, Math.PI * 2); context.stroke();
-    context.beginPath(); context.moveTo(-32, 0); context.lineTo(32, 0); context.moveTo(0, -32); context.lineTo(0, 32); context.stroke();
-  } else if (kind === 'rover') {
-    context.strokeRect(-22, -11, 44, 20);
-    context.beginPath(); context.moveTo(0, -11); context.lineTo(9, -26); context.lineTo(17, -26); context.stroke();
-    for (const x of [-16, 0, 16]) { context.beginPath(); context.arc(x, 14, 6, 0, Math.PI * 2); context.fill(); }
-  } else if (kind === 'landing') {
-    context.beginPath(); context.moveTo(0, -26); context.lineTo(22, 18); context.lineTo(-22, 18); context.closePath(); context.stroke();
-    context.beginPath(); context.moveTo(-30, 27); context.lineTo(30, 27); context.stroke();
-  } else if (kind === 'body') {
-    context.beginPath(); context.arc(0, 0, 15, 0, Math.PI * 2); context.fill();
-    context.globalAlpha = 0.58; context.beginPath(); context.arc(0, 0, 31, 0, Math.PI * 2); context.stroke();
-  } else {
-    context.lineWidth = 2.5;
-    context.shadowBlur = 5;
-    context.strokeRect(-8, -11, 16, 22);
-    context.fillRect(-4, -7, 8, 14);
-    context.strokeRect(-31, -8, 18, 16);
-    context.strokeRect(13, -8, 18, 16);
-    context.beginPath(); context.moveTo(-13, 0); context.lineTo(-8, 0); context.moveTo(8, 0); context.lineTo(13, 0); context.stroke();
-    context.beginPath(); context.moveTo(0, -11); context.lineTo(7, -21); context.arc(10, -24, 4, Math.PI * 0.75, Math.PI * 1.75); context.stroke();
-  }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
+  const canvas = document.createElement('canvas');canvas.width=64;canvas.height=64;
+  const context=canvas.getContext('2d');context.strokeStyle=color;context.fillStyle=color;
+  context.lineWidth=2.5;context.beginPath();
+  if(kind==='lagrange') {context.moveTo(32,16);context.lineTo(48,32);context.lineTo(32,48);context.lineTo(16,32);context.closePath();context.stroke();}
+  else {context.arc(32,32,kind==='body'?6:8,0,Math.PI*2);kind==='body'?context.fill():context.stroke();}
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
 }
 
 function makeSprite(item, kind = 'spacecraft') {
@@ -130,19 +104,20 @@ function makeSprite(item, kind = 'spacecraft') {
     map: makeIconTexture(kind, item.color || '#8fdcff'),
     transparent: true,
     depthWrite: false,
-    depthTest: false,
+    depthTest: true,
     sizeAttenuation: false,
     toneMapped: false,
   });
   const sprite = new THREE.Sprite(material);
   sprite.scale.setScalar(kind === 'body' ? 0.024 : kind === 'spacecraft' ? 0.022 : 0.027);
   sprite.renderOrder = 20;
+  sprite.userData.pixelSize = sprite.scale.x;
   sprite.userData.item = item;
   return sprite;
 }
 
 function makeAtmosphereMaterial(color = '#50c8ff') {
-  return new THREE.ShaderMaterial({
+  return physicalShader({
     transparent: true,
     side: THREE.BackSide,
     blending: THREE.AdditiveBlending,
@@ -172,7 +147,7 @@ function makeAtmosphereMaterial(color = '#50c8ff') {
 }
 
 function makeEarthMaterial(dayMap, nightMap) {
-  return new THREE.ShaderMaterial({
+  return physicalShader({
     transparent: false,
     depthWrite: true,
     depthTest: true,
@@ -201,21 +176,22 @@ function makeEarthMaterial(dayMap, nightMap) {
       varying vec3 vNormalW;
       void main() {
         vec3 dayColor = texture2D(dayMap, vUvMap).rgb;
-        dayColor = pow(dayColor, vec3(0.94)) * vec3(1.03, 1.04, 1.07);
+        // NASA visible-colour composite, without a relief colour ramp.
         vec3 nightColor = texture2D(nightMap, vUvMap).rgb * 1.55;
         float directLight = dot(normalize(vNormalW), normalize(sunDirection));
         float terminator = smoothstep(-0.13, 0.17, directLight);
-        vec3 litDay = dayColor * (0.25 + max(0.0, directLight) * 0.95);
+        vec3 litDay = dayColor * (0.10 + max(0.0, directLight) * 1.05);
         vec3 color = mix(nightColor, litDay, max(terminator, allNight));
         if (allNight > 0.5) color = nightColor * 1.3;
         gl_FragColor = vec4(color, 1.0);
+        #include <colorspace_fragment>
       }
     `,
   });
 }
 
 function makeSunMaterial(surfaceMap) {
-  return new THREE.ShaderMaterial({
+  return physicalShader({
     uniforms: { time: { value: 0 }, surfaceMap: { value: surfaceMap } },
     vertexShader: `varying vec2 vUvMap; void main(){vUvMap=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
     fragmentShader: `
@@ -238,7 +214,7 @@ function makeSunMaterial(surfaceMap) {
 }
 
 function makeSunGlowMaterial() {
-  return new THREE.ShaderMaterial({
+  return physicalShader({
     transparent: true,
     side: THREE.BackSide,
     blending: THREE.AdditiveBlending,
@@ -319,21 +295,21 @@ export class OrbitalScene {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color('#020406');
     this.camera = new THREE.PerspectiveCamera(44, 1, 1, 1e12);
-    this.camera.position.set(0, 22_000, 88_000);
+    this.camera.position.set(0, 8_000, 25_000);
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', logarithmicDepthBuffer: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.08;
-    this.renderer.domElement.setAttribute('aria-label', 'Sistema solar tridimensional interactivo a escala física');
+    this.renderer.domElement.setAttribute('aria-label', 'Universo tridimensional interactivo, desde satélites hasta la red cósmica');
     container.appendChild(this.renderer.domElement);
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.065;
     this.controls.minDistance = EARTH_RADIUS_KM * 1.012;
-    this.controls.maxDistance = 5e10;
-    this.controls.zoomSpeed = 2.2;
+    this.controls.maxDistance = OBSERVABLE_RADIUS_KM * 4;
+    this.controls.zoomSpeed = 3.2;
     this.controls.rotateSpeed = 0.42;
     this.controls.panSpeed = 0.5;
     this.controls.enablePan = false;
@@ -353,7 +329,10 @@ export class OrbitalScene {
     this.localOrbiterNodes = [];
 
     this.createLights();
-    this.createStars();
+    this.renderCamera = this.camera.clone();
+    this.renderUnit = 1;
+    this.showLabels = true;
+    this.showPlanetOrbits = false;
     this.createBodies();
     this.createPlanetOrbits();
     this.createCatalogPoints();
@@ -361,6 +340,7 @@ export class OrbitalScene {
     this.createLocalOrbiters();
     this.createSurfaceSites();
     this.setSpacecraft([]);
+    this.cosmos = new CosmicScene(this);
     this.bindEvents();
     this.updateWorld(this.simulationDate, true);
 
@@ -376,29 +356,6 @@ export class OrbitalScene {
     this.sunLight.position.set(1e8, 0, 0);
     this.sunLight.target.position.set(0, 0, 0);
     this.scene.add(this.ambientLight, this.sunLight, this.sunLight.target);
-  }
-
-  createStars() {
-    const count = 4_500;
-    const positions = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    for (let index = 0; index < count; index += 1) {
-      const radius = 4e10;
-      const theta = seededRandom(index + 10) * Math.PI * 2;
-      const phi = Math.acos(2 * seededRandom(index + 22) - 1);
-      positions[index * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[index * 3 + 1] = radius * Math.cos(phi);
-      positions[index * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
-      const brightness = 0.45 + seededRandom(index + 100) * 0.55;
-      colors.set([brightness * 0.82, brightness * 0.9, brightness], index * 3);
-    }
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    this.stars = new THREE.Points(geometry, new THREE.PointsMaterial({
-      size: 1.25, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false,
-    }));
-    this.scene.add(this.stars);
   }
 
   loadTexture(name, useSrgb = true) {
@@ -423,7 +380,7 @@ export class OrbitalScene {
       if (definition.id === 'sun') material = makeSunMaterial(this.loadTexture('sun-surface.jpg'));
       else if (definition.id === 'earth') {
         this.earthTextures = {
-          satellite: this.loadTexture('earth-day.jpg'),
+          satellite: this.loadTexture('earth-natural.png'),
           political: this.politicalTexture,
           night: this.loadTexture('earth-night.png'),
         };
@@ -439,7 +396,7 @@ export class OrbitalScene {
         });
       }
 
-      const widthSegments = definition.radiusKm > 3_000 ? 96 : 48;
+      const widthSegments = definition.radiusKm > 3_000 ? 160 : 64;
       const surface = new THREE.Mesh(new THREE.SphereGeometry(definition.radiusKm, widthSegments, Math.round(widthSegments * 0.66)), material);
       surface.userData.item = {
         ...definition,
@@ -565,6 +522,7 @@ export class OrbitalScene {
     this.activePoints = new THREE.Points(new THREE.BufferGeometry(), material(2.25, 1));
     this.debrisPoints = new THREE.Points(new THREE.BufferGeometry(), material(1.15, 0.58));
     this.activePoints.renderOrder = 8;
+    this.activePoints.userData.catalog = true;
     this.debrisPoints.renderOrder = 7;
     this.scene.add(this.activePoints, this.debrisPoints);
   }
@@ -593,14 +551,14 @@ export class OrbitalScene {
     }
   }
 
-  createSurfaceSites() {
+  createSurfaceSites(sites = SURFACE_SITES) {
     this.surfaceNodes = [];
-    for (const site of SURFACE_SITES) {
+    for (const site of sites) {
       const body = this.bodyNodes.get(site.body);
-      if (!body) continue;
+      if (!body || !Number.isFinite(site.lat) || !Number.isFinite(site.lon)) continue;
       const item = {
         ...site,
-        summary: `${site.name}, emplazamiento de superficie en ${body.definition.name}. Estado: ${site.status}.`,
+        summary: site.summary || `${site.name}, emplazamiento de superficie en ${body.definition.name}. Estado: ${site.status}.`,
       };
       const sprite = makeSprite(item, site.kind);
       sprite.position.copy(surfacePosition(site, body.definition.radiusKm));
@@ -613,7 +571,9 @@ export class OrbitalScene {
   addLabel(object, title, kicker, id) {
     const element = document.createElement('div');
     element.className = 'space-label';
-    element.innerHTML = `<span>${kicker}</span><strong>${title}</strong>`;
+    const small=document.createElement('span');small.textContent=kicker;
+    const strong=document.createElement('strong');strong.textContent=title;
+    element.append(small,strong);
     this.container.appendChild(element);
     this.labels.push({ object, element, id });
   }
@@ -632,6 +592,8 @@ export class OrbitalScene {
   setSpacecraft(objects) {
     for (const node of this.spacecraftNodes) {
       this.scene.remove(node.sprite);
+      this.interactive = this.interactive.filter(x => x !== node.sprite);
+      this.labels = this.labels.filter(x => x !== node.label);
       node.sprite.material.dispose();
       node.sprite.material.map?.dispose();
       node.label?.element.remove();
@@ -662,6 +624,8 @@ export class OrbitalScene {
       ...this.specialNodes.map((node) => node.item),
       ...this.spacecraftNodes.map((node) => node.item),
       ...this.localOrbiterNodes.map((node) => node.item),
+      ...this.surfaceNodes.map((node) => node.item),
+      ...(this.cosmos?.targets || []),
     ];
   }
 
@@ -748,15 +712,22 @@ export class OrbitalScene {
     if (!item) return false;
     if (item.satrec && !this.catalogReliable) return false;
     if (this.bodyNodes.has(item.id)) return this.focusBody(item.id, notify);
-    if (item.satrec || item.kind === 'spacecraft' || item.kind === 'lagrange') {
+    if (item.cosmic || item.satrec || item.kind === 'spacecraft' || item.kind === 'lagrange') {
       this.focus = { type: 'object', item };
       this.selected = item;
       this.updateWorld(this.simulationDate, true);
       this.resetCamera();
+      if(item.cosmic && item.kind === 'star') this.cosmos.selectStar(item);
       if (notify) this.onFocus?.(item);
       return true;
     }
-    if (item.body) return this.focusBody(item.body, notify);
+    if (item.body) {
+      if(!this.focusBody(item.body,notify))return false;
+      const body=this.bodyNodes.get(item.body);
+      const normal=surfacePosition(item,1).applyQuaternion(body.spin.quaternion).applyQuaternion(body.axialTilt.quaternion).normalize();
+      this.camera.position.copy(normal.multiplyScalar(body.definition.radiusKm*2.7));this.controls.update();
+      this.selected=item;return true;
+    }
     return false;
   }
 
@@ -768,11 +739,11 @@ export class OrbitalScene {
     let distance = 90_000;
     if (this.focus.type === 'body') {
       const radius = this.bodyNodes.get(this.focus.id)?.definition.radiusKm || EARTH_RADIUS_KM;
-      distance = this.focus.id === 'earth' ? 90_000 : Math.max(radius * 5.5, radius + 850);
+      distance = this.focus.id === 'earth' ? 26_000 : Math.max(radius * 5.5, radius + 850);
       this.controls.minDistance = Math.max(1, radius * 1.012);
     } else {
       const record = this.focus.item;
-      distance = record.satrec ? 2_500 : record.kind === 'lagrange' ? 180_000 : 80_000;
+      distance = record.viewDistanceKm || (record.satrec ? 2_500 : record.kind === 'lagrange' ? 180_000 : 80_000);
       this.controls.minDistance = record.satrec ? 5 : 50;
     }
     const direction = this.camera.position.lengthSq() > 0
@@ -793,7 +764,8 @@ export class OrbitalScene {
   }
 
   selectByName(query, focus = false) {
-    const upper = String(query || '').toUpperCase();
+    const upper = String(query || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
+    const canonical = item => `${item.name} ${item.id} ${item.aliases||''}`.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
     const body = CELESTIAL_BODIES.find((item) => item.name.toUpperCase().includes(upper) || item.id.toUpperCase() === upper);
     if (body) {
       const item = this.bodyNodes.get(body.id).surface.userData.item;
@@ -801,7 +773,7 @@ export class OrbitalScene {
       if (focus) this.focusBody(body.id);
       return item;
     }
-    const special = this.getFocusTargets().find((item) => item.name?.toUpperCase().includes(upper) || item.id?.toUpperCase() === upper);
+    const special = this.getFocusTargets().find((item) => canonical(item).includes(upper));
     if (special && !special.satrec) {
       this.onSelect?.(special);
       if (focus) this.focusItem(special);
@@ -814,6 +786,7 @@ export class OrbitalScene {
 
   currentAbsolutePosition(item, date) {
     if (!item) return null;
+    if (item.cosmic) return new THREE.Vector3(...item.position);
     if (this.rawPositions.has(item.id)) return this.rawPositions.get(item.id).clone();
     if (item.satrec) {
       const earth = this.rawPositions.get('earth');
@@ -872,7 +845,7 @@ export class OrbitalScene {
         const base = lagrangePosition(point, earthEcliptic);
         const days = julianDate(date) - 2_451_545;
         const angle = days / 180 * Math.PI * 2 + seededRandom(node.item.id.length) * Math.PI * 2;
-        const amplitude = point === 'L2' ? 420_000 : 180_000;
+        const amplitude = node.item.deploymentTarget ? 0 : point === 'L2' ? 420_000 : 180_000;
         absolute = eclipticToScene({ x: base.x, y: base.y + Math.cos(angle) * amplitude, z: base.z + Math.sin(angle) * amplitude * 0.55 });
       }
       node.sprite.userData.absolute = absolute;
@@ -930,6 +903,7 @@ export class OrbitalScene {
   }
 
   updateCatalogPositions(date, force = false) {
+    if (!force && (this.camera.position.length() > 8e6 || this.focus.item?.cosmic)) return;
     if (!this.activePoints || (!force && performance.now() - this.lastPropagation < 1_250)) return;
     this.lastPropagation = performance.now();
     this.catalogReliable = this.catalogSupports(date);
@@ -995,18 +969,27 @@ export class OrbitalScene {
   updateVisibility() {
     const cameraDistance = this.camera.position.length();
     const focusBody = this.focus.type === 'body' ? this.focus.id : null;
-    this.activePoints.visible = this.catalogReliable && cameraDistance < 8e6;
-    this.debrisPoints.visible = this.catalogReliable && this.showDebris && cameraDistance < 8e6;
+    const solarVisible = !this.focus.item?.cosmic && cameraDistance < LY_KM * .1;
+    this.planetOrbitRoot.visible = this.showPlanetOrbits && solarVisible;
+    if(this.selectedOrbit)this.selectedOrbit.visible = solarVisible && this.showOrbit && this.catalogReliable;
+    for (const body of this.bodyNodes.values()) body.root.visible = solarVisible;
+    this.activePoints.visible = solarVisible && this.catalogReliable && cameraDistance < 8e6;
+    this.debrisPoints.visible = solarVisible && this.catalogReliable && this.showDebris && cameraDistance < 8e6;
     for (const node of this.surfaceNodes) {
       const body = this.bodyNodes.get(node.bodyId);
       const threshold = body.definition.radiusKm * 18;
-      node.sprite.visible = this.showSurface && focusBody === node.bodyId && cameraDistance < threshold;
+      node.sprite.visible = this.showSurface && (!node.item.component || this.showComponents) && (!node.item.landDate || this.simulationDate >= new Date(node.item.landDate)) && focusBody === node.bodyId && cameraDistance < threshold;
     }
-    for (const node of this.specialNodes) node.sprite.visible = this.showMissions;
-    for (const node of [...this.spacecraftNodes, ...this.localOrbiterNodes]) node.sprite.visible = this.catalogReliable && this.showMissions;
+    for (const node of this.specialNodes) node.sprite.visible = solarVisible && this.showMissions;
+    for (const node of [...this.spacecraftNodes, ...this.localOrbiterNodes]) {
+      const epoch = node.item.snapshotAt ? Date.parse(node.item.snapshotAt) : null;
+      const reliable = !epoch || Math.abs(this.simulationDate - epoch) < 2 * 86400000;
+      const launched = !node.item.launchDate || this.simulationDate >= new Date(node.item.launchDate);
+      node.sprite.visible = solarVisible && this.showMissions && reliable && launched;
+    }
     for (const line of this.moonOrbitNodes) {
       const parent = line.userData.parent;
-      line.visible = focusBody === parent || cameraDistance > 80_000;
+      line.visible = solarVisible && this.showPlanetOrbits && (focusBody === parent || cameraDistance > 80_000);
     }
   }
 
@@ -1038,6 +1021,9 @@ export class OrbitalScene {
       visible: this.catalogReliable ? this.activePointRecords.length + this.debrisPointRecords.length : 0,
       catalogReliable: this.catalogReliable,
       catalogReferenceDate: this.catalogReferenceDate,
+      scale: scaleLevel(this.camera.position.length()),
+      stars: this.cosmos?.stars.length || 0,
+      starState: this.cosmos?.starState,
     };
   }
 
@@ -1045,11 +1031,20 @@ export class OrbitalScene {
     const rect = this.renderer.domElement.getBoundingClientRect();
     this.pointer.x = (event.clientX - rect.left) / rect.width * 2 - 1;
     this.pointer.y = -(event.clientY - rect.top) / rect.height * 2 + 1;
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    this.raycaster.params.Points.threshold = Math.max(25, this.camera.position.length() * 0.004);
+    this.raycaster.setFromCamera(this.pointer, this.renderCamera);
+    this.raycaster.params.Points.threshold = Math.max(25, this.camera.position.length() * 0.0025) / this.renderUnit;
     const intersections = this.raycaster.intersectObjects([
-      this.activePoints, this.debrisPoints, ...this.interactive.filter((object) => object.visible),
+      ...this.interactive.filter((object) => this.isVisible(object)),
     ], false);
+    const camera = this.camera.position.clone().add(this.focusOrigin).toArray();
+    const direction = this.raycaster.ray.direction.toArray();
+    const angle = Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2))*12/this.container.clientHeight;
+    const records = [...(this.activePoints.visible?this.activePointRecords:[]),...(this.debrisPoints.visible?this.debrisPointRecords:[])];
+    const satelliteHit = closestPointOnRay(records, x=>x.position?.absolute.toArray(),camera,direction,angle);
+    const cosmicHit = this.cosmos.pickPhysical(camera,direction,angle);
+    const starHit = [satelliteHit,cosmicHit].filter(Boolean).sort((a,b)=>a.distance-b.distance)[0];
+    if(starHit)starHit.distance/=this.renderUnit;
+    if (starHit && (!intersections.length || starHit.distance < intersections[0].distance)) return starHit.item;
     for (const hit of intersections) {
       if (hit.object === this.activePoints) return this.activePointRecords[hit.index];
       if (hit.object === this.debrisPoints) return this.debrisPointRecords[hit.index];
@@ -1085,22 +1080,87 @@ export class OrbitalScene {
     const height = this.container.clientHeight;
     const cameraDistance = this.camera.position.length();
     const position = new THREE.Vector3();
+    const occupied = [];
     for (const label of this.labels) {
-      if (!label.object.visible || !label.object.parent) { label.element.hidden = true; continue; }
+      if (this.bodyNodes.has(label.id) && !this.showLabels) this.bodyNodes.get(label.id).marker.visible=false;
+      if (!this.showLabels || !this.isVisible(label.object) || !label.object.parent) { label.element.hidden = true; continue; }
       label.object.getWorldPosition(position);
-      const projected = position.clone().project(this.camera);
+      const projected = position.clone().project(this.renderCamera);
       const onScreen = projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < 1.15 && Math.abs(projected.y) < 1.15;
       const body = this.bodyNodes.get(label.id);
-      const distance = position.distanceTo(this.camera.position);
+      const distance = position.distanceTo(this.renderCamera.position) * this.renderUnit;
       const radius = body?.definition.radiusKm || 0;
       const pixels = radius / Math.max(1, distance) * height / Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
       if (body) body.marker.visible = pixels < 11 && label.id !== this.focus.id;
       const closeToFocusedBody = body && label.id === this.focus.id && cameraDistance < radius * 35;
-      label.element.hidden = !onScreen || closeToFocusedBody || (!body && !this.showMissions);
+      const occluded = this.isOccluded(position, label.id);
+      const px = (projected.x*.5+.5)*width, py = (-projected.y*.5+.5)*height;
+      const overlap = occupied.some(([x,y]) => Math.abs(px-x)<155 && Math.abs(py-y)<35);
+      label.element.hidden = !onScreen || occluded || overlap || closeToFocusedBody || (!body && !label.object.userData.item?.cosmic && !this.showMissions);
+      if (!label.element.hidden) occupied.push([px,py]);
       if (!label.element.hidden) {
         label.element.style.transform = `translate3d(${(projected.x * 0.5 + 0.5) * width}px, ${(-projected.y * 0.5 + 0.5) * height}px, 0)`;
       }
     }
+  }
+
+  setExplorationData(data) {
+    for(const node of this.surfaceNodes) {
+      node.sprite.parent?.remove(node.sprite);node.sprite.material.map?.dispose();node.sprite.material.dispose();
+      this.interactive=this.interactive.filter(x=>x!==node.sprite);
+    }
+    this.createSurfaceSites(data.sites.filter(x=>!x.noLocation));
+    this.exploration=data;
+  }
+
+  makeCosmicMarker(item) {
+    const marker = makeSprite(item, 'body');
+    this.scene.add(marker); this.interactive.push(marker);
+    this.addLabel(marker, item.name, item.kind === 'galaxy' ? 'GALAXIA' : 'ESTRUCTURA CÓSMICA', item.id);
+    return marker;
+  }
+
+  isVisible(object) {
+    for (let node=object; node; node=node.parent) if (!node.visible) return false;
+    return true;
+  }
+
+  isOccluded(position, ownId) {
+    const camera = this.renderCamera.position.toArray();
+    for (const [id, body] of this.bodyNodes) {
+      if (id === ownId || !body.root.visible) continue;
+      const center = new THREE.Vector3(); body.root.getWorldPosition(center);
+      if (segmentOccluded(camera, position.toArray(), center.toArray(), body.definition.radiusKm / this.renderUnit)) return true;
+    }
+    return false;
+  }
+
+  prepareRender() {
+    this.renderUnit = renderingUnit(this.camera.position.length());
+    this.scene.scale.setScalar(1 / this.renderUnit);
+    if(this.cosmos?.unitPc)this.cosmos.unitPc.value=this.renderUnit/3.0856775814913673e13;
+    for (const object of this.interactive) {
+      if (object.userData.pixelSize) object.scale.setScalar(object.userData.pixelSize * this.renderUnit);
+    }
+    this.renderCamera.copy(this.camera);
+    this.renderCamera.position.copy(this.camera.position).divideScalar(this.renderUnit);
+    this.renderCamera.near = Math.max(1e-8, this.controls.minDistance * .0001 / this.renderUnit);
+    this.renderCamera.far = Math.max(this.camera.position.length()*100, LY_KM*100000) / this.renderUnit;
+    this.renderCamera.updateProjectionMatrix();
+    this.renderCamera.updateMatrixWorld();
+    this.scene.updateMatrixWorld(true);
+  }
+
+  navigateScale(stop) {
+    const target = this.getFocusTargets().find(x=>x.id===stop.id);
+    if (!target || !this.focusItem(target)) return;
+    this.camera.position.normalize().multiplyScalar(stop.km);
+    this.controls.update();
+  }
+
+  setZoomDistance(km) {
+    this.camera.position.normalize().multiplyScalar(THREE.MathUtils.clamp(km,this.controls.minDistance,this.controls.maxDistance));
+    this.controls.update();
   }
 
   resize() {
@@ -1114,20 +1174,25 @@ export class OrbitalScene {
   animate() {
     requestAnimationFrame(() => this.animate());
     const delta = Math.min(this.clock.getDelta(), 0.1);
-    if (this.running) this.simulationDate = new Date(this.simulationDate.getTime() + delta * 1000 * this.timeScale);
+    if (this.running) {
+      const time=this.simulationDate.getTime()+delta*1000*this.timeScale;
+      const bounded=THREE.MathUtils.clamp(time,Date.parse('1957-10-04T00:00:00Z'),Date.parse('2050-12-31T23:59:59Z'));
+      this.simulationDate=new Date(bounded);if(time!==bounded)this.running=false;
+    }
     const now = performance.now();
     if (now - this.lastPositionUpdate > 250) {
       this.updateWorld(this.simulationDate);
       this.lastPositionUpdate = now;
     }
-    this.updateCatalogPositions(this.simulationDate);
     this.controls.update();
+    this.updateCatalogPositions(this.simulationDate);
     this.updateVisibility();
+    this.cosmos.update(this.focusOrigin, this.camera.position.length());
+    this.prepareRender();
     this.updateLabels();
-    if (this.stars) this.stars.position.copy(this.camera.position);
     const sun = this.bodyNodes.get('sun')?.surface;
     if (sun?.material.uniforms?.time) sun.material.uniforms.time.value += delta;
     this.onFrame?.(this.selected?.satrec ? this.selected : null, this.getStatus());
-    this.renderer.render(this.scene, this.camera);
+    this.renderer.render(this.scene, this.renderCamera);
   }
 }

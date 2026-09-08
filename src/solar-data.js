@@ -39,23 +39,23 @@ const PLANET_ELEMENTS = {
 export const CELESTIAL_BODIES = [
   { id: 'sun', name: 'Sol', parent: null, radiusKm: 696_340, color: '#ffbd65', texture: 'sun-surface.jpg', rotationHours: 609.12, type: 'star' },
   { id: 'mercury', name: 'Mercurio', parent: 'sun', radiusKm: 2_439.7, color: '#a7a39d', texture: 'mercury.jpg', rotationHours: 1407.6, type: 'planet' },
-  { id: 'venus', name: 'Venus', parent: 'sun', radiusKm: 6_051.8, color: '#d7aa69', texture: 'venus.jpg', rotationHours: -5832.5, type: 'planet' },
+  { id: 'venus', name: 'Venus', parent: 'sun', radiusKm: 6_051.8, color: '#d7aa69', texture: null, rotationHours: -5832.5, type: 'planet' },
   { id: 'earth', name: 'Tierra', parent: 'sun', radiusKm: 6_378.137, color: '#5ab9e8', texture: 'earth-day.jpg', rotationHours: 23.9344696, type: 'planet' },
   { id: 'moon', name: 'Luna', parent: 'earth', radiusKm: 1_737.4, color: '#c7c6c2', texture: 'moon-color.jpg', orbitKm: 384_400, periodDays: 27.321661, inclination: 5.145, rotationHours: 655.7199, type: 'moon' },
   { id: 'mars', name: 'Marte', parent: 'sun', radiusKm: 3_389.5, color: '#bf694c', texture: 'mars.jpg', rotationHours: 24.6229, type: 'planet' },
-  { id: 'phobos', name: 'Fobos', parent: 'mars', radiusKm: 11.267, color: '#8d8174', orbitKm: 9_376, periodDays: 0.31891, inclination: 1.093, rotationHours: 7.6538, type: 'moon' },
-  { id: 'deimos', name: 'Deimos', parent: 'mars', radiusKm: 6.2, color: '#9e9183', orbitKm: 23_463, periodDays: 1.26244, inclination: 0.93, rotationHours: 30.2986, type: 'moon' },
+  { id: 'phobos', texture: 'phobos.jpg', name: 'Fobos', parent: 'mars', radiusKm: 11.267, color: '#8d8174', orbitKm: 9_376, periodDays: 0.31891, inclination: 1.093, rotationHours: 7.6538, type: 'moon' },
+  { id: 'deimos', texture: 'deimos.jpg', name: 'Deimos', parent: 'mars', radiusKm: 6.2, color: '#9e9183', orbitKm: 23_463, periodDays: 1.26244, inclination: 0.93, rotationHours: 30.2986, type: 'moon' },
   { id: 'jupiter', name: 'Júpiter', parent: 'sun', radiusKm: 69_911, color: '#d4aa82', texture: 'jupiter.jpg', rotationHours: 9.925, type: 'planet' },
-  { id: 'io', name: 'Ío', parent: 'jupiter', radiusKm: 1_821.6, color: '#d7c25a', orbitKm: 421_800, periodDays: 1.769138, inclination: 0.05, type: 'moon' },
-  { id: 'europa', name: 'Europa', parent: 'jupiter', radiusKm: 1_560.8, color: '#b9aa8d', orbitKm: 671_100, periodDays: 3.551181, inclination: 0.47, type: 'moon' },
-  { id: 'ganymede', name: 'Ganímedes', parent: 'jupiter', radiusKm: 2_634.1, color: '#988879', orbitKm: 1_070_400, periodDays: 7.154553, inclination: 0.2, type: 'moon' },
-  { id: 'callisto', name: 'Calisto', parent: 'jupiter', radiusKm: 2_410.3, color: '#786d62', orbitKm: 1_882_700, periodDays: 16.689018, inclination: 0.28, type: 'moon' },
+  { id: 'io', texture: 'io.jpg', name: 'Ío', parent: 'jupiter', radiusKm: 1_821.6, color: '#d7c25a', orbitKm: 421_800, periodDays: 1.769138, inclination: 0.05, type: 'moon' },
+  { id: 'europa', texture: 'europa.jpg', name: 'Europa', parent: 'jupiter', radiusKm: 1_560.8, color: '#b9aa8d', orbitKm: 671_100, periodDays: 3.551181, inclination: 0.47, type: 'moon' },
+  { id: 'ganymede', texture: 'ganymede.jpg', name: 'Ganímedes', parent: 'jupiter', radiusKm: 2_634.1, color: '#988879', orbitKm: 1_070_400, periodDays: 7.154553, inclination: 0.2, type: 'moon' },
+  { id: 'callisto', texture: 'callisto.jpg', name: 'Calisto', parent: 'jupiter', radiusKm: 2_410.3, color: '#786d62', orbitKm: 1_882_700, periodDays: 16.689018, inclination: 0.28, type: 'moon' },
   { id: 'saturn', name: 'Saturno', parent: 'sun', radiusKm: 58_232, color: '#d8c08e', texture: 'saturn.jpg', rotationHours: 10.656, rings: true, type: 'planet' },
-  { id: 'enceladus', name: 'Encélado', parent: 'saturn', radiusKm: 252.1, color: '#dededb', orbitKm: 237_948, periodDays: 1.370218, inclination: 0.009, type: 'moon' },
-  { id: 'titan', name: 'Titán', parent: 'saturn', radiusKm: 2_574.73, color: '#c58d42', orbitKm: 1_221_870, periodDays: 15.945421, inclination: 0.34854, type: 'moon' },
+  { id: 'enceladus', texture: 'enceladus.jpg', name: 'Encélado', parent: 'saturn', radiusKm: 252.1, color: '#dededb', orbitKm: 237_948, periodDays: 1.370218, inclination: 0.009, type: 'moon' },
+  { id: 'titan', texture: 'titan.jpg', name: 'Titán', parent: 'saturn', radiusKm: 2_574.73, color: '#c58d42', orbitKm: 1_221_870, periodDays: 15.945421, inclination: 0.34854, type: 'moon' },
   { id: 'uranus', name: 'Urano', parent: 'sun', radiusKm: 25_362, color: '#8bd5dd', texture: 'uranus.jpg', rotationHours: -17.24, type: 'planet' },
   { id: 'neptune', name: 'Neptuno', parent: 'sun', radiusKm: 24_622, color: '#4167cb', texture: 'neptune.jpg', rotationHours: 16.11, type: 'planet' },
-  { id: 'triton', name: 'Tritón', parent: 'neptune', radiusKm: 1_353.4, color: '#b9b3ac', orbitKm: 354_759, periodDays: -5.876854, inclination: 156.885, type: 'moon' },
+  { id: 'triton', texture: 'triton.jpg', name: 'Tritón', parent: 'neptune', radiusKm: 1_353.4, color: '#b9b3ac', orbitKm: 354_759, periodDays: -5.876854, inclination: 156.885, type: 'moon' },
 ];
 
 export const SURFACE_SITES = [
@@ -99,6 +99,9 @@ export const LAGRANGE_OBJECTS = [
 ];
 
 export const FALLBACK_SPACECRAFT = [
+  { id: 'roman', name: 'Nancy Grace Roman Space Telescope', kind: 'spacecraft', agency: 'NASA', anchor: 'L2', deploymentTarget: true, launchDate: '2026-08-30T11:26:00Z', status: 'Destino previsto de despliegue · no posición en tránsito', source: 'NASA · referencia de misión', sourceUrl: 'https://science.nasa.gov/mission/roman-space-telescope/', color: '#ead29d', summary: 'Telescopio de campo amplio para cosmología y exoplanetas. Se muestra en su destino previsto Sol–Tierra L2, por elección de visualización, no como una efeméride de vuelo ni como confirmación de llegada. Lanzamiento: 30 de agosto de 2026.' },
+  { id: 'aditya-l1', name: 'Aditya-L1', kind: 'spacecraft', agency: 'ISRO', anchor: 'L1', launchDate: '2023-09-02T00:00:00Z', color: '#ffca85', summary: 'Observatorio solar de ISRO. En el visor se usa un modelo aproximado en torno a Sol–Tierra L1; no una efeméride operacional.', sourceUrl: 'https://www.isro.gov.in/Aditya_L1.html' },
+
   { id: 'jwst', name: 'James Webb Space Telescope', kind: 'spacecraft', agency: 'NASA / ESA / CSA', anchor: 'L2', color: '#f2a65a', summary: 'Observatorio infrarrojo en una órbita de halo real de aproximadamente seis meses alrededor de Sol–Tierra L2.' },
   { id: 'euclid', name: 'Euclid', kind: 'spacecraft', agency: 'ESA', anchor: 'L2', color: '#c59cff', summary: 'Observatorio cosmológico en torno al punto Sol–Tierra L2.' },
   { id: 'soho', name: 'SOHO', kind: 'spacecraft', agency: 'ESA / NASA', anchor: 'L1', color: '#ffb45f', summary: 'Observatorio solar próximo al punto Sol–Tierra L1.' },

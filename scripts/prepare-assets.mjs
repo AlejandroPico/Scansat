@@ -3,6 +3,17 @@ import { dirname, resolve } from 'node:path';
 
 const nasaRoot = 'https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/Images%20and%20Textures';
 const assets = [
+  ['public/textures/phobos.jpg', `${nasaRoot}/Mars%20-%20Phobos/Mars%20-%20Phobos.jpg`],
+  ['public/textures/deimos.jpg', `${nasaRoot}/Mars%20-%20Deimos/Mars%20-%20Deimos.jpg`],
+  ['public/textures/io.jpg', `${nasaRoot}/Jupiter%20-%20Io%20%28A%29/Jupiter%20-%20Io%20%28A%29.jpg`],
+  ['public/textures/europa.jpg', `${nasaRoot}/Jupiter%20-%20Europa/Jupiter%20-%20Europa.jpg`],
+  ['public/textures/ganymede.jpg', `${nasaRoot}/Jupiter%20-%20Ganymede/Jupiter%20-%20Ganymede.jpg`],
+  ['public/textures/callisto.jpg', `${nasaRoot}/Jupiter%20-%20Callisto/Jupiter%20-%20Callisto.jpg`],
+  ['public/textures/enceladus.jpg', `${nasaRoot}/Saturn%20-%20Enceladus/Saturn%20-%20Enceladus.jpg`],
+  ['public/textures/titan.jpg', `${nasaRoot}/Saturn%20-%20Titan/Saturn%20-%20Titan.jpg`],
+  ['public/textures/triton.jpg', `${nasaRoot}/Neptune%20-%20Triton/Neptune%20-%20Triton.jpg`],
+
+  ['public/textures/earth-natural.png', 'https://svs.gsfc.nasa.gov/vis/a000000/a002900/a002915/bluemarble-2048.png'],
   ['public/textures/earth-day.jpg', `${nasaRoot}/Earth%20(A)/Earth%20(A).jpg`],
   ['public/textures/earth-night.png', 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_lights_2048.png'],
   ['public/textures/earth-roughness.jpg', 'https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_bump_roughness_clouds_4096.jpg'],
@@ -27,11 +38,15 @@ for (const [relativePath, url] of assets) {
   } catch { /* El recurso todavía no existe. */ }
 
   const response = await fetch(url, {
-    headers: { 'user-agent': 'ScanSat/0.3.0 (+https://github.com/AlejandroPico/Scansat)' },
+    headers: { 'user-agent': 'ScanSat/0.4.0 (+https://github.com/AlejandroPico/Scansat)' },
     signal: AbortSignal.timeout(120_000),
   });
   if (!response.ok) throw new Error(`No se pudo descargar ${url} (${response.status}).`);
   const data = new Uint8Array(await response.arrayBuffer());
+  const jpeg = data[0]===0xff && data[1]===0xd8;
+  const png = data[0]===0x89 && data[1]===0x50;
+  const glb = data[0]===0x67 && data[1]===0x6c;
+  if (data.length < 10_000 || !(jpeg || png || glb)) throw new Error(`Recurso inválido: ${relativePath}. No se guardará una respuesta HTML como imagen.`);
   await mkdir(dirname(target), { recursive: true });
   await writeFile(target, data);
   console.log(`Preparado ${relativePath} (${data.length} bytes).`);

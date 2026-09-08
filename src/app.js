@@ -1,9 +1,9 @@
 import './styles.css';
+import { LY_KM, SCALE_STOPS, OBSERVABLE_RADIUS_KM } from './cosmic-data.js';
+import { makeEncyclopedia, entryFor, ENCYCLOPEDIA_CATEGORIES } from './encyclopedia.js';
 import { OrbitalScene } from './scene.js';
 import {
   GROUP_STYLES,
-  LIBRARY_CATEGORIES,
-  LIBRARY_ENTRIES,
   ORBIT_STYLES,
   describeRecord,
 } from './catalog.js';
@@ -26,6 +26,10 @@ const state = {
   librarySelected: null,
 };
 let lastStatusUpdate = 0;
+let encyclopedia = makeEncyclopedia();
+let explorationEntries = [];
+const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase();
 const UTILITY_TITLES = { catalog: 'Base de datos', layers: 'Capas y objetos', filters: 'Filtros orbitales', time: 'Fecha y tiempo' };
 const THEME_ICONS = { auto: 'auto', morning: 'morning', afternoon: 'afternoon', night: 'night' };
 const MIN_SIMULATION_DATE = new Date('1957-10-04T00:00:00Z');
@@ -48,6 +52,9 @@ function formatNumber(value, decimals = 0) {
 function formatDistance(value) {
   if (!Number.isFinite(Number(value))) return '—';
   const distance = Number(value);
+  if (distance >= LY_KM * 1e9) return `${formatNumber(distance / LY_KM / 1e9, 2)} mil millones a. l.`;
+  if (distance >= LY_KM * 1e6) return `${formatNumber(distance / LY_KM / 1e6, 2)} M a. l.`;
+  if (distance >= LY_KM * .1) return `${formatNumber(distance / LY_KM, 2)} a. l.`;
   if (distance >= 149_597_870.7) return `${formatNumber(distance / 149_597_870.7, 3)} UA`;
   if (distance >= 1_000_000) return `${formatNumber(distance / 1_000_000, 2)} M km`;
   return `${formatNumber(distance, 0)} km`;
@@ -134,6 +141,7 @@ function updateLiveMetrics(record) {
 }
 
 function itemType(item) {
+  if (item?.cosmic && item.kind !== 'star') return ({galaxy:'GALAXIA',cluster:'CÚMULO DE GALAXIAS',structure:'ESTRUCTURA CÓSMICA',universe:'UNIVERSO OBSERVABLE'})[item.kind] || 'COSMOS';
   if (item?.satrec) return item.isDebris ? 'BASURA ESPACIAL RASTREADA' : 'OBJETO ORBITAL PÚBLICO';
   if (item?.kind === 'lagrange') return 'PUNTO DE LAGRANGE';
   if (item?.kind === 'spacecraft') return 'SONDA U OBSERVATORIO';
@@ -160,7 +168,13 @@ function showDetail(item) {
   $('#detail-id').textContent = satellite ? `NORAD ${item.id} · ${item.internationalId}` : [item.id?.toUpperCase(), item.status].filter(Boolean).join(' · ');
   $('#detail-dot').style.background = satellite ? (item.isDebris ? '#9b8178' : ORBIT_STYLES[item.orbit].color) : item.color || '#8fdcff';
 
-  if (satellite) {
+  if (item.cosmic) {
+    setMetricLabels('DISTANCIA AL SOL', item.kind === 'star' ? 'TIPO ESPECTRAL' : 'EXTENSIÓN', 'DATOS', 'REFERENCIA');
+    $('#metric-altitude').textContent = formatDistance(item.distanceLy * LY_KM);
+    $('#metric-speed').textContent = item.spect || (item.radiusLy ? formatDistance(item.radiusLy*2*LY_KM) : '—');
+    $('#metric-inclination').textContent = item.kind === 'star' ? 'HYG v4.1' : 'Aproximados';
+    $('#metric-period').textContent = item.kind === 'star' ? 'J2000' : 'Cosmológica';
+  } else if (satellite) {
     setMetricLabels('ALTITUD', 'VELOCIDAD', 'INCLINACIÓN', 'PERIODO', ['kilómetros', 'km/s', 'grados', 'minutos']);
     $('#metric-altitude').textContent = formatNumber(item.position?.altitude ?? item.meanAltitude, 0);
     $('#metric-speed').textContent = formatNumber(item.position?.speed, 2);
@@ -207,8 +221,8 @@ function showDetail(item) {
   $('#metric-mean-motion').textContent = satellite ? `${formatNumber(item.meanMotion, 7)} rev/día` : '—';
   $('#metric-bstar').textContent = satellite ? Number(item.omm.BSTAR || 0).toExponential(3) : '—';
   $('.orbital-elements').hidden = !satellite;
-  $('#detail-summary').textContent = satellite ? describeRecord(item) : item.summary || 'Objeto incluido en el sistema solar continuo de ScanSat.';
-  $('#focus-object').hidden = false;
+  $('#detail-summary').textContent = satellite ? describeRecord(item) : entryFor(item).body;
+  $('#focus-object').hidden = Boolean(item.noLocation);
   const libraryEntry = findLibraryEntry(item);
   $('#open-library-entry').hidden = !libraryEntry;
   $('#selected-label').textContent = item.name || item.title || 'Objeto';
@@ -225,25 +239,26 @@ function closeDetail() {
 
 function findLibraryEntry(item) {
   if (!item) return null;
-  const byId = LIBRARY_ENTRIES.find((entry) => entry.id === item.id);
+  if (item.satrec) return { ...entryFor(item), body: describeRecord(item), facts: [['NORAD',item.id],['Designador',item.internationalId],['Órbita',item.orbit],['Época',item.epoch]],category:'navigation' };
+  const byId = encyclopedia.find((entry) => entry.id === item.id);
   if (byId) return byId;
   const name = String(item.name || item.title || '').toUpperCase();
-  return LIBRARY_ENTRIES.find((entry) => entry.keywords.some((keyword) => name.includes(keyword)));
+  return encyclopedia.find((entry) => entry.keywords.some((keyword) => name.includes(keyword))) || entryFor(item);
 }
 
 function makeResultButton(item, subtitle, onActivate) {
   const button = document.createElement('button');
   button.type = 'button';
-  button.innerHTML = `<span class="result-dot" style="--result-color:${item.color || (item.satrec ? ORBIT_STYLES[item.orbit].color : '#82dfff')}"></span><span><strong>${item.name}</strong><small>${subtitle}</small></span>`;
+  button.innerHTML = `<span class="result-dot" style="--result-color:${item.color || (item.satrec ? ORBIT_STYLES[item.orbit].color : '#82dfff')}"></span><span><strong>${escapeHTML(item.name)}</strong><small>${subtitle}</small></span>`;
   button.addEventListener('click', onActivate);
   return button;
 }
 
 function searchCatalog(query) {
   const resultsBox = $('#search-results');
-  const normalized = query.trim().toUpperCase();
+  const normalized = normalize(query.trim());
   if (!normalized) { resultsBox.hidden = true; return; }
-  const special = scene.getFocusTargets().filter((item) => `${item.name} ${item.id}`.toUpperCase().includes(normalized)).slice(0, 5);
+  const special = scene.getFocusTargets().filter((item) => normalize(`${escapeHTML(item.name)} ${item.id}`).includes(normalized)).slice(0, 5);
   const records = state.records.filter((record) => record.name.toUpperCase().includes(normalized)
     || record.id.includes(normalized) || record.internationalId.toUpperCase().includes(normalized)).slice(0, 9 - special.length);
   resultsBox.replaceChildren();
@@ -266,14 +281,16 @@ function searchCatalog(query) {
 }
 
 function renderTargetMenu(query = '') {
-  const normalized = query.trim().toUpperCase();
-  const targets = scene.getFocusTargets().filter((item) => !normalized || `${item.name} ${item.id} ${item.kind}`.toUpperCase().includes(normalized));
+  const normalized = normalize(query.trim());
+  const targets = scene.getFocusTargets().filter((item) => !normalized || normalize(`${escapeHTML(item.name)} ${item.id} ${item.kind}`).includes(normalized));
   const records = normalized ? state.records.filter((record) => `${record.name} ${record.id}`.toUpperCase().includes(normalized)).slice(0, 12) : [];
   const container = $('#target-results');
   container.replaceChildren();
   const groups = [
-    ['Cuerpos celestes', targets.filter((item) => ['star', 'planet', 'moon'].includes(item.kind))],
-    ['Misiones y puntos', targets.filter((item) => !['star', 'planet', 'moon'].includes(item.kind))],
+    ['Sistema solar', targets.filter((item) => !item.cosmic && ['star', 'planet', 'moon'].includes(item.kind))],
+    ['Galaxias y universo', targets.filter((item) => item.cosmic && item.kind !== 'star')],
+    ['Estrellas HYG · busca por nombre o HIP', targets.filter((item) => item.cosmic && item.kind === 'star')],
+    ['Misiones y puntos', targets.filter((item) => !item.cosmic && !['star', 'planet', 'moon'].includes(item.kind))],
     ['Catálogo terrestre', records],
   ];
   for (const [title, items] of groups) {
@@ -285,7 +302,7 @@ function renderTargetMenu(query = '') {
     for (const item of items.slice(0, normalized ? 18 : 30)) {
       const button = document.createElement('button');
       button.type = 'button';
-      button.innerHTML = `<span class="target-glyph" style="--target-color:${item.color || '#80dfff'}"></span><span><strong>${item.name}</strong><small>${item.satrec ? `NORAD ${item.id}` : item.agency || item.parent || item.kind}</small></span>`;
+      button.innerHTML = `<span class="target-glyph" style="--target-color:${item.color || '#80dfff'}"></span><span><strong>${escapeHTML(item.name)}</strong><small>${item.satrec ? `NORAD ${item.id}` : escapeHTML(item.aliases || item.agency || item.parent || item.kind)}</small></span>`;
       button.addEventListener('click', () => {
         if (item.satrec) {
           if (!scene.selectRecord(item, true)) {
@@ -311,10 +328,10 @@ function closeTargetMenu() {
 function updateFocusUI(item) {
   const name = item?.name || 'Tierra';
   $('#focus-label').textContent = name;
-  const kind = itemType(item).replace('OBJETO ORBITAL PÚBLICO', 'SATÉLITE').replace('BASURA ESPACIAL RASTREADA', 'FRAGMENTO');
-  $('#view-eyebrow').textContent = `SISTEMA SOLAR · FOCO ${name.toUpperCase()}`;
-  $('#view-title').textContent = item?.id === 'earth' ? 'La Tierra, sin escalas comprimidas' : `Observando ${name}`;
-  $('#view-description').textContent = `${kind}. Doble clic en otro objeto o usa el selector de foco para navegar sin cambiar de escena.`;
+
+  $('#view-eyebrow').textContent = `FOCO · ${name.toUpperCase()}`;
+  $('#view-title').textContent = name;
+  $('#view-description').textContent = 'Gira para explorar · rueda para viajar · doble clic para centrar';
   renderTargetMenu($('#target-search').value);
 }
 
@@ -325,7 +342,11 @@ function updateStatus(status) {
   lastStatusUpdate = now;
   state.catalogReliable = status.catalogReliable !== false;
   $('#visible-count').textContent = formatNumber(status.visible);
-  $('#scale-note').textContent = `Distancia al foco: ${formatDistance(status.distanceKm)} · radios y órbitas en kilómetros físicos`;
+  $('#scale-note').textContent = `${formatDistance(status.distanceKm)} al foco · escala física`;
+  $('#view-eyebrow').textContent = status.scale.name.toUpperCase();
+  $('#evidence-note').textContent = status.scale.evidence;
+  if(document.activeElement !== $('#universe-zoom')) $('#universe-zoom').value = Math.log10(status.distanceKm);
+  $$('#scale-stops button').forEach((button,i)=>button.classList.toggle('active',Math.abs(Math.log10(status.distanceKm / SCALE_STOPS[i].km)) < .5));
   const archiveStatus = $('#time-archive-status');
   archiveStatus.classList.toggle('warning', !state.catalogReliable);
   $('.status-dot', archiveStatus).className = `status-dot ${state.catalogReliable ? 'live' : ''}`;
@@ -336,7 +357,7 @@ function updateStatus(status) {
 }
 
 function renderLibrary() {
-  $('#library-tabs').replaceChildren(...LIBRARY_CATEGORIES.map((category) => {
+  $('#library-tabs').replaceChildren(...ENCYCLOPEDIA_CATEGORIES.map((category) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = category.label;
@@ -344,16 +365,23 @@ function renderLibrary() {
     button.addEventListener('click', () => { state.libraryCategory = category.id; renderLibrary(); });
     return button;
   }));
-  const query = $('#library-search').value.trim().toLowerCase();
-  const entries = LIBRARY_ENTRIES.filter((entry) => (state.libraryCategory === 'all' || entry.category === state.libraryCategory)
-    && (!query || `${entry.title} ${entry.subtitle} ${entry.short}`.toLowerCase().includes(query)));
+  const query = normalize($('#library-search').value.trim());
+  const candidates = [...encyclopedia];
+  if (state.libraryCategory === 'stars' || (query && state.libraryCategory === 'all')) {
+    const stars = scene.cosmos.stars.filter(item=>!query || normalize(`${escapeHTML(item.name)} ${item.id}`).includes(query));
+    candidates.push(...stars.slice(0,120).map(entryFor));
+  }
+  if(query && ['all','navigation'].includes(state.libraryCategory)) candidates.push(...state.records.filter(item=>normalize(`${escapeHTML(item.name)} ${item.id}`).includes(query)).slice(0,60).map(item=>findLibraryEntry(item)));
+  const entries = candidates.filter((entry) => (state.libraryCategory === 'all' || entry.category === state.libraryCategory)
+    && (!query || normalize(`${entry.id} ${escapeHTML(entry.title)} ${escapeHTML(entry.subtitle)} ${entry.short}`).includes(query)));
+  $('#library-result-count').textContent = `${entries.length} fichas en esta selección · ${scene.cosmos.stars.length.toLocaleString('es-ES')} estrellas consultables por nombre o HIP · hasta 120 resultados estelares`;
   $('#library-grid').replaceChildren(...entries.map((entry) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'library-card';
     button.classList.toggle('active', state.librarySelected?.id === entry.id);
     button.style.setProperty('--entry-accent', entry.accent);
-    button.innerHTML = `<span class="entry-symbol"><i></i><i></i></span><span><strong>${entry.title}</strong><small>${entry.subtitle}</small></span><svg><use href="#i-chevron"/></svg>`;
+    button.innerHTML = `<span class="entry-symbol"><i></i><i></i></span><span><strong>${escapeHTML(entry.title)}</strong><small>${escapeHTML(entry.subtitle)}</small></span><svg><use href="#i-chevron"/></svg>`;
     button.addEventListener('click', () => showLibraryArticle(entry));
     return button;
   }));
@@ -367,12 +395,13 @@ function showLibraryArticle(entry) {
   article.style.setProperty('--entry-accent', entry.accent);
   article.innerHTML = `
     <div class="article-visual"><span class="orbital-glyph"><i></i><i></i><b></b></span><span>${entry.category.replace('-', ' ').toUpperCase()}</span></div>
-    <span class="dialog-kicker">FICHA DE BIBLIOTECA</span><h3>${entry.title}</h3>
-    <p class="article-subtitle">${entry.subtitle}</p><p>${entry.body}</p>
-    <dl>${entry.facts.map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`).join('')}</dl>
-    <button class="primary-button locate-entry">${icon('target')} Localizar en la escena</button>`;
+    <span class="dialog-kicker">ENCICLOPEDIA</span><h3>${escapeHTML(entry.title)}</h3>
+    <p class="article-subtitle">${escapeHTML(entry.subtitle)}</p><p>${escapeHTML(entry.body)}</p>
+    <dl>${entry.facts.map(([term, value]) => `<div><dt>${escapeHTML(term)}</dt><dd>${escapeHTML(value)}</dd></div>`).join('')}</dl>
+    <p class="article-source"><a href="${escapeHTML(entry.sourceUrl)}" target="_blank" rel="noreferrer">Consultar fuente ↗</a></p><button class="primary-button locate-entry" ${entry.noLocation ? 'hidden' : ''}>${icon('target')} Localizar en la escena</button>`;
   $('.locate-entry', article).addEventListener('click', () => {
-    const found = scene.selectByName(entry.searchName || entry.id, true);
+    const target = entry.target;
+    const found = target ? (scene.focusItem(target) ? target : null) : scene.selectByName(entry.searchName || entry.id, true);
     if (found) { $('#library-dialog').close(); showDetail(found); }
     else toast('Este objeto no figura en la instantánea o efeméride actual.', 'warning');
   });
@@ -467,6 +496,20 @@ function setSimulationInstant(date, { pause = true } = {}) {
 }
 
 function bindInterface() {
+  $('#scale-stops').replaceChildren(...SCALE_STOPS.map(stop=>{
+    const button=document.createElement('button');button.type='button';button.textContent=stop.name;
+    button.addEventListener('click',()=>scene.navigateScale(stop));return button;
+  }));
+  $('#universe-zoom').max=Math.log10(OBSERVABLE_RADIUS_KM*4);
+  $('#universe-zoom').addEventListener('input',event=>scene.setZoomDistance(10**Number(event.target.value)));
+  for(const layer of ['stars','galaxies','structure','labels']) $(`#${layer}-toggle`).addEventListener('change',event=>{
+    scene.cosmos.layers[layer]=event.target.checked;
+    if(layer==='labels')scene.showLabels=event.target.checked;
+  });
+  $('#components-toggle').addEventListener('change',event=>{scene.showComponents=event.target.checked;});
+  $('#star-magnitude').addEventListener('input',event=>{scene.cosmos.magnitudeLimit.value=Number(event.target.value);$('#star-magnitude-value').textContent=event.target.value;});
+  $('#planet-orbits-toggle').addEventListener('change',event=>{scene.showPlanetOrbits=event.target.checked;});
+
   $('#focus-picker').addEventListener('click', (event) => {
     event.stopPropagation();
     $('#target-menu').hidden = !$('#target-menu').hidden;
@@ -519,8 +562,8 @@ function bindInterface() {
     if (scene.focusSelected()) toast(`Foco centrado en ${state.selected?.name || 'el objeto'}.`);
   });
   $('#open-library-entry').addEventListener('click', () => openLibrary(findLibraryEntry(state.selected)));
-  $('#home-view').addEventListener('click', () => scene.resetCamera());
-  $('#solar-overview').addEventListener('click', () => scene.focusBody('sun'));
+  $('#home-view').addEventListener('click', () => scene.focusBody('earth'));
+  $('#solar-overview').addEventListener('click', () => scene.navigateScale(SCALE_STOPS[2]));
   $('#time-toggle').addEventListener('click', () => setRunning(!state.running));
   $('#time-apply').addEventListener('click', () => setSimulationInstant(new Date(`${$('#simulation-date-input').value}Z`)));
   $('#time-live').addEventListener('click', () => {
@@ -581,6 +624,8 @@ async function initializeCatalog() {
   }
   const spacecraft = await spacecraftPromise;
   scene.setSpacecraft(spacecraft);
+  encyclopedia=makeEncyclopedia([...scene.getFocusTargets().filter(x=>!x.cosmic || x.kind!=='star'),...explorationEntries]);
+  renderLibrary();
   renderTargetMenu();
 }
 
@@ -597,4 +642,15 @@ renderLibrary();
 renderTargetMenu();
 applyTheme(localStorage.getItem('scansat-theme') || 'auto');
 initializeCatalog();
+fetch(`${import.meta.env.BASE_URL}data/exploration.json`).then(r=>{if(!r.ok)throw new Error('GCAT no disponible');return r.json();}).then(data=>{
+  scene.setExplorationData(data);
+  explorationEntries=[...data.missions,...data.sites];
+  encyclopedia=makeEncyclopedia([...scene.getFocusTargets().filter(x=>!x.cosmic||x.kind!=='star'),...explorationEntries]);
+  $('#exploration-status').textContent=`${data.missions.length} registros históricos de cargas útiles · ${data.sites.length} registros de aterrizajes e impactos (GCAT)`;
+  renderLibrary();renderTargetMenu();
+}).catch(error=>{$('#exploration-status').textContent='Archivo GCAT no disponible; se conservan los emplazamientos básicos.';console.error(error);});
+scene.cosmos.loadStars().then(count=>{
+  $('#stellar-status').textContent=count ? `${formatNumber(count)} estrellas HYG · posiciones J2000` : 'Catálogo estelar no disponible; vuelve a cargar para reintentar.';
+  renderTargetMenu(); renderLibrary();
+});
 updateClock();

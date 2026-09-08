@@ -1,0 +1,63 @@
+import { LIBRARY_ENTRIES, LIBRARY_CATEGORIES } from './catalog.js';
+import { CELESTIAL_BODIES, SURFACE_SITES, LOCAL_ORBITERS, FALLBACK_SPACECRAFT, LAGRANGE_OBJECTS } from './solar-data.js';
+import { COSMIC_OBJECTS, LY_KM } from './cosmic-data.js';
+export const ENCYCLOPEDIA_CATEGORIES=[...LIBRARY_CATEGORIES,{id:'solar',label:'Planetas y lunas'},{id:'stars',label:'Estrellas'},{id:'galaxies',label:'Galaxias'},{id:'cosmology',label:'Cosmología'},{id:'surface',label:'Superficie'},{id:'history',label:'Historia'},{id:'methods',label:'Datos y escala'}];
+const bodyNotes={
+ sun:'Estrella de secuencia principal de tipo G2V. La fusión de hidrógeno en el núcleo suministra la energía que ilumina el sistema solar. La fotosfera no es una superficie sólida; las imágenes ultravioletas usadas como textura muestran plasma y se representan en falso color.',
+ mercury:'El planeta más próximo al Sol tiene una superficie rocosa craterizada y una exosfera muy tenue. Su rotación está en resonancia 3:2 con su órbita: completa tres giros por cada dos revoluciones alrededor del Sol.',
+ venus:'Planeta rocoso cubierto por una atmósfera muy densa de dióxido de carbono y nubes de ácido sulfúrico. Su superficie caliente solo es visible mediante radar o desde sondas que atravesaron las nubes. El exterior del visor representa una cubierta nubosa uniforme; no el relieve radar oculto bajo ella.',
+ earth:'Océanos, continentes y atmósfera hacen de la Tierra el único mundo con vida conocida. La capa Color natural usa un mapa global NASA en color natural; no es una imagen meteorológica en directo. La esfera oculta físicamente los objetos situados detrás. Las luces urbanas aparecen en el hemisferio nocturno.',
+ moon:'Satélite natural de la Tierra con rotación síncrona. Conserva mares basálticos, tierras altas y cráteres. El mapa LROC y el relieve LOLA proceden de Lunar Reconnaissance Orbiter. Los emplazamientos históricos permanecen sobre la superficie; la órbita lunar del visor es aproximada.',
+ mars:'Mundo rocoso con una atmósfera tenue de dióxido de carbono. El color rojizo procede de minerales de hierro oxidados. Sus valles, volcanes y depósitos sedimentarios conservan información sobre antiguos ambientes con agua.',
+ phobos:'Luna interior irregular de Marte. Orbita más rápido de lo que rota el planeta. La esfera usa un radio equivalente para indicar escala, no reproduce su forma irregular exacta.',
+ deimos:'Pequeño satélite exterior de Marte, de forma irregular y superficie cubierta por regolito. Se muestra su radio equivalente, sin inventar un mapa de superficie de alta resolución.',
+ jupiter:'Gigante gaseoso con bandas nubosas, tormentas y una magnetosfera intensa. No tiene una superficie sólida definida como la terrestre. El radio de referencia describe una capa de presión de su atmósfera.',
+ io:'Luna de Júpiter sometida a intenso calentamiento por mareas. Es el mundo volcánicamente más activo del sistema solar. Su superficie cambia con la actividad de numerosos volcanes.',
+ europa:'Luna helada de Júpiter. Las fracturas del hielo y la evidencia geofísica apuntan a un océano líquido interior, mantenido por calentamiento de mareas.',
+ ganymede:'La mayor luna del sistema solar, de tamaño superior a Mercurio. Posee un campo magnético propio y una superficie que alterna regiones antiguas oscuras y terrenos surcados.',
+ callisto:'Luna exterior galileana de Júpiter. Su superficie está muy craterizada y conserva una larga historia de impactos. Es menos afectada por la radiación joviana que las lunas interiores.',
+ saturn:'Gigante gaseoso rodeado por anillos compuestos principalmente por hielo. Los anillos tienen radios físicos y huecos diferenciados; la división de Cassini separa los anillos A y B.',
+ enceladus:'Pequeña luna helada de Saturno. Cassini detectó chorros de vapor, hielo y compuestos orgánicos que emergen cerca del polo sur y se relacionan con un océano interior.',
+ titan:'La mayor luna de Saturno posee una atmósfera densa de nitrógeno. En su superficie hay lagos y mares de metano y etano. Huygens descendió a su superficie en 2005.',
+ uranus:'Gigante de hielo cuya inclinación axial extrema cambia profundamente sus estaciones. Su color azul verdoso está relacionado con el metano y la estructura de sus nubes y brumas.',
+ neptune:'Gigante de hielo exterior, con vientos intensos y una atmósfera de hidrógeno, helio y metano. Los mapas de distintas misiones pueden realzar colores que no equivalen a la visión humana.',
+ triton:'La gran luna de Neptuno tiene una órbita retrógrada y se considera un probable objeto capturado del cinturón de Kuiper. Voyager 2 observó actividad de géiseres en su superficie.',
+};
+const methods=[
+ ['physical-scale','Una escala física común','Distancias, radios y ayudas de lectura','El visor conserva los cocientes entre radios y distancias en kilómetros. Al alejarse cambia la unidad interna de dibujo, nunca las proporciones. A escala del sistema solar, una Tierra de tamaño correcto es casi invisible: por eso existen marcadores desactivables. El tamaño de esos puntos, las etiquetas, el grosor de las órbitas y los destellos son ayudas de lectura, no tamaños físicos.',['Distancia local','Kilómetros / unidades astronómicas'],['Distancia estelar','Años luz / pársecs']],
+ ['hyg-catalog','Catálogo estelar HYG','Hipparcos, Yale y Gliese','El catálogo combina nombres, posiciones, distancias, magnitudes y tipos espectrales. Se excluyen registros sin distancia utilizable (valor centinela de 100.000 pc). Las coordenadas son de época J2000 y las distancias tienen incertidumbre. No incluye todas las estrellas de la Vía Láctea y no es Gaia completo. Puedes buscar por nombre o identificador HIP/HYG y navegar a cada estrella incluida.',['Época','J2000'],['Licencia','CC BY-SA 4.0 · David Nash']],
+ ['cosmic-web','La red cósmica','Filamentos, cúmulos y vacíos','La materia se organiza en una red de filamentos y paredes que rodean grandes vacíos. El visor genera una reconstrucción determinista e ilustrativa de esta organización, con nodos cálidos y filamentos violetas. No es una descarga de un sondeo de galaxias ni una simulación cosmológica de N cuerpos. Las galaxias nombradas son referencias astronómicas separadas de esa reconstrucción.',['Geometría','Ilustrativa'],['Distancia cosmológica','Comóvil actual aproximada']],
+ ['observable-distance','13.800 frente a 46.500 millones','Edad y distancia no son lo mismo','La edad del universo y el radio actual del universo observable son magnitudes diferentes. Mientras la luz viajaba, el espacio se expandía. Por eso el radio comóvil actual puede rondar 46.500 millones de años luz. La vista externa sirve para entender el volumen; ningún observador puede situarse fuera y fotografiarlo así. Tampoco vemos simultáneamente todos los objetos tal como son hoy.',['Edad aproximada','13.800 millones de años'],['Radio comóvil aproximado','46.500 millones de años luz']],
+ ['orbital-data','Órbitas y basura espacial','Qué significa el catálogo público','Los elementos OMM describen órbitas medias y se propagan con SGP4. La precisión se degrada con la distancia a su época; el visor oculta los elementos actuales fuera de su ventana temporal. Los fragmentos mostrados pertenecen a catálogos públicos seleccionados. No es toda la basura espacial: existen objetos demasiado pequeños para rastrearlos y datos no publicados.',['Modelo','SGP4 / OMM'],['Uso','Exploración educativa']],
+ ['lagrange-guide','Los cinco puntos de Lagrange','Sol–Tierra L1, L2, L3, L4 y L5','Son posiciones de equilibrio del problema restringido de tres cuerpos en un marco que gira con los primarios. L1, L2 y L3 son inestables; los observatorios recorren órbitas de halo o Lissajous y requieren correcciones. L4 y L5 forman triángulos aproximadamente equiláteros. El visor usa posiciones aproximadas y distingue un destino de despliegue de una efeméride medida.',['L1 y L2','A unos 1,5 millones de km de la Tierra'],['Representación','Modelo aproximado']],
+];
+export function entryFor(item) {
+ const category=item.kind==='history'?'history':item.cosmic?(item.kind==='star'?'stars':item.kind==='galaxy'?'galaxies':'cosmology'):item.kind==='history'?'history':item.body?'surface':item.radiusKm?'solar':'deep-space';
+ let body=bodyNotes[item.id] || item.summary || `${item.name} forma parte del catálogo público de exploración espacial.`;
+ const facts=[];
+ if(item.radiusKm)facts.push(['Radio',`${item.radiusKm.toLocaleString('es-ES')} km`],['Centro orbital',item.parent||'Sistema solar'],['Rotación',item.rotationHours?`${Math.abs(item.rotationHours)} h`:'Síncrona / modelo aproximado']);
+ if(item.distanceLy!==undefined)facts.push(['Distancia de referencia',`${item.distanceLy.toLocaleString('es-ES',{maximumFractionDigits:2})} años luz`]);
+ if(item.radiusLy)facts.push(['Extensión de referencia',`${(item.radiusLy*2).toLocaleString('es-ES')} años luz`]);
+ if(item.spect)facts.push(['Tipo espectral',item.spect],['Magnitud aparente',String(item.mag)]);
+ if(item.lum)facts.push(['Luminosidad',`${item.lum.toLocaleString('es-ES',{maximumSignificantDigits:4})} L☉`]);
+ if(item.lat!==undefined)facts.push(['Latitud',`${item.lat}°`],['Longitud',`${item.lon}°`]);
+ if(item.agency)facts.push(['Agencia / operador',item.agency]);
+ if(item.designation)facts.push(['Designación',item.designation]);
+ if(item.eventDate)facts.push(['Evento de superficie',item.eventDate]);
+ if(item.destination)facts.push(['Destino de primera fase',item.destination]);
+ if(item.aliases)facts.push(['Identificación adicional',item.aliases]);
+ if(item.launchDate)facts.push(['Lanzamiento',item.launchDate.slice(0,10)]);
+ if(item.status)facts.push(['Estado / referencia',item.status]);
+ if(item.periodHours)facts.push(['Periodo de modelo',`${item.periodHours} horas`]);
+ if(item.source)facts.push(['Fuente',item.source]);
+ if(item.positionKm)body+=' La posición corresponde a la época de la instantánea JPL. Se permite una interpolación lineal local de hasta dos días; fuera de ese intervalo se oculta. No es una trayectoria histórica completa.';
+ if(item.parent&&item.periodHours)body+=' La trayectoria local es un modelo orbital aproximado, no una solución operacional de navegación.';
+ const sourceUrl=item.sourceUrl || (item.positionKm?'https://ssd.jpl.nasa.gov/horizons/':item.radiusKm?'https://science.nasa.gov/solar-system/':item.satrec?'https://celestrak.org/':'https://science.nasa.gov/missions/');
+ return {id:item.id,title:item.name,subtitle:item.aliases||item.source||item.agency||category,short:body,body,facts,category,accent:item.color||'#87c9e4',keywords:[String(item.name).toUpperCase()],searchName:item.id,target:item,sourceUrl,noLocation:item.noLocation};
+}
+export function makeEncyclopedia(extra=[]) {
+ const entries=new Map(LIBRARY_ENTRIES.map(e=>[e.id,{...e,sourceUrl:'https://science.nasa.gov/missions/'}]));
+ for(const item of [...CELESTIAL_BODIES.map(x=>({...x,kind:x.type})),...(extra.some(x=>x.id?.startsWith('gcat-landing-'))?[]:SURFACE_SITES),...LOCAL_ORBITERS,...FALLBACK_SPACECRAFT,...LAGRANGE_OBJECTS,...COSMIC_OBJECTS,...extra])entries.set(item.id,entryFor(item));
+ for(const [id,title,subtitle,body,...facts] of methods)entries.set(id,{id,title,subtitle,short:body,body,facts,category:'methods',accent:'#d0b9ff',keywords:[],noLocation:true,sourceUrl:id==='hyg-catalog'?'https://github.com/astronexus/HYG-Database':id==='orbital-data'?'https://celestrak.org/':id==='lagrange-guide'?'https://science.nasa.gov/resource/what-is-a-lagrange-point/':'https://science.nasa.gov/universe/overview/'});
+ return [...entries.values()];
+}

@@ -1,7 +1,7 @@
 {
-  "name": "ScanSat — Atlas orbital 3D",
+  "name": "ScanSat — Atlas del universo",
   "short_name": "ScanSat",
-  "description": "Seguimiento tridimensional de satélites y misiones espaciales.",
+  "description": "Exploración a escala física desde satélites terrestres hasta la red cósmica.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#06090d",

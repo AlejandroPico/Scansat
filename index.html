@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#06090d" />
-    <meta name="description" content="Atlas 3D en tiempo real de satélites, constelaciones y misiones espaciales." />
+    <meta name="description" content="Explora desde la Tierra y sus satélites hasta las estrellas, galaxias y la red cósmica, con distancias físicas y fuentes identificadas." />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <title>ScanSat — Atlas orbital 3D</title>
+    <title>ScanSat — Atlas del universo</title>
   </head>
   <body>
     <svg class="svg-sprite" aria-hidden="true">
@@ -58,7 +58,7 @@
           <button class="icon-button" id="theme-button" aria-label="Cambiar tema" title="Tema">
             <svg><use id="theme-icon-use" href="#i-auto"/></svg>
           </button>
-          <button class="icon-button" id="library-button" aria-label="Abrir biblioteca" title="Biblioteca">
+          <button class="icon-button" id="library-button" aria-label="Abrir enciclopedia" title="Enciclopedia">
             <svg><use href="#i-book"/></svg>
           </button>
           <button class="icon-button" id="about-button" aria-label="Acerca de ScanSat" title="Acerca de">
@@ -77,7 +77,7 @@
             <section class="search-section" data-utility-section="catalog">
               <label class="search-box">
                 <svg><use href="#i-search"/></svg>
-                <input id="catalog-search" type="search" placeholder="Buscar satélite o NORAD…" autocomplete="off" />
+                <input id="catalog-search" type="search" placeholder="Buscar nombre, HIP o NORAD…" autocomplete="off" />
                 <kbd>/</kbd>
               </label>
               <div class="search-results" id="search-results" hidden></div>
@@ -93,7 +93,7 @@
                 <strong id="debris-count">—</strong>
                 <span>fragmentos de nubes principales</span>
               </div>
-              <div class="data-status"><span class="status-dot loading" id="data-dot"></span><span id="data-label">Preparando catálogo orbital…</span></div>
+              <p class="catalog-note" id="exploration-status">Preparando archivo de exploración…</p><p id="stellar-status" class="catalog-note">Preparando catálogo estelar HYG…</p><p class="catalog-note">Catálogo orbital público y subconjunto estelar con distancias disponibles; no constituyen un censo completo del espacio.</p><div class="data-status"><span class="status-dot loading" id="data-dot"></span><span id="data-label">Preparando catálogo orbital…</span></div>
               <div class="progress-track" id="load-progress"><span></span></div>
             </section>
 
@@ -102,16 +102,23 @@
                 <span><svg><use href="#i-layers"/></svg> Capas y objetos</span><svg class="chevron"><use href="#i-chevron"/></svg>
               </button>
               <div class="section-content layer-grid">
-                <button class="layer-card active" data-layer="satellite"><span class="layer-preview satellite"></span><span><strong>Satélite</strong><small>NASA Blue Marble</small></span></button>
-                <button class="layer-card" data-layer="political"><span class="layer-preview political"></span><span><strong>Político plano</strong><small>Fronteras</small></span></button>
+                <button class="layer-card active" data-layer="satellite"><span class="layer-preview satellite"></span><span><strong>Color natural</strong><small>NASA · color natural</small></span></button>
+                <button class="layer-card" data-layer="political"><span class="layer-preview political"></span><span><strong>Fronteras</strong><small>Fronteras</small></span></button>
                 <button class="layer-card" data-layer="night"><span class="layer-preview night"></span><span><strong>Noche</strong><small>Black Marble</small></span></button>
               </div>
+              <div class="filter-title"><span>Universo y navegación</span></div>
+              <label class="switch-row"><span>Estrellas de catálogo HYG</span><input id="stars-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Galaxias y Vía Láctea</span><input id="galaxies-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Red cósmica ilustrativa</span><input id="structure-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Etiquetas y localizadores</span><input id="labels-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Órbitas de planetas y lunas</span><input id="planet-orbits-toggle" type="checkbox"><span class="switch"></span></label>
+              <label class="time-field"><span>Magnitud estelar límite <output id="star-magnitude-value">7</output></span><input id="star-magnitude" type="range" min="3" max="14" step="0.5" value="7"></label><div class="filter-title"><span>Sistema solar</span></div>
               <label class="switch-row"><span>Atmósfera</span><input id="atmosphere-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Basura espacial</span><input id="debris-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Misiones y Lagrange</span><input id="missions-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Lugares de superficie</span><input id="surface-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Órbita seleccionada</span><input id="orbit-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Cobertura estimada</span><input id="coverage-toggle" type="checkbox"><span class="switch"></span></label>
+              <label class="switch-row"><span>Componentes e impactos secundarios</span><input id="components-toggle" type="checkbox"><span class="switch"></span></label><label class="switch-row"><span>Órbita seleccionada</span><input id="orbit-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row" hidden><span>Cobertura estimada</span><input id="coverage-toggle" type="checkbox"><span class="switch"></span></label>
             </section>
 
             <section class="panel-section" id="filters-section" data-utility-section="filters">
@@ -160,17 +167,18 @@
           <div id="scene-container"></div>
           <div class="view-label">
             <span class="eyebrow" id="view-eyebrow">SISTEMA SOLAR · FOCO TIERRA</span>
-            <h1 id="view-title">La Tierra, sin escalas comprimidas</h1>
-            <p id="view-description">Aléjate para descubrir la Luna y el sistema solar; doble clic para cambiar el foco.</p>
+            <h1 id="view-title">Tierra</h1>
+            <p id="view-description">Gira para explorar · rueda para viajar · doble clic para centrar</p>
           </div>
           <div class="scene-legend" id="scene-legend">
             <span><i class="leo"></i>LEO</span><span><i class="meo"></i>MEO</span><span><i class="geo"></i>GEO</span><span><i class="debris"></i>Basura</span><span><i class="mission"></i>Misión</span>
           </div>
+          <nav class="scale-navigation" aria-label="Viajar por el universo"><div id="scale-stops"></div><label class="zoom-control"><span>Acercar</span><input id="universe-zoom" type="range" min="3.81" max="24.25" step="0.005" value="4.42" aria-label="Distancia al foco, escala logarítmica"><span>Alejar</span></label></nav>
           <div class="scene-tools">
-            <button class="tool-button" id="home-view" title="Restablecer vista" aria-label="Restablecer vista"><svg><use href="#i-target"/></svg></button>
+            <button class="tool-button" id="home-view" title="Volver a la Tierra" aria-label="Volver a la Tierra"><svg><use href="#i-target"/></svg></button>
             <button class="tool-button" id="solar-overview" title="Ir al Sol" aria-label="Ir al Sol"><svg><use href="#i-orbit"/></svg></button>
           </div>
-          <div class="scale-note" id="scale-note">Radios y distancias físicas · los iconos lejanos son ayudas de lectura.</div>
+          <div class="evidence-note" id="evidence-note"></div><div class="scale-note" id="scale-note">Radios y distancias físicas · los iconos lejanos son ayudas de lectura.</div>
         </section>
 
         <aside class="detail-panel" id="detail-panel" aria-label="Ficha del objeto" aria-hidden="true">
@@ -195,34 +203,34 @@
           </div>
           <div class="detail-actions">
             <button class="primary-button" id="focus-object"><svg><use href="#i-target"/></svg> Centrar aquí</button>
-            <button class="secondary-button" id="open-library-entry"><svg><use href="#i-book"/></svg> Ver en biblioteca</button>
+            <button class="secondary-button" id="open-library-entry"><svg><use href="#i-book"/></svg> Ver en enciclopedia</button>
           </div>
         </aside>
       </main>
 
       <footer class="statusbar">
         <div><span class="status-dot live"></span><span id="simulation-status">SIMULACIÓN EN VIVO</span></div>
-        <div class="status-center"><span>Visibles <strong id="visible-count">—</strong></span><span>Seleccionado <strong id="selected-label">Ninguno</strong></span></div>
+        <div class="status-center"><span>Objetos orbitales <strong id="visible-count">—</strong></span><span>Seleccionado <strong id="selected-label">Ninguno</strong></span></div>
         <div><span id="fps-label">WEBGL</span><span class="desktop-only"> · SGP4 / OMM</span></div>
       </footer>
     </div>
 
     <dialog class="app-dialog library-dialog" id="library-dialog">
       <div class="dialog-shell">
-        <header><div><span class="dialog-kicker">ENCICLOPEDIA ORBITAL</span><h2>Biblioteca ScanSat</h2><p>Constelaciones, observatorios, estaciones y misiones que definen nuestra presencia en el espacio.</p></div><button class="icon-button plain dialog-close" aria-label="Cerrar biblioteca"><svg><use href="#i-close"/></svg></button></header>
-        <div class="library-toolbar"><label class="search-box"><svg><use href="#i-search"/></svg><input id="library-search" type="search" placeholder="Buscar en la biblioteca…"></label><div class="library-tabs" id="library-tabs"></div></div>
-        <div class="library-content"><div class="library-grid" id="library-grid"></div><article class="library-article" id="library-article"><div class="empty-article"><svg><use href="#i-book"/></svg><p>Selecciona una ficha para ampliar la información.</p></div></article></div>
+        <header><div><span class="dialog-kicker">ENCICLOPEDIA DEL UNIVERSO</span><h2>Enciclopedia ScanSat</h2><p>Cuerpos celestes, estrellas catalogadas, exploración espacial y grandes estructuras. Cada ficha explica sus datos y su representación.</p></div><button class="icon-button plain dialog-close" aria-label="Cerrar enciclopedia"><svg><use href="#i-close"/></svg></button></header>
+        <div class="library-toolbar"><label class="search-box"><svg><use href="#i-search"/></svg><input id="library-search" type="search" placeholder="Buscar en la enciclopedia…"></label><div class="library-tabs" id="library-tabs"></div></div>
+        <p class="library-result-count" id="library-result-count"></p><div class="library-content"><div class="library-grid" id="library-grid"></div><article class="library-article" id="library-article"><div class="empty-article"><svg><use href="#i-book"/></svg><p>Selecciona una ficha para ampliar la información.</p></div></article></div>
       </div>
     </dialog>
 
     <dialog class="app-dialog about-dialog" id="about-dialog">
       <div class="dialog-shell compact">
         <header><div><span class="dialog-kicker">ACERCA DEL PROYECTO</span><h2>ScanSat</h2></div><button class="icon-button plain dialog-close" aria-label="Cerrar acerca de"><svg><use href="#i-close"/></svg></button></header>
-        <div class="about-hero"><span class="about-mark"><span></span></span><div><strong>ScanSat · Atlas orbital y planetario</strong><small>Versión 0.3.0 · Alfa</small></div></div>
-        <p>ScanSat ofrece una escena continua del sistema solar con foco inicial en la Tierra. Las órbitas planetarias usan elementos aproximados de JPL; los objetos terrestres se propagan con SGP4 y las sondas destacadas usan vectores de NASA/JPL Horizons. La navegación temporal oculta el catálogo GP actual cuando la fecha elegida queda fuera de su periodo fiable.</p>
+        <div class="about-hero"><span class="about-mark"><span></span></span><div><strong>ScanSat · Atlas del universo</strong><small>Versión 0.4.0 · Alfa</small></div></div>
+        <p>ScanSat conecta la Tierra, los satélites, el sistema solar, las estrellas, las galaxias y el universo observable mediante una escala física común. Combina OMM/SGP4, JPL Horizons, 109.400 estrellas HYG y el archivo histórico GCAT. La Vía Láctea y la red cósmica incluyen reconstrucciones ilustrativas identificadas; no constituyen un mapa observado completo.</p>
         <div class="about-links"><a href="https://alejandropico.github.io/Portfolio/" target="_blank" rel="noreferrer">Portfolio <span>↗</span></a><a href="https://github.com/AlejandroPico/Scansat" target="_blank" rel="noreferrer">Repositorio <span>↗</span></a></div>
         <div class="credits"><strong>Datos y atribuciones</strong><p>Órbitas terrestres y basura: CelesTrak / 18 SDS. Efemérides: NASA/JPL Horizons. Tierra: NASA Blue/Black Marble. Luna: LROC/LOLA. Sol: STEREO y SDO/AIA. Otras texturas: NASA, JPL, USGS y NASA 3D Resources. Propagación: satellite.js. Fronteras: Natural Earth.</p><p>Los iconos conservan legibilidad en pantalla, pero cuerpos y distancias utilizan kilómetros físicos. Herramienta educativa; no apta para navegación ni operaciones espaciales.</p></div>
-      </div>
+      <p class="about-data-credits">Datos estelares: <a href="https://github.com/astronexus/HYG-Database" target="_blank" rel="noreferrer">HYG v4.1 · David Nash · CC BY-SA 4.0</a>. Exploración: <a href="https://planet4589.org/space/gcat/" target="_blank" rel="noreferrer">GCAT · Jonathan McDowell · CC BY 4.0</a>. Mapas: NASA/GSFC y NASA 3D Resources.</p></div>
     </dialog>
 
     <div class="theme-menu" id="theme-menu" hidden>
@@ -233,7 +241,7 @@
     </div>
 
     <div class="target-menu" id="target-menu" hidden>
-      <label class="search-box"><svg><use href="#i-search"/></svg><input id="target-search" type="search" placeholder="Planeta, luna, misión o NORAD…"></label>
+      <label class="search-box"><svg><use href="#i-search"/></svg><input id="target-search" type="search" placeholder="Planeta, estrella, HIP, galaxia, misión…"></label>
       <div class="target-results" id="target-results"></div>
       <small>Doble clic sobre un objeto también cambia el foco.</small>
     </div>
