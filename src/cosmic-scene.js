@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { MicrowaveBackground } from './cmb-scene.js';
 import { GalacticSectors } from './galactic-sectors.js';
 import { AstronomyPhotos } from './astronomy-photos.js';
 import { galaxyPopulation } from './galaxy-model.js';
@@ -14,10 +15,10 @@ function cloud(positions,colors,size,texture) {
 }
 export class CosmicScene {
   constructor(owner) {
-    this.owner=owner; this.stars=[]; this.layers={stars:true,galaxies:true,structure:true,labels:true,sdss:true,twoMrs:true,flows:true,sky:true,population:true};
+    this.owner=owner; this.stars=[]; this.layers={stars:true,galaxies:true,structure:true,labels:true,sdss:true,twoMrs:true,flows:true,sky:true,population:true,cmb:true};
     this.nodes=[]; this.targets=[...COSMIC_OBJECTS]; this.starState='pending'; this.magnitudeLimit={value:8.5}; this.unitPc={value:1/PC_KM};
     this.surveys=new CosmicSurveys(this);
-    this.photos=new AstronomyPhotos(owner);this.sectors=new GalacticSectors(owner);
+    this.cmb=new MicrowaveBackground(owner);this.photos=new AstronomyPhotos(owner);this.sectors=new GalacticSectors(owner);
     for(const item of COSMIC_OBJECTS.filter(x=>x.kind==='galaxy')) {
       const count=item.id==='milky-way'?320000:item.id==='andromeda'?80000:18000;
       const {positions,colors}=galaxyPopulation(item,count);
@@ -33,7 +34,7 @@ export class CosmicScene {
       };
       haze.scale.setScalar(LY_KM);owner.scene.add(haze);this.nodes.push({node:haze,item,layer:'galaxies'});
     }
-    for(const item of COSMIC_OBJECTS) {
+    for(const item of COSMIC_OBJECTS.filter(x=>x.kind!=='cmb')) {
       const marker=owner.makeCosmicMarker(item);
       this.nodes.push({node:marker,item,layer:item.kind==='galaxy'?'galaxies':'structure',marker:true});
     }
@@ -87,6 +88,7 @@ export class CosmicScene {
     this.unitPc.value=this.owner.renderUnit/PC_KM;
     this.surveys.update(origin,distance);
     this.photos.update(origin,distance,this.layers);
+    this.cmb.update(origin,distance,this.layers.cmb);
     this.sectors.update(origin,distance,this.layers.population&&this.layers.stars);
     if(this.selectedMarker) {
       this.selectedMarker.position.fromArray(this.selectedMarker.userData.item.position).sub(origin);

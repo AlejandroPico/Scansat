@@ -1,8 +1,23 @@
-# ScanSat · Atlas del universo
+# Universal · Atlas del universo
 
-**Versión 0.6.0-alpha** · [Abrir ScanSat](https://alejandropico.github.io/Scansat/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
+**Versión 0.7.0-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
 
 Exploración continua desde la Tierra y el tráfico orbital hasta las estrellas, las galaxias y el volumen del universo observable. La rueda recorre todas las escalas sin cambiar de aplicación. Los radios de los cuerpos y las distancias comparten una unidad física; los marcadores son ayudas de localización, no diámetros agrandados.
+
+## Novedades de 0.7.0 · Universal
+
+- Nueva identidad **Universal**, favicon, manifiesto, enlaces y descripción. Repositorio: `AlejandroPico/Universal`; publicación: `https://alejandropico.github.io/Universal/`.
+- La Tierra compone las teselas en un atlas de textura aplicado a **una única superficie**, eliminando el cruce de mallas y los patrones triangulares entre niveles. La geometría aumenta su definición al acercarse. Los padres disponibles rellenan regiones cuyas teselas todavía no han llegado.
+- Satélites y residuos con puntos más legibles y centros claros; galaxias de los sondeos con mayor brillo y tamaño mínimo. Los datos y trazados CF4 de Laniakea se conservan.
+- Campos de densidad de **192³ y 256³ celdas**, 192 muestras por rayo y mayor presencia luminosa. Es detalle del modelo ilustrativo, no nueva resolución observacional.
+- **Capa CMB / WMAP**: mapa auténtico de cinco años de NASA, 4096 × 2048, proyección galáctica equirectangular para esfera. Radio comóvil adoptado de **45.500 millones de años luz**, aproximado y dependiente de cosmología, ligeramente dentro del horizonte observable. Visible a gran escala y activable en Capas; botón de acceso directo. La esfera está centrada en nuestro origen observacional, no sigue a la cámara al viajar. Colores de temperatura de −200 a +200 μK alrededor de una media de unos 2,725 K: no son colores ópticos ni densidad de materia actual.
+- **Enciclopedia rediseñada**: navegación por capítulos, índice con búsqueda, filtros de imágenes/localización/guías, artículo ilustrado, galería, pestañas de visión general/datos/fuentes y acceso al objeto. Incluye fotografías ESO/DSS2, mapas planetarios, WMAP y dos referencias visuales aportadas por el usuario, descritas como ilustraciones de densidad y sin atribuirles una procedencia científica desconocida.
+
+## Fuente del fondo cósmico de microondas
+
+[NASA LAMBDA / WMAP Science on a Sphere](https://lambda.gsfc.nasa.gov/product/wmap/dr4/sos/5year/) documenta la proyección, los polos, el meridiano y la paridad exterior. Se usa el [mapa ILC de cinco años ±200 μK](https://lambda.gsfc.nasa.gov/product/wmap/dr4/sos/5year/ilc/wmap_ilc_5yr_v3_200uK_RGB.png), crédito **NASA / WMAP Science Team**. No se presenta como un producto Planck ni como la observación CMB más reciente. La última dispersión ocurrió unos 380.000 años después del Big Bang; la esfera muestra un mapa angular de esa época, no una capa material que se pueda visitar o una región entre galaxias actuales.
+
+Los archivos `public/encyclopedia/reference-*.png` son referencias suministradas por el usuario. No están amparados por la licencia MIT del código; no se atribuyen a WMAP, NASA ni a un sondeo observado.
 
 ## Novedades de 0.6.0
 
@@ -100,10 +115,10 @@ Los datos científicos conservan la atribución y las condiciones de sus proveed
 - [2MRS / Huchra et al. 2012](https://heasarc.gsfc.nasa.gov/w3browse/all/twomassrsc.html), distribuido por [CDS VizieR, J/ApJS/199/26](https://cdsarc.cds.unistra.fr/viz-bin/cat/J/ApJS/199/26). Se conservan identificadores y magnitud Ks; se excluyen distancias no utilizables. [Condiciones de VizieR](https://cds.unistra.fr/vizier-org/licences_vizier.html).
 - [Cosmicflows, rejillas públicas](https://projets.ip2i.in2p3.fr/cosmicflows/): [Courtois et al. 2023](https://arxiv.org/abs/2211.16390) y [Dupuy y Courtois 2023](https://arxiv.org/abs/2305.02339). Arrays ZYX y componentes XYZ, velocidades multiplicadas por 52 según el proveedor; RK2 con paso de 2 Mpc/h. Envolvente muestreada de la cuenca publicada, no una frontera exacta. Las rejillas de velocidad y cuenca tienen distinta resolución.
 - [ESA, anatomía de la Vía Láctea](https://sci.esa.int/web/gaia/-/58206-anatomy-of-the-milky-way), para las poblaciones del disco, bulbo, barra y halo.
-- [Hidding et al., aproximación de Zel’dovich](https://academic.oup.com/mnras/article/437/4/3442/1005676), base conceptual del modelo pedagógico; [Millennium / MPA](https://wwwmpa.mpa-garching.mpg.de/galform/virgo/millennium/) permite distinguir las visualizaciones de densidad de un catálogo observado. ScanSat no importa sus partículas ni sus imágenes.
+- [Hidding et al., aproximación de Zel’dovich](https://academic.oup.com/mnras/article/437/4/3442/1005676), base conceptual del modelo pedagógico; [Millennium / MPA](https://wwwmpa.mpa-garching.mpg.de/galform/virgo/millennium/) permite distinguir las visualizaciones de densidad de un catálogo observado. Universal no importa sus partículas ni sus imágenes.
 
 - [CelesTrak](https://celestrak.org/) y [NASA/JPL Horizons](https://ssd.jpl.nasa.gov/horizons/).
-- [HYG v4.1 / David Nash](https://github.com/astronexus/HYG-Database): **CC BY-SA 4.0**. `public/data/stars.json` es un subconjunto transformado, conserva esa licencia y la atribución. El código de ScanSat mantiene su licencia MIT.
+- [HYG v4.1 / David Nash](https://github.com/astronexus/HYG-Database): **CC BY-SA 4.0**. `public/data/stars.json` es un subconjunto transformado, conserva esa licencia y la atribución. El código de Universal mantiene su licencia MIT.
 - [GCAT / Jonathan C. McDowell](https://planet4589.org/space/gcat/): **CC BY 4.0**. `public/data/exploration.json` es una extracción normalizada de `deepcat.tsv` y `landercat.tsv`, con campos de origen, fechas y notas; instantánea del 8 de septiembre de 2026.
 - [NASA Blue Marble](https://svs.gsfc.nasa.gov/2915/), [LROC/LOLA](https://svs.gsfc.nasa.gov/4720/) y [NASA 3D Resources](https://github.com/nasa/NASA-3D-Resources). NASA/GSFC y autores originales. Los mapas no son fotografías actuales; pueden incluir mosaicos, realces y zonas incompletas. El Sol conserva una visualización en falso color STEREO/SDO, no una fotografía de su fotosfera en luz visible.
 - [Laniakea — Tully et al., 2014](https://arxiv.org/abs/1409.0880) y [NASA, descripción del universo](https://science.nasa.gov/universe/overview/), para el contexto de las grandes escalas.
@@ -164,6 +179,8 @@ Las pruebas cubren conservación de escala, transformaciones de coordenadas, ocu
 
 ## Historial
 
+- **0.7.0-alpha** — identidad Universal, superficie terrestre unificada, contraste, densidad de mayor resolución, CMB WMAP y enciclopedia ilustrada.
+
 - **0.6.0-alpha** — volúmenes difusos, fotografías ESO/DSS2, vuelo galáctico por sectores, teselas terrestres y herramientas flotantes.
 
 - **0.5.0-alpha** — sondeos SDSS/2MRS, Laniakea CF4, nuevas poblaciones galácticas, densidad multiescala y correcciones de controles.
@@ -172,3 +189,5 @@ Las pruebas cubren conservación de escala, transformaciones de coordenadas, ocu
 - **0.2.1-alpha** — instantáneas de residuos particionadas y verificadas.
 - **0.2.0-alpha** — escena solar continua, JPL Horizons, Lagrange, residuos y misiones de superficie.
 - **0.1.0-alpha** — primera versión orbital con CelesTrak.
+
+El volumen exterior se transporta en dos partes consecutivas que se reúnen antes de descomprimir; conservan exactamente los mismos datos y resolución.

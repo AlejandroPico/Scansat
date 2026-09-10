@@ -156,6 +156,7 @@ function makeEarthMaterial(dayMap, nightMap) {
     side: THREE.FrontSide,
     uniforms: {
       dayMap: { value: dayMap },
+      detailMap:{value:dayMap},detailBounds:{value:new THREE.Vector4()},detailEnabled:{value:0},
       nightMap: { value: nightMap },
       sunDirection: { value: new THREE.Vector3(1, 0, 0) },
       allNight: { value: 0 },
@@ -171,6 +172,7 @@ function makeEarthMaterial(dayMap, nightMap) {
     `,
     fragmentShader: `
       uniform sampler2D dayMap;
+      uniform sampler2D detailMap;uniform vec4 detailBounds;uniform float detailEnabled;
       uniform sampler2D nightMap;
       uniform vec3 sunDirection;
       uniform float allNight;
@@ -178,7 +180,16 @@ function makeEarthMaterial(dayMap, nightMap) {
       varying vec3 vNormalW;
       void main() {
         vec3 dayColor = texture2D(dayMap, vUvMap).rgb;
-        // NASA visible-colour composite, without a relief colour ramp.
+        if(detailEnabled>.5){
+          float latitude=(vUvMap.y-.5)*3.14159265359;
+          float mercY=.5-log(tan(.78539816339+clamp(latitude,-1.484422,1.484422)*.5))/6.28318530718;
+          float dx=vUvMap.x-detailBounds.x;dx-=floor(dx);
+          vec2 local=vec2(dx,mercY-detailBounds.y)/detailBounds.zw;
+          if(abs(latitude)<1.484422&&local.x>=0.0&&local.x<=1.0&&local.y>=0.0&&local.y<=1.0){
+            vec4 detail=texture2D(detailMap,vec2(local.x,1.0-local.y));dayColor=mix(dayColor,detail.rgb,detail.a);
+          }
+        }
+        // One surface owns every imagery level: no coplanar tile meshes.
         vec3 nightColor = texture2D(nightMap, vUvMap).rgb * 1.55;
         float directLight = dot(normalize(vNormalW), normalize(sunDirection));
         float terminator = smoothstep(-0.13, 0.17, directLight);
@@ -525,8 +536,11 @@ export class OrbitalScene {
       size, sizeAttenuation: false, map: this.dotTexture, alphaTest: 0.04, transparent: true,
       opacity, vertexColors: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false,
     });
-    this.activePoints = new THREE.Points(new THREE.BufferGeometry(), material(2.25, 1));
-    this.debrisPoints = new THREE.Points(new THREE.BufferGeometry(), material(1.15, 0.58));
+    // A pale, bright centre retains category colour while remaining readable over imagery.
+    const brighten=shader=>{shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>\ndiffuseColor.rgb=mix(diffuseColor.rgb,vec3(1.0),.38)*1.35;');};
+    this.activePoints = new THREE.Points(new THREE.BufferGeometry(), material(3.3, 1));
+    this.debrisPoints = new THREE.Points(new THREE.BufferGeometry(), material(2.0, 0.9));
+    this.activePoints.material.onBeforeCompile=brighten;this.debrisPoints.material.onBeforeCompile=brighten;
     this.activePoints.renderOrder = 8;
     this.activePoints.userData.catalog = true;
     this.debrisPoints.renderOrder = 7;

@@ -122,7 +122,7 @@ export const LIBRARY_ENTRIES = [
     id: 'starlink', title: 'Starlink', subtitle: 'Constelación de internet · SpaceX', category: 'constellation', accent: '#6ee7ff',
     keywords: ['STARLINK'], searchName: 'STARLINK',
     short: 'Constelación comercial de comunicaciones en órbita baja, desplegada en múltiples planos, generaciones e inclinaciones.',
-    body: 'Starlink es una megaconstelación de satélites de comunicaciones en LEO. ScanSat identifica cada unidad por su número NORAD y conserva sus diferencias reales de altitud, inclinación, época orbital y plano visible.',
+    body: 'Starlink es una megaconstelación de satélites de comunicaciones en LEO. Universal identifica cada unidad por su número NORAD y conserva sus diferencias reales de altitud, inclinación, época orbital y plano visible.',
     facts: [['Régimen', 'LEO'], ['Función', 'Internet de banda ancha'], ['Operador', 'SpaceX'], ['Estado', 'Despliegue continuo']],
   },
   {
@@ -150,7 +150,7 @@ export const LIBRARY_ENTRIES = [
     id: 'guowang', title: 'Guowang', subtitle: 'Red satelital nacional china', category: 'constellation', accent: '#e8d06c',
     keywords: ['GUOWANG', 'HULIANWANG'], searchName: 'GUOWANG',
     short: 'Arquitectura china de comunicaciones de gran escala, catalogada por sus identificadores públicos.',
-    body: 'ScanSat agrupa bajo Guowang los nombres públicos asociados a esta red. Las unidades sin denominación estable permanecen visibles como otros objetos activos.',
+    body: 'Universal agrupa bajo Guowang los nombres públicos asociados a esta red. Las unidades sin denominación estable permanecen visibles como otros objetos activos.',
     facts: [['Régimen', 'LEO'], ['Función', 'Comunicaciones'], ['País', 'China'], ['Fuente', 'Catálogo público']],
   },
   {
@@ -171,14 +171,14 @@ export const LIBRARY_ENTRIES = [
     id: 'glonass', title: 'GLONASS', subtitle: 'Sistema global ruso', category: 'navigation', accent: '#ff8175',
     keywords: ['GLONASS'], searchName: 'GLONASS',
     short: 'Constelación rusa de navegación global desplegada en órbita media.',
-    body: 'GLONASS utiliza tres planos orbitales y satélites de varias generaciones. ScanSat conserva el nombre COSMOS cuando forma parte de la designación pública.',
+    body: 'GLONASS utiliza tres planos orbitales y satélites de varias generaciones. Universal conserva el nombre COSMOS cuando forma parte de la designación pública.',
     facts: [['Régimen', 'MEO'], ['Función', 'Navegación'], ['País', 'Rusia'], ['Cobertura', 'Global']],
   },
   {
     id: 'beidou', title: 'BeiDou', subtitle: 'Sistema de navegación chino', category: 'navigation', accent: '#ffcf62',
     keywords: ['BEIDOU', 'COMPASS'], searchName: 'BEIDOU',
     short: 'Arquitectura de navegación que combina satélites MEO, GEO e inclinados geosíncronos.',
-    body: 'BeiDou destaca por mezclar regímenes orbitales. En ScanSat sus unidades pueden aparecer simultáneamente en los filtros MEO, GEO y HEO según sus elementos orbitales.',
+    body: 'BeiDou destaca por mezclar regímenes orbitales. En Universal sus unidades pueden aparecer simultáneamente en los filtros MEO, GEO y HEO según sus elementos orbitales.',
     facts: [['Régimen', 'MEO / GEO / IGSO'], ['Función', 'Navegación'], ['País', 'China'], ['Cobertura', 'Global']],
   },
   {
@@ -220,7 +220,7 @@ export const LIBRARY_ENTRIES = [
     id: 'landsat', title: 'Landsat', subtitle: 'Archivo terrestre de larga duración', category: 'weather', accent: '#9ee7ac',
     keywords: ['LANDSAT'], searchName: 'LANDSAT',
     short: 'Programa de observación de la superficie terrestre con continuidad histórica desde 1972.',
-    body: 'Los Landsat activos recorren órbitas heliosíncronas para obtener iluminación comparable. ScanSat permite ver su geometría casi polar y distinguirlos del tráfico de comunicaciones.',
+    body: 'Los Landsat activos recorren órbitas heliosíncronas para obtener iluminación comparable. Universal permite ver su geometría casi polar y distinguirlos del tráfico de comunicaciones.',
     facts: [['Régimen', 'LEO heliosíncrona'], ['Función', 'Observación terrestre'], ['Entidades', 'NASA / USGS'], ['Inicio del programa', '1972']],
   },
   {
@@ -248,14 +248,14 @@ export const LIBRARY_ENTRIES = [
     id: 'voyager-1', title: 'Voyager 1', subtitle: 'Misión interestelar', category: 'deep-space', accent: '#ffd47d',
     keywords: ['VOYAGER 1'], searchName: null,
     short: 'Sonda de 1977 que continúa alejándose del Sol más allá de la heliosfera.',
-    body: 'Voyager 1 no se representa con SGP4. ScanSat obtiene su vector heliocéntrico de NASA/JPL Horizons y conserva su enorme distancia en kilómetros físicos mediante un origen flotante alrededor del foco.',
+    body: 'Voyager 1 no se representa con SGP4. Universal obtiene su vector heliocéntrico de NASA/JPL Horizons y conserva su enorme distancia en kilómetros físicos mediante un origen flotante alrededor del foco.',
     facts: [['Destino', 'Medio interestelar'], ['Agencia', 'NASA / JPL'], ['Lanzamiento', '1977'], ['Efeméride', 'JPL Horizons']],
   },
   {
     id: 'voyager-2', title: 'Voyager 2', subtitle: 'Misión interestelar', category: 'deep-space', accent: '#ffb667',
     keywords: ['VOYAGER 2'], searchName: null,
     short: 'Única sonda que visitó Urano y Neptuno; continúa su trayectoria interestelar.',
-    body: 'La trayectoria real de Voyager 2 exige efemérides de espacio profundo. ScanSat utiliza un vector J2000 de NASA/JPL Horizons y la separa claramente del catálogo SGP4 terrestre.',
+    body: 'La trayectoria real de Voyager 2 exige efemérides de espacio profundo. Universal utiliza un vector J2000 de NASA/JPL Horizons y la separa claramente del catálogo SGP4 terrestre.',
     facts: [['Destino', 'Medio interestelar'], ['Agencia', 'NASA / JPL'], ['Lanzamiento', '1977'], ['Efeméride', 'JPL Horizons']],
   },
   {
@@ -283,7 +283,7 @@ export const LIBRARY_ENTRIES = [
     id: 'roadster', title: 'Tesla Roadster', subtitle: 'Carga de demostración Falcon Heavy', category: 'deep-space', accent: '#ef6b6b',
     keywords: ['ROADSTER'], searchName: null,
     short: 'Carga de demostración situada en una órbita heliocéntrica que cruza aproximadamente la región orbital de Marte.',
-    body: 'El Roadster no orbita entre la Tierra y Marte como un satélite de ambos cuerpos: sigue su propia órbita alrededor del Sol. ScanSat usa la efeméride del objetivo SpaceX Roadster de JPL Horizons.',
+    body: 'El Roadster no orbita entre la Tierra y Marte como un satélite de ambos cuerpos: sigue su propia órbita alrededor del Sol. Universal usa la efeméride del objetivo SpaceX Roadster de JPL Horizons.',
     facts: [['Centro orbital', 'Sol'], ['Lanzamiento', '2018'], ['Vehículo', 'Falcon Heavy'], ['Efeméride', 'JPL Horizons']],
   },
 ];

@@ -18,17 +18,17 @@ export class DensityVolume {
      vec3 a=(-vec3(1.0)-eye)*inv,b=(vec3(1.0)-eye)*inv;
      vec3 lo=min(a,b),hi=max(a,b);float begin=max(0.0,max(lo.x,max(lo.y,lo.z))),end=min(hi.x,min(hi.y,hi.z));
      if(end<=begin)discard;
-     float stepLength=(end-begin)/96.0;
+     float stepLength=(end-begin)/192.0;
      float jitter=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);
      vec4 sum=vec4(0.0);
-     for(int i=0;i<96;i++){
+     for(int i=0;i<192;i++){
       vec3 p=eye+ray*(begin+(float(i)+jitter)*stepLength);
       float window=1.0-smoothstep(.57,1.0,length(p));
       float density=texture(field,p*.5+.5).r;
       float emission=pow(max(0.0,density-.035),1.7);
       vec3 color=mix(vec3(.23,.055,.46),vec3(.69,.30,.70),smoothstep(.10,.42,density));
       color=mix(color,vec3(1.0,.72,.24),smoothstep(.40,.78,density));
-      float alpha=1.0-exp(-emission*window*stepLength*9.0*strength);
+      float alpha=1.0-exp(-emission*window*stepLength*12.0*strength);
       sum.rgb+=(1.0-sum.a)*alpha*color;sum.a+=(1.0-sum.a)*alpha;
       if(sum.a>.98)break;
      }
@@ -40,7 +40,7 @@ export class DensityVolume {
  update(origin,distance,enabled){
   const ly=distance/LY_KM,s=(a,b,x)=>THREE.MathUtils.smoothstep(x,a,b);
   const opacity=this.outer?s(3e9,12e9,ly):s(6e8,2.5e9,ly)*(1-s(5e9,14e9,ly));
-  this.uniforms.strength.value=opacity*1.6;this.node.visible=enabled&&opacity>.001;
+  this.uniforms.strength.value=opacity*1.9;this.node.visible=enabled&&opacity>.001;
   this.node.position.copy(origin).negate();this.uniforms.eye.value.copy(this.owner.camera.position).add(origin).divideScalar(this.radius);
  }
 }

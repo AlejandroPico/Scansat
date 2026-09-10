@@ -2,12 +2,12 @@
   "version": 1,
   "local": {
     "file": "local-volume.bin.gz",
-    "size": 128,
+    "size": 192,
     "sideMpc": 2000
   },
   "outer": {
     "file": "cosmic-volume.bin.gz",
-    "size": 192,
+    "size": 256,
     "radiusLy": 46500000000.0
   },
   "encoding": "uint8 log(1+density)/log(25), x fastest for GPU; isotropic generated field",

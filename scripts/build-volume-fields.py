@@ -7,7 +7,7 @@ import gzip,json
 import numpy as np
 from scipy.ndimage import gaussian_filter
 out=Path(__file__).resolve().parents[1]/'public/data/cosmography'
-for name,n,seed,turnover in [('local-volume',128,941107,9),('cosmic-volume',192,420601,22)]:
+for name,n,seed,turnover in [('local-volume',192,941107,9),('cosmic-volume',256,420601,22)]:
  rng=np.random.default_rng(seed);white=rng.normal(size=(n,n,n));wave=np.fft.rfftn(white)
  k=np.fft.fftfreq(n)*n;kz=np.fft.rfftfreq(n)*n
  axes=np.meshgrid(k,k,kz,indexing='ij');k2=sum(a*a for a in axes)
@@ -19,6 +19,10 @@ for name,n,seed,turnover in [('local-volume',128,941107,9),('cosmic-volume',192,
  density=gaussian_filter(density,.7,mode='wrap')
  # Log encoding preserves tenuous inter-filament matter as well as dense knots.
  encoded=np.round(np.clip(np.log1p(density)/np.log(25),0,1)*255).astype('u1')
- (out/(name+'.bin.gz')).write_bytes(gzip.compress(encoded.tobytes(),mtime=0))
+ packed=gzip.compress(encoded.tobytes(),mtime=0)
+ if name=='cosmic-volume':
+  (out/'cosmic-volume.part1.bin.gz').write_bytes(packed[:8000000])
+  (out/'cosmic-volume.part2.bin.gz').write_bytes(packed[8000000:])
+ else:(out/(name+'.bin.gz')).write_bytes(packed)
  print(name,n,encoded.min(),encoded.max())
-(out/'volume-metadata.json').write_text(json.dumps({'version':1,'local':{'file':'local-volume.bin.gz','size':128,'sideMpc':2000},'outer':{'file':'cosmic-volume.bin.gz','size':192,'radiusLy':46.5e9},'encoding':'uint8 log(1+density)/log(25), x fastest for GPU; isotropic generated field','model':'Pedagogical Zel’dovich density; independent coarse outer realization; not a fitted simulation, complete measured map, or light cone.','display':'Continuous volume integration; violet/gold are false-colour density. Soft horizon window and overlapping level-of-detail transitions. Outer grid does not resolve galaxy-scale filaments.'},indent=2)+'\n')
+(out/'volume-metadata.json').write_text(json.dumps({'version':1,'local':{'file':'local-volume.bin.gz','size':192,'sideMpc':2000},'outer':{'file':'cosmic-volume.bin.gz','size':256,'radiusLy':46.5e9},'encoding':'uint8 log(1+density)/log(25), x fastest for GPU; isotropic generated field','model':'Pedagogical Zel’dovich density; independent coarse outer realization; not a fitted simulation, complete measured map, or light cone.','display':'Continuous volume integration; violet/gold are false-colour density. Soft horizon window and overlapping level-of-detail transitions. Outer grid does not resolve galaxy-scale filaments.'},indent=2)+'\n')

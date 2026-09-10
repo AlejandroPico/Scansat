@@ -50,6 +50,7 @@ const objects = [
   ['great-attractor','Gran Atractor',16.25,-60.9,200e6,30e6,'structure','Región de concentración de masa asociada a Norma y a los flujos de galaxias locales. No es un objeto puntual ni un agujero negro que absorba el universo. Su distancia es aproximada.'],
   ['laniakea','Laniakea · Cosmicflows-4',263/15,-39,322.3e6,350e6,'structure','Cuenca de atracción reconstruida en Cosmicflows-4. La envolvente muestrea la cuenca 1 de la rejilla publicada por Dupuy y Courtois (2023); las curvas se integran en el campo de velocidades de Courtois et al. (2023). Las curvas doradas parten dentro de la cuenca y las azules fuera. Son direcciones de velocidad peculiar actual, no filamentos de materia ni trayectorias históricas. El marcador sitúa aproximadamente el atractor de la solución CF4, no el centro geométrico. La rejilla de velocidades tiene resolución de 15,625 Mpc/h: no resuelve movimientos individuales.'],
   ['shapley','Concentración de Shapley',13.5,-30,650e6,80e6,'structure','Concentración masiva de cúmulos que contribuye al campo gravitatorio a gran escala.'],
+  ['cmb','Fondo cósmico de microondas',0,0,0,45.5e9,'cmb','Radiación liberada unos 380.000 años después del Big Bang. La esfera representa nuestra superficie de última dispersión a unos 45.500 millones de años luz de distancia comóvil actual, dentro del horizonte observable. No es una pared ni una capa de galaxias: es una vista de una época temprana. Mapa observado WMAP de cinco años, con variaciones de temperatura en falso color y rango de ±200 μK.'],
   ['observable-universe','Universo observable',0,0,0,46.5e9,'universe','Volumen del que la luz ha podido alcanzarnos. Su radio comóvil actual es aproximadamente 46.500 millones de años luz. El borde no es una pared ni el límite de todo el universo. La red representa estadísticamente filamentos, nodos y vacíos; no reproduce las posiciones de todas las galaxias.'],
 ];
 export const COSMIC_OBJECTS = objects.map(([id,name,ra,dec,distanceLy,radiusLy,kind,summary])=>({
@@ -58,7 +59,7 @@ export const COSMIC_OBJECTS = objects.map(([id,name,ra,dec,distanceLy,radiusLy,k
   viewDistanceKm:radiusLy*LY_KM*4,
   color:kind==='galaxy'?'#cadbff':kind==='cluster'?'#ffd39a':'#ba9bff',
   source:'Referencia astronómica · geometría aproximada',
-  sourceUrl:id==='laniakea'?'https://arxiv.org/abs/2305.02339':['great-attractor','shapley'].includes(id)?'https://arxiv.org/abs/1409.0880':nasa,
+  sourceUrl:id==='cmb'?'https://lambda.gsfc.nasa.gov/product/wmap/dr4/sos/5year/':id==='laniakea'?'https://arxiv.org/abs/2305.02339':['great-attractor','shapley'].includes(id)?'https://arxiv.org/abs/1409.0880':nasa,
 }));
 export const SCALE_STOPS = [
   {name:'Tierra',id:'earth',km:26000}, {name:'Luna',id:'earth',km:1.2e6},
@@ -66,6 +67,7 @@ export const SCALE_STOPS = [
   {name:'Vía Láctea',id:'milky-way',km:200000*LY_KM},
   {name:'Grupo Local',id:'milky-way',km:8e6*LY_KM},
   {name:'Laniakea',id:'laniakea',km:900e6*LY_KM},
+  {name:'Fondo de microondas',id:'cmb',km:110e9*LY_KM},
   {name:'Universo',id:'observable-universe',km:120e9*LY_KM},
 ];
 export function segmentOccluded(camera, point, center, radius) {

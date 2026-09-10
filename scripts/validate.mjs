@@ -3,9 +3,9 @@ import { access, readFile, stat } from 'node:fs/promises';
 const required = [
   'index.html', 'favicon.svg', 'manifest.webmanifest', 'README.md', 'LICENSE',
   'src/app.js', 'src/scene.js', 'src/catalog.js', 'src/satellite-core.js', 'src/styles.css',
-  'src/density-volume.js','src/astronomy-photos.js','src/galactic-sectors.js','src/earth-tiles.js','src/navigation.js',
+  'src/cmb-scene.js','src/encyclopedia-media.js','public/encyclopedia/reference-cosmic-web.png','public/encyclopedia/reference-cluster.png','src/density-volume.js','src/astronomy-photos.js','src/galactic-sectors.js','src/earth-tiles.js','src/navigation.js',
   'src/cosmic-surveys.js', 'src/galaxy-model.js', 'public/data/cosmography/metadata.json', 'public/data/cosmography/density-metadata.json',
-  ...['sdss.bin.gz','2mrs.json.gz','flows.bin.gz','laniakea.bin.gz','density.bin.gz','outer-density.bin.gz','local-volume.bin.gz','cosmic-volume.bin.gz','volume-metadata.json'].map(x=>'public/data/cosmography/'+x),
+  ...['sdss.bin.gz','2mrs.json.gz','flows.bin.gz','laniakea.bin.gz','density.bin.gz','outer-density.bin.gz','local-volume.bin.gz','cosmic-volume.part1.bin.gz','cosmic-volume.part2.bin.gz','volume-metadata.json'].map(x=>'public/data/cosmography/'+x),
   'src/cosmic-data.js', 'src/cosmic-scene.js', 'src/encyclopedia.js', 'src/picking.js', 'src/shader-support.js',
   'public/data/stars.json', 'public/data/exploration.json', 'src/solar-data.js', 'public/data/active.json', 'public/data/metadata.json', 'public/data/spacecraft.json',
   'public/data/debris-1.json', 'public/data/debris-2.json', 'public/data/debris-3.json', 'public/data/debris-4.json',
@@ -21,9 +21,9 @@ const debrisPaths = Array.from({ length: 4 }, (_, index) => `public/data/debris-
 const debris = (await Promise.all(debrisPaths.map(async (path) => JSON.parse(await readFile(path, 'utf8'))))).flat();
 const spacecraft = JSON.parse(await readFile('public/data/spacecraft.json', 'utf8'));
 
-if (pkg.version !== '0.6.0') throw new Error('La versión de package.json no es 0.6.0.');
-if (!html.includes('0.6.0')) throw new Error('La versión visible no coincide.');
-if (!readme.includes('0.6.0')) throw new Error('README no documenta la versión actual.');
+if (pkg.version !== '0.7.0') throw new Error('La versión de package.json no es 0.7.0.');
+if (!html.includes('0.7.0')) throw new Error('La versión visible no coincide.');
+if (!readme.includes('0.7.0')) throw new Error('README no documenta la versión actual.');
 if (!Array.isArray(catalog) || catalog.length < 10) throw new Error('El catálogo orbital de respaldo está incompleto.');
 if (!Array.isArray(debris) || debris.length < 500) throw new Error('La instantánea de basura espacial está incompleta.');
 if ((metadata.activeCount ?? metadata.recordCount) !== catalog.length) throw new Error('El contador activo de metadata no coincide con el catálogo.');
@@ -34,4 +34,4 @@ for (const path of debrisPaths) {
   if ((await stat(path)).size > 700_000) throw new Error(`${path} supera el límite de 700 KB.`);
 }
 
-console.log(`Validación correcta: ScanSat ${pkg.version}, ${catalog.length} objetos activos, ${debris.length} fragmentos y ${spacecraft.objects.length} efemérides JPL.`);
+console.log(`Validación correcta: Universal ${pkg.version}, ${catalog.length} objetos activos, ${debris.length} fragmentos y ${spacecraft.objects.length} efemérides JPL.`);

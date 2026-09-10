@@ -3,9 +3,13 @@ import { DensityVolume, LOCAL_VOLUME_RADIUS } from './density-volume.js';
 import { equatorialPosition, PC_KM, LY_KM } from './cosmic-data.js';
 export const MPC_KM=PC_KM*1e6;
 export async function fetchPacked(name,json=false) {
- const response=await fetch(`${import.meta.env.BASE_URL}data/cosmography/${name}`);
- if(!response.ok)throw new Error(`${name}: HTTP ${response.status}`);
- const stream=response.body.pipeThrough(new DecompressionStream('gzip'));
+ const names=name==='cosmic-volume.bin.gz'?['cosmic-volume.part1.bin.gz','cosmic-volume.part2.bin.gz']:[name];
+ const chunks=await Promise.all(names.map(async file=>{
+  const response=await fetch(`${import.meta.env.BASE_URL}data/cosmography/${file}`);
+  if(!response.ok)throw new Error(`${file}: HTTP ${response.status}`);
+  return response.arrayBuffer();
+ }));
+ const stream=new Blob(chunks).stream().pipeThrough(new DecompressionStream('gzip'));
  const result=new Response(stream);
  return json?result.json():result.arrayBuffer();
 }
@@ -38,7 +42,7 @@ export class CosmicSurveys {
    const warm=new THREE.Color('#efd4ac'),blue=new THREE.Color('#c7d7e5');
    for(let i=0;i<catalog.count;i++) {
     const r=((Math.imul(i+17,1664525)>>>0)%65536)/65536;
-    const color=r>.6?blue:warm,brightness=.52+r*.44;
+    const color=r>.6?blue:warm,brightness=.8+r*.55;
     colors.set([color.r*brightness,color.g*brightness,color.b*brightness],i*3);
     shape.set([r*6.283185, .35+((i*71)%100)/155],i*2);
    }
@@ -47,9 +51,9 @@ export class CosmicSurveys {
    material.onBeforeCompile=shader=>{
     shader.uniforms.unitMpc=this.unitMpc;shader.uniforms.surveyFocal=this.focal;
     shader.vertexShader='uniform float unitMpc; uniform float surveyFocal; attribute vec2 galaxyShape; varying vec2 glyphShape;\n'+shader.vertexShader;
-    shader.vertexShader=shader.vertexShader.replace('gl_PointSize = size;',`glyphShape=galaxyShape; float mpc=max(.001,length(mvPosition.xyz)*unitMpc); gl_PointSize=clamp(.035/mpc*surveyFocal,1.4,28.0);`);
+    shader.vertexShader=shader.vertexShader.replace('gl_PointSize = size;',`glyphShape=galaxyShape; float mpc=max(.001,length(mvPosition.xyz)*unitMpc); gl_PointSize=clamp(.045/mpc*surveyFocal,2.1,32.0);`);
     shader.fragmentShader='varying vec2 glyphShape;\n'+shader.fragmentShader;
-    shader.fragmentShader=shader.fragmentShader.replace('#include <map_particle_fragment>',`vec2 p=(gl_PointCoord-.5)*2.0; float a=glyphShape.x; p=mat2(cos(a),-sin(a),sin(a),cos(a))*p; p.y/=glyphShape.y; float r=length(p); float halo=exp(-r*4.5); float core=exp(-r*r*65.0); diffuseColor.a*= (halo*.55+core*.45)*(1.0-smoothstep(.65,1.0,r)); if(diffuseColor.a<.005)discard;`);
+    shader.fragmentShader=shader.fragmentShader.replace('#include <map_particle_fragment>',`vec2 p=(gl_PointCoord-.5)*2.0; float a=glyphShape.x; p=mat2(cos(a),-sin(a),sin(a),cos(a))*p; p.y/=glyphShape.y; float r=length(p); float halo=exp(-r*4.5); float core=exp(-r*r*65.0); diffuseColor.a*= (halo*.70+core*.75)*(1.0-smoothstep(.65,1.0,r)); if(diffuseColor.a<.005)discard;`);
    };
    catalog.node=new THREE.Points(geometry,material);catalog.node.scale.setScalar(MPC_KM);catalog.node.visible=false;
    this.owner.scene.add(catalog.node);this.catalogs.push(catalog);this.states[kind]='ready';
@@ -73,7 +77,7 @@ export class CosmicSurveys {
   if(this.states.density!=='pending')return;this.states.density='loading';
   try {
    const results=await Promise.all(['local-volume.bin.gz','cosmic-volume.bin.gz'].map(x=>fetchPacked(x)));
-   this.volumes=[new DensityVolume(this.owner,results[0],128,LOCAL_VOLUME_RADIUS,false),new DensityVolume(this.owner,results[1],192,46.5e9*LY_KM,true)];
+   this.volumes=[new DensityVolume(this.owner,results[0],192,LOCAL_VOLUME_RADIUS,false),new DensityVolume(this.owner,results[1],256,46.5e9*LY_KM,true)];
    this.states.density='ready';
   }catch(error){this.states.density='error';console.error('Densidad cósmica',error);}
  }

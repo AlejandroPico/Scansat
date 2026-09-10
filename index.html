@@ -7,7 +7,7 @@
     <meta name="description" content="Explora desde la Tierra y sus satélites hasta las estrellas, galaxias y la red cósmica, con distancias físicas y fuentes identificadas." />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="./manifest.webmanifest" />
-    <title>ScanSat — Atlas del universo</title>
+    <title>Universal — Atlas del universo</title>
   </head>
   <body>
     <svg class="svg-sprite" aria-hidden="true">
@@ -61,7 +61,7 @@
           <button class="icon-button" id="library-button" aria-label="Abrir enciclopedia" title="Enciclopedia">
             <svg><use href="#i-book"/></svg>
           </button>
-          <button class="icon-button" id="about-button" aria-label="Acerca de ScanSat" title="Acerca de">
+          <button class="icon-button" id="about-button" aria-label="Acerca de Universal" title="Acerca de">
             <svg><use href="#i-info"/></svg>
           </button>
         </div>
@@ -108,6 +108,9 @@
               </div>
               <p id="evidence-note" class="catalog-note"></p><div class="filter-title"><span>Universo y navegación</span></div>
               <label class="switch-row"><span>Estrellas de catálogo HYG</span><input id="stars-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Fondo cósmico de microondas · WMAP</span><input id="cmb-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <button class="secondary-button" id="cmb-focus">Ver la última luz primordial</button>
+              <p class="catalog-note" id="cmb-status">WMAP · temperatura en falso color · ±200 μK. Visible al alejarse hasta la escala del horizonte.</p>
               <label class="switch-row"><span>Cielo fotográfico · ESO</span><input id="sky-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Población galáctica modelada</span><input id="population-toggle" type="checkbox" checked><span class="switch"></span></label>
               <p class="catalog-note">Para explorar la galaxia: arrastra con el botón derecho, o usa W/A/S/D y Q/E sobre el visor. Mayús acelera. Las estrellas modeladas se distinguen de HYG.</p>
@@ -222,18 +225,25 @@
 
     <dialog class="app-dialog library-dialog" id="library-dialog">
       <div class="dialog-shell">
-        <header><div><span class="dialog-kicker">ENCICLOPEDIA DEL UNIVERSO</span><h2>Enciclopedia ScanSat</h2><p>Cuerpos celestes, estrellas catalogadas, exploración espacial y grandes estructuras. Cada ficha explica sus datos y su representación.</p></div><button class="icon-button plain dialog-close" aria-label="Cerrar enciclopedia"><svg><use href="#i-close"/></svg></button></header>
-        <div class="library-toolbar"><label class="search-box"><svg><use href="#i-search"/></svg><input id="library-search" type="search" placeholder="Buscar en la enciclopedia…"></label><div class="library-tabs" id="library-tabs"></div></div>
-        <p class="library-result-count" id="library-result-count"></p><div class="library-content"><div class="library-grid" id="library-grid"></div><article class="library-article" id="library-article"><div class="empty-article"><svg><use href="#i-book"/></svg><p>Selecciona una ficha para ampliar la información.</p></div></article></div>
+        <header><div><span class="dialog-kicker">UNIVERSAL / CONOCIMIENTO</span><h2>Enciclopedia</h2></div><button class="icon-button plain dialog-close" aria-label="Cerrar enciclopedia"><svg><use href="#i-close"/></svg></button></header>
+        <div class="library-workspace">
+          <nav class="library-chapters" aria-label="Capítulos de la enciclopedia"><span class="section-kicker">EXPLORAR POR CAPÍTULOS</span><div class="library-tabs" id="library-tabs"></div></nav>
+          <section class="library-index" aria-label="Índice de artículos">
+            <div class="library-toolbar"><label class="search-box"><svg><use href="#i-search"/></svg><input id="library-search" type="search" placeholder="Nombre, tema, HIP, NORAD…" aria-label="Buscar artículos"></label>
+            <label class="library-filter"><span>Mostrar</span><select id="library-filter"><option value="all">Todas las fichas</option><option value="images">Con imágenes</option><option value="located">Localizables</option><option value="guides">Guías y métodos</option></select></label></div>
+            <p class="library-result-count" id="library-result-count" aria-live="polite"></p><div class="library-grid" id="library-grid"></div>
+          </section>
+          <article class="library-article" id="library-article" aria-label="Artículo seleccionado"></article>
+        </div>
       </div>
     </dialog>
 
     <dialog class="app-dialog about-dialog" id="about-dialog">
       <div class="dialog-shell compact">
-        <header><div><span class="dialog-kicker">ACERCA DEL PROYECTO</span><h2>ScanSat</h2></div><button class="icon-button plain dialog-close" aria-label="Cerrar acerca de"><svg><use href="#i-close"/></svg></button></header>
-        <div class="about-hero"><span class="about-mark"><span></span></span><div><strong>ScanSat · Atlas del universo</strong><small>Versión 0.6.0 · Alfa</small></div></div>
-        <p>ScanSat conecta la Tierra, los satélites, el sistema solar, las estrellas, las galaxias y el universo observable mediante una escala física común. Combina OMM/SGP4, JPL Horizons, 109.400 estrellas HYG y el archivo histórico GCAT. La cosmografía incorpora 431.263 registros SDSS/WWT, 43.380 registros 2MRS y las rejillas de velocidades y cuencas de Cosmicflows-4. La Vía Láctea y la densidad del volumen no cartografiado son modelos identificados. Los dos sondeos pueden contener galaxias en común; no constituyen un mapa observado completo.</p>
-        <div class="about-links"><a href="https://alejandropico.github.io/Portfolio/" target="_blank" rel="noreferrer">Portfolio <span>↗</span></a><a href="https://github.com/AlejandroPico/Scansat" target="_blank" rel="noreferrer">Repositorio <span>↗</span></a></div>
+        <header><div><span class="dialog-kicker">ACERCA DEL PROYECTO</span><h2>Universal</h2></div><button class="icon-button plain dialog-close" aria-label="Cerrar acerca de"><svg><use href="#i-close"/></svg></button></header>
+        <div class="about-hero"><img class="universal-mark" src="./favicon.svg" alt="" width="56" height="56"><div><strong>Universal · Atlas del universo</strong><small>Versión 0.7.0 · Alfa</small></div></div>
+        <p>Universal es un atlas interactivo para explorar el espacio y consultar su enciclopedia ilustrada. Conecta la Tierra, los satélites, el sistema solar, las estrellas, las galaxias y el universo observable mediante una escala física común. Combina OMM/SGP4, JPL Horizons, 109.400 estrellas HYG y el archivo histórico GCAT. La cosmografía incorpora 431.263 registros SDSS/WWT, 43.380 registros 2MRS y las rejillas de velocidades y cuencas de Cosmicflows-4. Incluye imágenes terrestres de detalle, fotografías ESO y DSS2, exploración galáctica y el fondo cósmico de microondas observado por WMAP. La Vía Láctea y la densidad del volumen no cartografiado son modelos identificados. Los dos sondeos pueden contener galaxias en común; no constituyen un mapa observado completo.</p>
+        <div class="about-links"><a href="https://alejandropico.github.io/Portfolio/" target="_blank" rel="noreferrer">Portfolio <span>↗</span></a><a href="https://github.com/AlejandroPico/Universal" target="_blank" rel="noreferrer">Repositorio <span>↗</span></a></div>
         <div class="credits"><strong>Datos y atribuciones</strong><p>Órbitas terrestres y basura: CelesTrak / 18 SDS. Efemérides: NASA/JPL Horizons. Tierra: NASA Blue/Black Marble. Luna: LROC/LOLA. Sol: STEREO y SDO/AIA. Otras texturas: NASA, JPL, USGS y NASA 3D Resources. Propagación: satellite.js. Fronteras: Natural Earth.</p><p>Los iconos conservan legibilidad en pantalla, pero cuerpos y distancias utilizan kilómetros físicos. Herramienta educativa; no apta para navegación ni operaciones espaciales.</p></div>
       <p class="about-data-credits">Datos estelares: <a href="https://github.com/astronexus/HYG-Database" target="_blank" rel="noreferrer">HYG v4.1 · David Nash · CC BY-SA 4.0</a>. Exploración: <a href="https://planet4589.org/space/gcat/" target="_blank" rel="noreferrer">GCAT · Jonathan McDowell · CC BY 4.0</a>. Mapas: NASA/GSFC y NASA 3D Resources.</p></div>
     </dialog>

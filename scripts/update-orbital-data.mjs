@@ -14,7 +14,7 @@ const feeds = [
 async function download(group) {
   const source = `https://celestrak.org/NORAD/elements/gp.php?GROUP=${group}&FORMAT=JSON`;
   const response = await fetch(source, {
-    headers: { 'user-agent': `ScanSat/${version} (+https://github.com/AlejandroPico/Scansat)` },
+    headers: { 'user-agent': `Universal/${version} (+https://github.com/AlejandroPico/Universal)` },
     signal: AbortSignal.timeout(120_000),
   });
   if (!response.ok) throw new Error(`CelesTrak respondió ${response.status} para ${group}.`);

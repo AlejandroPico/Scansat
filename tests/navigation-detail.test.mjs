@@ -41,8 +41,8 @@ test('sectores deterministas, diferenciados y explícitamente modelados',()=>{
 });
 test('volúmenes completos, sin cavidad central y con transición de escalas',async()=>{
  const owner={scene:new THREE.Scene(),camera:new THREE.PerspectiveCamera()};
- for(const [file,n,outer] of [['local-volume.bin.gz',128,false],['cosmic-volume.bin.gz',192,true]]){
-  const data=gunzipSync(await readFile('public/data/cosmography/'+file));assert.equal(data.length,n**3);
+ for(const [file,n,outer] of [['local-volume.bin.gz',192,false],['cosmic-volume.bin.gz',256,true]]){
+  const packed=file==='cosmic-volume.bin.gz'?Buffer.concat(await Promise.all(['cosmic-volume.part1.bin.gz','cosmic-volume.part2.bin.gz'].map(f=>readFile('public/data/cosmography/'+f)))):await readFile('public/data/cosmography/'+file);const data=gunzipSync(packed);assert.equal(data.length,n**3);
   let filled=0;for(const v of data)if(v)filled++;assert.ok(filled/data.length>.8);
   const volume=new DensityVolume(owner,data,n,outer?46.5e9*LY_KM:LOCAL_VOLUME_RADIUS,outer);
   volume.update(new THREE.Vector3(),30e9*LY_KM,true);assert.equal(volume.node.visible,outer);

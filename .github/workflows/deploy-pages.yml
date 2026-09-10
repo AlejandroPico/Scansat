@@ -1,4 +1,4 @@
-name: Deploy ScanSat to GitHub Pages
+name: Deploy Universal to GitHub Pages
 
 on:
   push:

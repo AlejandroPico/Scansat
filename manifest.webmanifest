@@ -1,10 +1,16 @@
 {
-  "name": "ScanSat — Atlas del universo",
-  "short_name": "ScanSat",
-  "description": "Exploración a escala física desde satélites terrestres hasta la red cósmica.",
+  "name": "Universal — Atlas del universo",
+  "short_name": "Universal",
+  "description": "Atlas interactivo del universo: Tierra, satélites, estrellas, galaxias, cosmología y enciclopedia ilustrada.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#06090d",
   "theme_color": "#06090d",
-  "icons": [{ "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
 }

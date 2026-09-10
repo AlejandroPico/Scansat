@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 
 const nasaRoot = 'https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/Images%20and%20Textures';
 const assets = [
+ ['public/textures/cmb-wmap-equirectangular.png','https://lambda.gsfc.nasa.gov/product/wmap/dr4/sos/5year/ilc/wmap_ilc_5yr_v3_200uK_RGB.png'],
   ['public/textures/milky-way-eso0932a.jpg','https://cdn.eso.org/images/large/eso0932a.jpg'],
   ['public/textures/andromeda-full-dss2.jpg','https://cdn.esahubble.org/archives/images/publicationjpg/heic1502b.jpg'],
   ['public/textures/phobos.jpg', `${nasaRoot}/Mars%20-%20Phobos/Mars%20-%20Phobos.jpg`],
@@ -40,7 +41,7 @@ for (const [relativePath, url] of assets) {
   } catch { /* El recurso todavía no existe. */ }
 
   const response = await fetch(url, {
-    headers: { 'user-agent': 'ScanSat/0.6.0 (+https://github.com/AlejandroPico/Scansat)' },
+    headers: { 'user-agent': 'Universal/0.7.0 (+https://github.com/AlejandroPico/Universal)' },
     signal: AbortSignal.timeout(120_000),
   });
   if (!response.ok) throw new Error(`No se pudo descargar ${url} (${response.status}).`);

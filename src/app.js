@@ -1,5 +1,6 @@
+import { mediaFor,evidenceFor } from './encyclopedia-media.js';
 import './styles.css';
-import { LY_KM, SCALE_STOPS } from './cosmic-data.js';
+import { LY_KM, SCALE_STOPS, COSMIC_OBJECTS } from './cosmic-data.js';
 import { makeEncyclopedia, entryFor, ENCYCLOPEDIA_CATEGORIES } from './encyclopedia.js';
 import { OrbitalScene } from './scene.js';
 import {
@@ -343,8 +344,9 @@ function updateStatus(status) {
   const credit=$('#map-credit');credit.hidden=!earth.group.visible;
   if(!credit.hidden)credit.innerHTML=earth.weather?`<a href="https://www.earthdata.nasa.gov/" target="_blank" rel="noreferrer">NASA GIBS / MODIS</a> · ${earth.date} · observación diaria`:'<a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9" target="_blank" rel="noreferrer">Esri World Imagery</a> · Esri, Vantor, Earthstar Geographics, GIS User Community';
   const photos=scene.cosmos.photos,photoCredit=$('#photo-credit');
-  photoCredit.hidden=!(photos.sky.visible||photos.andromeda.visible);
-  photoCredit.innerHTML=[photos.sky.visible?'<a href="https://www.eso.org/public/images/eso0932a/" target="_blank" rel="noreferrer">Cielo: ESO/S. Brunier · CC BY 4.0</a>':'',photos.andromeda.visible?'<a href="https://esahubble.org/images/heic1502b/" target="_blank" rel="noreferrer">M31: NASA, ESA, Digitized Sky Survey 2 · Davide De Martin · CC BY 4.0</a>':''].filter(Boolean).join(' · ');
+  photoCredit.hidden=!(photos.sky.visible||photos.andromeda.visible||scene.cosmos.cmb.node.visible);
+  photoCredit.innerHTML=[scene.cosmos.cmb.node.visible?'<a href="https://lambda.gsfc.nasa.gov/product/wmap/dr4/sos/5year/" target="_blank" rel="noreferrer">CMB: NASA / WMAP Science Team · falso color ±200 μK</a>':'',photos.sky.visible?'<a href="https://www.eso.org/public/images/eso0932a/" target="_blank" rel="noreferrer">Cielo: ESO/S. Brunier · CC BY 4.0</a>':'',photos.andromeda.visible?'<a href="https://esahubble.org/images/heic1502b/" target="_blank" rel="noreferrer">M31: NASA, ESA, Digitized Sky Survey 2 · Davide De Martin · CC BY 4.0</a>':''].filter(Boolean).join(' · ');
+  $('#cmb-status').textContent=scene.cosmos.cmb.error?'No se pudo cargar WMAP; recarga para reintentar.':'WMAP · variaciones de temperatura ±200 μK · radio comóvil aproximado 45.500 millones de años luz';
   const surveys=scene.cosmos.surveys;
   const catalogCount=surveys.catalogs.reduce((sum,cat)=>sum+cat.count,0);
   const loading=Object.values(surveys.states).includes('loading');
@@ -370,28 +372,30 @@ function renderLibrary() {
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = category.label;
-    button.classList.toggle('active', state.libraryCategory === category.id);
-    button.addEventListener('click', () => { state.libraryCategory = category.id; renderLibrary(); });
+    button.classList.toggle('active', state.libraryCategory === category.id);button.setAttribute('aria-pressed',String(state.libraryCategory===category.id));
+    button.addEventListener('click', () => { state.libraryCategory = category.id; renderLibrary();if(state.libraryEntries.length)showLibraryArticle(state.libraryEntries[0]);else $('#library-article').innerHTML='<p>No hay artículos en esta selección.</p>'; });
     return button;
   }));
   const query = normalize($('#library-search').value.trim());
   const candidates = [...encyclopedia];
   if(query && ['all','galaxies'].includes(state.libraryCategory)) candidates.push(...scene.cosmos.surveys.search(query,60).map(entryFor));
   if (state.libraryCategory === 'stars' || (query && state.libraryCategory === 'all')) {
-    const stars = scene.cosmos.stars.filter(item=>!query || normalize(`${escapeHTML(item.name)} ${item.id}`).includes(query));
+    const stars = scene.cosmos.stars.filter(item=>!query || normalize(`${item.name} ${item.id} ${item.aliases||''}`).includes(query));
     candidates.push(...stars.slice(0,120).map(entryFor));
   }
-  if(query && ['all','navigation'].includes(state.libraryCategory)) candidates.push(...state.records.filter(item=>normalize(`${escapeHTML(item.name)} ${item.id}`).includes(query)).slice(0,60).map(item=>findLibraryEntry(item)));
-  const entries = candidates.filter((entry) => (state.libraryCategory === 'all' || entry.category === state.libraryCategory)
+  if(query && ['all','constellation','navigation','science','weather','station'].includes(state.libraryCategory)) candidates.push(...state.records.filter(item=>normalize(`${item.name} ${item.id} ${item.aliases||''}`).includes(query)).slice(0,60).map(item=>findLibraryEntry(item)));
+  const filter=$('#library-filter').value;
+  const entries = [...new Map(candidates.map(e=>[e.id,e])).values()].filter(entry=>filter==='all'||(filter==='images'&&mediaFor(entry).length)||(filter==='located'&&!entry.noLocation)||(filter==='guides'&&entry.category==='methods')).filter((entry) => (state.libraryCategory === 'all' || entry.category === state.libraryCategory)
     && (!query || normalize(`${entry.id} ${escapeHTML(entry.title)} ${escapeHTML(entry.subtitle)} ${entry.short}`).includes(query)));
-  $('#library-result-count').textContent = `${entries.length} fichas en esta selección · ${scene.cosmos.stars.length.toLocaleString('es-ES')} estrellas consultables por nombre o HIP · hasta 120 resultados estelares`;
+  state.libraryEntries=entries;
+  $('#library-result-count').textContent = `${entries.length} artículos · HYG: hasta 120 coincidencias por búsqueda`;
   $('#library-grid').replaceChildren(...entries.map((entry) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'library-card';
     button.classList.toggle('active', state.librarySelected?.id === entry.id);
     button.style.setProperty('--entry-accent', entry.accent);
-    button.innerHTML = `<span class="entry-symbol"><i></i><i></i></span><span><strong>${escapeHTML(entry.title)}</strong><small>${escapeHTML(entry.subtitle)}</small></span><svg><use href="#i-chevron"/></svg>`;
+    button.innerHTML = `<span class="entry-index">${String(entries.indexOf(entry)+1).padStart(2,'0')}</span><span><small class="entry-kind">${evidenceFor(entry)}</small><strong>${escapeHTML(entry.title)}</strong><small>${escapeHTML(entry.subtitle)}</small></span>`;
     button.addEventListener('click', () => showLibraryArticle(entry));
     return button;
   }));
@@ -403,14 +407,28 @@ function showLibraryArticle(entry) {
   renderLibrary();
   const article = $('#library-article');
   article.style.setProperty('--entry-accent', entry.accent);
+  const media=mediaFor(entry),category=ENCYCLOPEDIA_CATEGORIES.find(c=>c.id===entry.category)?.label||entry.category;
+  const figures=media.map((m,i)=>`<figure ${i?'hidden':''} data-figure="${i}"><img src="${import.meta.env.BASE_URL}${m.file}" alt="${escapeHTML(m.caption)}" loading="lazy"><figcaption>${escapeHTML(m.caption)}<small>${m.url?`<a href="${escapeHTML(m.url)}" target="_blank" rel="noreferrer">${escapeHTML(m.credit)} ↗</a>`:escapeHTML(m.credit)}</small></figcaption></figure>`).join('');
   article.innerHTML = `
-    <div class="article-visual"><span class="orbital-glyph"><i></i><i></i><b></b></span><span>${entry.category.replace('-', ' ').toUpperCase()}</span></div>
-    <span class="dialog-kicker">ENCICLOPEDIA</span><h3>${escapeHTML(entry.title)}</h3>
-    <p class="article-subtitle">${escapeHTML(entry.subtitle)}</p><p>${escapeHTML(entry.body)}</p>
-    <dl>${entry.facts.map(([term, value]) => `<div><dt>${escapeHTML(term)}</dt><dd>${escapeHTML(value)}</dd></div>`).join('')}</dl>
-    <p class="article-source"><a href="${escapeHTML(entry.sourceUrl)}" target="_blank" rel="noreferrer">Consultar fuente ↗</a></p><button class="primary-button locate-entry" ${entry.noLocation ? 'hidden' : ''}>${icon('target')} Localizar en la escena</button>`;
+    <div class="article-heading"><span class="dialog-kicker">${escapeHTML(category)} / ${evidenceFor(entry)}</span><h3>${escapeHTML(entry.title)}</h3><p class="article-subtitle">${escapeHTML(entry.subtitle)}</p></div>
+    <div class="article-tabs" role="tablist" aria-label="Secciones del artículo"><button role="tab" aria-selected="true" data-article-tab="overview">Visión general</button><button role="tab" aria-selected="false" data-article-tab="data">Datos y escala</button><button role="tab" aria-selected="false" data-article-tab="sources">Fuentes</button></div>
+    <section data-article-section="overview"><div class="article-gallery">${figures}${media.length>1?`<div class="gallery-selector">${media.map((m,i)=>`<button aria-label="Ver imagen ${i+1}" aria-pressed="${i===0}" data-image="${i}">${i+1}</button>`).join('')}</div>`:''}</div><h4>Qué es y cómo se representa</h4><p>${escapeHTML(entry.body)}</p></section>
+    <section data-article-section="data" hidden><h4>Datos de referencia</h4><dl>${entry.facts.map(([term,value])=>`<div><dt>${escapeHTML(term)}</dt><dd>${escapeHTML(value)}</dd></div>`).join('')}</dl>${entry.facts.length?'':'<p>Esta ficha es descriptiva; no incluye medidas numéricas verificadas.</p>'}<p>Los marcadores ayudan a localizar objetos. Su tamaño en pantalla no es su diámetro físico.</p></section>
+    <section data-article-section="sources" hidden><h4>Procedencia y lectura adicional</h4><p class="article-source"><a href="${escapeHTML(entry.sourceUrl)}" target="_blank" rel="noreferrer">Consultar la fuente de la ficha ↗</a></p>${media.map(m=>`<p>${escapeHTML(m.credit)}${m.url?` · <a href="${escapeHTML(m.url)}" target="_blank" rel="noreferrer">Ver recurso original ↗</a>`:''}</p>`).join('')}<p>Las imágenes de observación, los mapas en falso color y las reconstrucciones se describen por separado en sus pies de imagen.</p></section>
+    <div class="article-actions"><button class="primary-button locate-entry" ${entry.noLocation?'hidden':''}>${icon('target')} Localizar en el universo</button><button class="secondary-button article-related">Más de este capítulo</button></div>`;
+  $$('[data-article-tab]',article).forEach(button=>button.addEventListener('click',()=>{
+    $$('[data-article-tab]',article).forEach(b=>b.setAttribute('aria-selected',String(b===button)));
+    $$('[data-article-section]',article).forEach(section=>section.hidden=section.dataset.articleSection!==button.dataset.articleTab);
+  }));
+  $$('[data-image]',article).forEach(button=>button.addEventListener('click',()=>{
+    $$('[data-figure]',article).forEach(figure=>figure.hidden=figure.dataset.figure!==button.dataset.image);
+    $$('[data-image]',article).forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+  }));
+  $('.article-related',article).addEventListener('click',()=>{state.libraryCategory=entry.category;$('#library-search').value='';$('#library-filter').value='all';renderLibrary();});
+  article.scrollTop=0;
   $('.locate-entry', article).addEventListener('click', () => {
     const target = entry.target;
+    if(target?.id==='cmb'){scene.cosmos.layers.cmb=true;$('#cmb-toggle').checked=true;}
     const found = target ? (scene.focusItem(target) ? target : null) : scene.selectByName(entry.searchName || entry.id, true);
     if (found) { $('#library-dialog').close(); showDetail(found); }
     else toast('Este objeto no figura en la instantánea o efeméride actual.', 'warning');
@@ -420,7 +438,7 @@ function showLibraryArticle(entry) {
 function openLibrary(entry = null) {
   const dialog = $('#library-dialog');
   if (!dialog.open) dialog.showModal();
-  if (entry) showLibraryArticle(entry); else renderLibrary();
+  showLibraryArticle(entry||state.librarySelected||encyclopedia.find(e=>e.id==='atlas-guide')||encyclopedia[0]);
 }
 
 function closeOverlays() {
@@ -465,7 +483,7 @@ function themeForHour() {
 
 function applyTheme(choice) {
   document.documentElement.dataset.theme = choice === 'auto' ? themeForHour() : choice;
-  localStorage.setItem('scansat-theme', choice);
+  localStorage.setItem('universal-theme', choice);
   $$('#theme-menu button').forEach((button) => button.classList.toggle('active', button.dataset.themeChoice === choice));
   $('#theme-icon-use').setAttribute('href', `#i-${THEME_ICONS[choice] || 'auto'}`);
   $('#theme-button').setAttribute('title', `Tema: ${choice === 'auto' ? 'automático' : choice}`);
@@ -513,7 +531,7 @@ function setSimulationInstant(date, { pause = true } = {}) {
 }
 
 function bindInterface() {
-  for(const layer of ['stars','galaxies','structure','labels','sdss','twoMrs','flows','sky','population']) $(`#${layer}-toggle`).addEventListener('change',event=>{
+  for(const layer of ['stars','galaxies','structure','labels','sdss','twoMrs','flows','sky','population','cmb']) $(`#${layer}-toggle`).addEventListener('change',event=>{
     scene.cosmos.layers[layer]=event.target.checked;
     if(layer==='labels')scene.showLabels=event.target.checked;
   });
@@ -522,6 +540,7 @@ function bindInterface() {
   });
   $('#earth-detail-toggle').addEventListener('change',e=>{scene.earthTiles.enabled=e.target.checked;});
   $('#earth-weather-toggle').addEventListener('change',e=>{scene.earthTiles.weather=e.target.checked;});
+  $('#cmb-focus').addEventListener('click',()=>{scene.cosmos.layers.cmb=true;$('#cmb-toggle').checked=true;scene.focusItem(COSMIC_OBJECTS.find(x=>x.id==='cmb'));closeUtilityPanel();});
   $('#components-toggle').addEventListener('change',event=>{scene.showComponents=event.target.checked;});
   $('#star-magnitude').addEventListener('input',event=>{scene.cosmos.magnitudeLimit.value=Number(event.target.value);$('#star-magnitude-value').textContent=event.target.value;});
   $('#planet-orbits-toggle').addEventListener('change',event=>{scene.showPlanetOrbits=event.target.checked;});
@@ -602,6 +621,7 @@ function bindInterface() {
   $('#about-button').addEventListener('click', () => { closeOverlays(); $('#about-dialog').showModal(); });
   $$('.dialog-close').forEach((button) => button.addEventListener('click', () => button.closest('dialog').close()));
   $$('.app-dialog').forEach((dialog) => dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); }));
+  $('#library-filter').addEventListener('change',renderLibrary);
   $('#library-search').addEventListener('input', renderLibrary);
   $('#theme-button').addEventListener('click', (event) => { event.stopPropagation(); const open=$('#theme-menu').hidden;closeOverlays();$('#theme-menu').hidden=!open; });
   $$('#theme-menu button').forEach((button) => button.addEventListener('click', () => applyTheme(button.dataset.themeChoice)));
@@ -656,7 +676,7 @@ function updateClock() {
 bindInterface();
 renderLibrary();
 renderTargetMenu();
-applyTheme(localStorage.getItem('scansat-theme') || 'auto');
+applyTheme(localStorage.getItem('universal-theme') || 'auto');
 initializeCatalog();
 fetch(`${import.meta.env.BASE_URL}data/exploration.json`).then(r=>{if(!r.ok)throw new Error('GCAT no disponible');return r.json();}).then(data=>{
   scene.setExplorationData(data);
