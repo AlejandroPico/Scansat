@@ -25,8 +25,10 @@ export function scaleLevel(km) {
   if (ly < 8000) return {name:'Vecindad estelar', evidence:'HYG · distancias de catálogo; cobertura incompleta'};
   if (ly < 8e5) return {name:'Vía Láctea', evidence:'Estructura galáctica reconstruida + catálogo HYG'};
   if (ly < 2e7) return {name:'Grupo Local', evidence:'Galaxias de referencia · distancias aproximadas'};
-  if (ly < 1e9) return {name:'Laniakea y supercúmulos', evidence:'Referencias observadas + filamentos ilustrativos'};
-  return {name:'Universo observable', evidence:'Reconstrucción ilustrativa · distancias comóviles actuales'};
+  if (ly < 1e8) return {name:'Grupos de galaxias y Virgo', evidence:'2MRS · distancias de corrimiento al rojo aproximadas'};
+  if (ly < 1.8e9) return {name:'Laniakea y supercúmulos', evidence:'2MRS / SDSS · flujos CF4 reconstruidos, no filamentos luminosos'};
+  if (ly < 8e9) return {name:'Universo cartografiado', evidence:'Sondeo SDSS / WWT · cobertura incompleta; modelo de densidad al fondo'};
+  return {name:'Universo observable', evidence:'Densidad en falso color · modelo estadístico, no mapa observado completo'};
 }
 const nasa = 'https://science.nasa.gov/universe/galaxies/';
 const objects = [
@@ -41,11 +43,12 @@ const objects = [
   ['sculptor','Escultor · NGC 253',.793,-25.288,11.4e6,45000,'galaxy','Galaxia espiral cercana vista de canto, con intensa formación de estrellas en su región central.'],
   ['m87','Virgo A · M87',12.514,12.391,53.5e6,60000,'galaxy','Galaxia elíptica gigante del cúmulo de Virgo. Alberga M87*, el agujero negro cuya sombra obtuvo el Event Horizon Telescope.'],
   ['virgo','Cúmulo de Virgo',12.45,12.7,54e6,7.5e6,'cluster','Cúmulo de galaxias cercano dominado por galaxias gigantes como M87. No debe confundirse con una constelación de estrellas.'],
+  ['virgo-supercluster','Supercúmulo de Virgo',12.45,12.7,54e6,55e6,'structure','El supercúmulo local reúne el Grupo Local, el cúmulo de Virgo y otros grupos en una distribución aplanada. Es una parte del entorno de Laniakea. El cúmulo de Virgo y el supercúmulo de Virgo tienen extensiones y significado distintos; los puntos circundantes proceden de sondeos de galaxias.'],
   ['fornax','Cúmulo de Fornax',3.635,-35.45,62e6,3e6,'cluster','Cúmulo cercano de galaxias, más compacto y menos masivo que Virgo.'],
   ['coma','Cúmulo de Coma',12.99,27.98,321e6,10e6,'cluster','Rico cúmulo de galaxias usado para estudiar la materia oscura y la evolución galáctica.'],
   ['perseus','Cúmulo de Perseo',3.33,41.5,240e6,6e6,'cluster','Cúmulo masivo con gas caliente emisor de rayos X y actividad del agujero negro central de NGC 1275.'],
   ['great-attractor','Gran Atractor',16.25,-60.9,200e6,30e6,'structure','Región de concentración de masa asociada a Norma y a los flujos de galaxias locales. No es un objeto puntual ni un agujero negro que absorba el universo. Su distancia es aproximada.'],
-  ['laniakea','Laniakea',10.5,-46,160e6,260e6,'structure','Cuenca de atracción definida a partir de velocidades peculiares de galaxias, de unos 160 Mpc de extensión. No es un cúmulo virializado. El marcador es una referencia regional, no un centro físico exacto; la envolvente y filamentos son ilustrativos.'],
+  ['laniakea','Laniakea · Cosmicflows-4',263/15,-39,322.3e6,350e6,'structure','Cuenca de atracción reconstruida en Cosmicflows-4. La envolvente muestrea la cuenca 1 de la rejilla publicada por Dupuy y Courtois (2023); las curvas se integran en el campo de velocidades de Courtois et al. (2023). Las curvas doradas parten dentro de la cuenca y las azules fuera. Son direcciones de velocidad peculiar actual, no filamentos de materia ni trayectorias históricas. El marcador sitúa aproximadamente el atractor de la solución CF4, no el centro geométrico. La rejilla de velocidades tiene resolución de 15,625 Mpc/h: no resuelve movimientos individuales.'],
   ['shapley','Concentración de Shapley',13.5,-30,650e6,80e6,'structure','Concentración masiva de cúmulos que contribuye al campo gravitatorio a gran escala.'],
   ['observable-universe','Universo observable',0,0,0,46.5e9,'universe','Volumen del que la luz ha podido alcanzarnos. Su radio comóvil actual es aproximadamente 46.500 millones de años luz. El borde no es una pared ni el límite de todo el universo. La red representa estadísticamente filamentos, nodos y vacíos; no reproduce las posiciones de todas las galaxias.'],
 ];
@@ -55,7 +58,7 @@ export const COSMIC_OBJECTS = objects.map(([id,name,ra,dec,distanceLy,radiusLy,k
   viewDistanceKm:radiusLy*LY_KM*4,
   color:kind==='galaxy'?'#cadbff':kind==='cluster'?'#ffd39a':'#ba9bff',
   source:'Referencia astronómica · geometría aproximada',
-  sourceUrl:['laniakea','great-attractor','shapley'].includes(id)?'https://arxiv.org/abs/1409.0880':nasa,
+  sourceUrl:id==='laniakea'?'https://arxiv.org/abs/2305.02339':['great-attractor','shapley'].includes(id)?'https://arxiv.org/abs/1409.0880':nasa,
 }));
 export const SCALE_STOPS = [
   {name:'Tierra',id:'earth',km:26000}, {name:'Luna',id:'earth',km:1.2e6},

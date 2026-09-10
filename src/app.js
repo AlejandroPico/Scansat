@@ -1,5 +1,5 @@
 import './styles.css';
-import { LY_KM, SCALE_STOPS, OBSERVABLE_RADIUS_KM } from './cosmic-data.js';
+import { LY_KM, SCALE_STOPS } from './cosmic-data.js';
 import { makeEncyclopedia, entryFor, ENCYCLOPEDIA_CATEGORIES } from './encyclopedia.js';
 import { OrbitalScene } from './scene.js';
 import {
@@ -36,7 +36,7 @@ const MIN_SIMULATION_DATE = new Date('1957-10-04T00:00:00Z');
 const MAX_SIMULATION_DATE = new Date('2050-12-31T23:59:59Z');
 
 const scene = new OrbitalScene($('#scene-container'), {
-  onSelect: (item) => showDetail(item),
+  onSelect: (item) => item ? showDetail(item) : closeDetail(),
   onFocus: (item) => updateFocusUI(item),
   onFrame: (record, status) => {
     if (record) updateLiveMetrics(record);
@@ -231,6 +231,7 @@ function showDetail(item) {
 }
 
 function closeDetail() {
+  scene.clearSelection(false);
   state.selected = null;
   $('#detail-panel').classList.remove('open');
   $('#detail-panel').setAttribute('aria-hidden', 'true');
@@ -258,7 +259,7 @@ function searchCatalog(query) {
   const resultsBox = $('#search-results');
   const normalized = normalize(query.trim());
   if (!normalized) { resultsBox.hidden = true; return; }
-  const special = scene.getFocusTargets().filter((item) => normalize(`${escapeHTML(item.name)} ${item.id}`).includes(normalized)).slice(0, 5);
+  const special = [...scene.getFocusTargets().filter((item) => normalize(`${escapeHTML(item.name)} ${item.id}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,5)].slice(0, 5);
   const records = state.records.filter((record) => record.name.toUpperCase().includes(normalized)
     || record.id.includes(normalized) || record.internationalId.toUpperCase().includes(normalized)).slice(0, 9 - special.length);
   resultsBox.replaceChildren();
@@ -282,7 +283,7 @@ function searchCatalog(query) {
 
 function renderTargetMenu(query = '') {
   const normalized = normalize(query.trim());
-  const targets = scene.getFocusTargets().filter((item) => !normalized || normalize(`${escapeHTML(item.name)} ${item.id} ${item.kind}`).includes(normalized));
+  const targets = [...scene.getFocusTargets().filter((item) => !normalized || normalize(`${escapeHTML(item.name)} ${item.id} ${item.kind}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,18)];
   const records = normalized ? state.records.filter((record) => `${record.name} ${record.id}`.toUpperCase().includes(normalized)).slice(0, 12) : [];
   const container = $('#target-results');
   container.replaceChildren();
@@ -339,14 +340,17 @@ function updateStatus(status) {
   if (!status) return;
   const now = performance.now();
   if (now - lastStatusUpdate < 200) return;
+  const surveys=scene.cosmos.surveys;
+  const catalogCount=surveys.catalogs.reduce((sum,cat)=>sum+cat.count,0);
+  const loading=Object.values(surveys.states).includes('loading');
+  const failed=Object.entries(surveys.states).filter(([,state])=>state==='error').map(([name])=>name);
+  $('#galaxy-status').textContent=failed.length ? `No se pudo cargar: ${failed.join(', ')}. Recarga para reintentar.` : loading ? 'Cargando cosmografía…' : catalogCount ? `${catalogCount.toLocaleString('es-ES')} registros de galaxias cargados · seleccionables y consultables` : '2MRS + SDSS se cargan al alejarte o al abrir sus catálogos.';
   lastStatusUpdate = now;
   state.catalogReliable = status.catalogReliable !== false;
   $('#visible-count').textContent = formatNumber(status.visible);
   $('#scale-note').textContent = `${formatDistance(status.distanceKm)} al foco · escala física`;
   $('#view-eyebrow').textContent = status.scale.name.toUpperCase();
   $('#evidence-note').textContent = status.scale.evidence;
-  if(document.activeElement !== $('#universe-zoom')) $('#universe-zoom').value = Math.log10(status.distanceKm);
-  $$('#scale-stops button').forEach((button,i)=>button.classList.toggle('active',Math.abs(Math.log10(status.distanceKm / SCALE_STOPS[i].km)) < .5));
   const archiveStatus = $('#time-archive-status');
   archiveStatus.classList.toggle('warning', !state.catalogReliable);
   $('.status-dot', archiveStatus).className = `status-dot ${state.catalogReliable ? 'live' : ''}`;
@@ -367,6 +371,7 @@ function renderLibrary() {
   }));
   const query = normalize($('#library-search').value.trim());
   const candidates = [...encyclopedia];
+  if(query && ['all','galaxies'].includes(state.libraryCategory)) candidates.push(...scene.cosmos.surveys.search(query,60).map(entryFor));
   if (state.libraryCategory === 'stars' || (query && state.libraryCategory === 'all')) {
     const stars = scene.cosmos.stars.filter(item=>!query || normalize(`${escapeHTML(item.name)} ${item.id}`).includes(query));
     candidates.push(...stars.slice(0,120).map(entryFor));
@@ -496,15 +501,12 @@ function setSimulationInstant(date, { pause = true } = {}) {
 }
 
 function bindInterface() {
-  $('#scale-stops').replaceChildren(...SCALE_STOPS.map(stop=>{
-    const button=document.createElement('button');button.type='button';button.textContent=stop.name;
-    button.addEventListener('click',()=>scene.navigateScale(stop));return button;
-  }));
-  $('#universe-zoom').max=Math.log10(OBSERVABLE_RADIUS_KM*4);
-  $('#universe-zoom').addEventListener('input',event=>scene.setZoomDistance(10**Number(event.target.value)));
-  for(const layer of ['stars','galaxies','structure','labels']) $(`#${layer}-toggle`).addEventListener('change',event=>{
+  for(const layer of ['stars','galaxies','structure','labels','sdss','twoMrs','flows']) $(`#${layer}-toggle`).addEventListener('change',event=>{
     scene.cosmos.layers[layer]=event.target.checked;
     if(layer==='labels')scene.showLabels=event.target.checked;
+  });
+  $('#load-galaxy-catalogs').addEventListener('click',async()=>{
+    await Promise.all([scene.cosmos.surveys.loadCatalog('twoMrs'),scene.cosmos.surveys.loadCatalog('sdss')]);renderLibrary();renderTargetMenu($('#target-search').value);
   });
   $('#components-toggle').addEventListener('change',event=>{scene.showComponents=event.target.checked;});
   $('#star-magnitude').addEventListener('input',event=>{scene.cosmos.magnitudeLimit.value=Number(event.target.value);$('#star-magnitude-value').textContent=event.target.value;});

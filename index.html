@@ -109,10 +109,14 @@
               <div class="filter-title"><span>Universo y navegación</span></div>
               <label class="switch-row"><span>Estrellas de catálogo HYG</span><input id="stars-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Galaxias y Vía Láctea</span><input id="galaxies-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Red cósmica ilustrativa</span><input id="structure-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Galaxias cercanas · 2MRS</span><input id="twoMrs-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Galaxias del sondeo · SDSS</span><input id="sdss-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Flujos de Laniakea · CF4</span><input id="flows-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Densidad cósmica · modelo</span><input id="structure-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Etiquetas y localizadores</span><input id="labels-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Órbitas de planetas y lunas</span><input id="planet-orbits-toggle" type="checkbox"><span class="switch"></span></label>
-              <label class="time-field"><span>Magnitud estelar límite <output id="star-magnitude-value">7</output></span><input id="star-magnitude" type="range" min="3" max="14" step="0.5" value="7"></label><div class="filter-title"><span>Sistema solar</span></div>
+              <label class="switch-row"><span>Órbitas de planetas y lunas</span><input id="planet-orbits-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <p id="galaxy-status" class="catalog-note" aria-live="polite">2MRS + SDSS se cargan al alejarte.</p><button id="load-galaxy-catalogs" type="button" class="text-button">Cargar catálogos de galaxias para buscar</button>
+              <label class="time-field"><span>Magnitud estelar límite <output id="star-magnitude-value">8.5</output></span><input id="star-magnitude" type="range" min="3" max="14" step="0.5" value="8.5"></label><div class="filter-title"><span>Sistema solar</span></div>
               <label class="switch-row"><span>Atmósfera</span><input id="atmosphere-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Basura espacial</span><input id="debris-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Misiones y Lagrange</span><input id="missions-toggle" type="checkbox" checked><span class="switch"></span></label>
@@ -173,7 +177,6 @@
           <div class="scene-legend" id="scene-legend">
             <span><i class="leo"></i>LEO</span><span><i class="meo"></i>MEO</span><span><i class="geo"></i>GEO</span><span><i class="debris"></i>Basura</span><span><i class="mission"></i>Misión</span>
           </div>
-          <nav class="scale-navigation" aria-label="Viajar por el universo"><div id="scale-stops"></div><label class="zoom-control"><span>Acercar</span><input id="universe-zoom" type="range" min="3.81" max="24.25" step="0.005" value="4.42" aria-label="Distancia al foco, escala logarítmica"><span>Alejar</span></label></nav>
           <div class="scene-tools">
             <button class="tool-button" id="home-view" title="Volver a la Tierra" aria-label="Volver a la Tierra"><svg><use href="#i-target"/></svg></button>
             <button class="tool-button" id="solar-overview" title="Ir al Sol" aria-label="Ir al Sol"><svg><use href="#i-orbit"/></svg></button>
@@ -226,8 +229,8 @@
     <dialog class="app-dialog about-dialog" id="about-dialog">
       <div class="dialog-shell compact">
         <header><div><span class="dialog-kicker">ACERCA DEL PROYECTO</span><h2>ScanSat</h2></div><button class="icon-button plain dialog-close" aria-label="Cerrar acerca de"><svg><use href="#i-close"/></svg></button></header>
-        <div class="about-hero"><span class="about-mark"><span></span></span><div><strong>ScanSat · Atlas del universo</strong><small>Versión 0.4.0 · Alfa</small></div></div>
-        <p>ScanSat conecta la Tierra, los satélites, el sistema solar, las estrellas, las galaxias y el universo observable mediante una escala física común. Combina OMM/SGP4, JPL Horizons, 109.400 estrellas HYG y el archivo histórico GCAT. La Vía Láctea y la red cósmica incluyen reconstrucciones ilustrativas identificadas; no constituyen un mapa observado completo.</p>
+        <div class="about-hero"><span class="about-mark"><span></span></span><div><strong>ScanSat · Atlas del universo</strong><small>Versión 0.5.0 · Alfa</small></div></div>
+        <p>ScanSat conecta la Tierra, los satélites, el sistema solar, las estrellas, las galaxias y el universo observable mediante una escala física común. Combina OMM/SGP4, JPL Horizons, 109.400 estrellas HYG y el archivo histórico GCAT. La cosmografía incorpora 431.263 registros SDSS/WWT, 43.380 registros 2MRS y las rejillas de velocidades y cuencas de Cosmicflows-4. La Vía Láctea y la densidad del volumen no cartografiado son modelos identificados. Los dos sondeos pueden contener galaxias en común; no constituyen un mapa observado completo.</p>
         <div class="about-links"><a href="https://alejandropico.github.io/Portfolio/" target="_blank" rel="noreferrer">Portfolio <span>↗</span></a><a href="https://github.com/AlejandroPico/Scansat" target="_blank" rel="noreferrer">Repositorio <span>↗</span></a></div>
         <div class="credits"><strong>Datos y atribuciones</strong><p>Órbitas terrestres y basura: CelesTrak / 18 SDS. Efemérides: NASA/JPL Horizons. Tierra: NASA Blue/Black Marble. Luna: LROC/LOLA. Sol: STEREO y SDO/AIA. Otras texturas: NASA, JPL, USGS y NASA 3D Resources. Propagación: satellite.js. Fronteras: Natural Earth.</p><p>Los iconos conservan legibilidad en pantalla, pero cuerpos y distancias utilizan kilómetros físicos. Herramienta educativa; no apta para navegación ni operaciones espaciales.</p></div>
       <p class="about-data-credits">Datos estelares: <a href="https://github.com/astronexus/HYG-Database" target="_blank" rel="noreferrer">HYG v4.1 · David Nash · CC BY-SA 4.0</a>. Exploración: <a href="https://planet4589.org/space/gcat/" target="_blank" rel="noreferrer">GCAT · Jonathan McDowell · CC BY 4.0</a>. Mapas: NASA/GSFC y NASA 3D Resources.</p></div>

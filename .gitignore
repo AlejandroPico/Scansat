@@ -4,3 +4,6 @@ dist/
 .DS_Store
 public/textures/
 public/models/
+
+__pycache__/
+*.pyc

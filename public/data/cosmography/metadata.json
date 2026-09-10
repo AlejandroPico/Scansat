@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "retrieved": "2026-09-08",
+  "sdssCount": 431263,
+  "twoMrsCount": 43380,
+  "flowSegments": 204381,
+  "boundarySamples": 22000,
+  "sdss": {
+    "recordBytes": 25,
+    "layout": "uint64 SDSS id; float32 RA hours, Dec degrees, distance Mpc/h; uint8 WWT morphology bucket; float32 WWT display size. Little endian.",
+    "h": 0.73,
+    "source": "https://worldwidetelescope.org/wwtweb/catalog.aspx?Q=cosmosnewbin",
+    "credit": "Sloan Digital Sky Survey / WorldWide Telescope. Catalogue served by WWT; original survey selection retained."
+  },
+  "twoMrs": {
+    "columns": [
+      "2MASS ID",
+      "alternative name",
+      "RA hours",
+      "Dec degrees",
+      "comoving Mpc",
+      "barycentric cz km/s",
+      "Ks magnitude",
+      "ZCAT morphology",
+      "axis ratio"
+    ],
+    "H0": 73,
+    "OmegaM": 0.3,
+    "OmegaLambda": 0.7,
+    "selection": "cz > 600 km/s; no invented distance for missing or negative redshift. No peculiar-velocity correction. Named nearby galaxies are separate reference objects.",
+    "credit": "Huchra et al. 2012, ApJS 199,26 / CDS VizieR J/ApJS/199/26",
+    "source": "https://vizier.cds.unistra.fr/viz-bin/asu-tsv?-source=J/ApJS/199/26/table3&-out.all&-out.max=50000"
+  },
+  "flows": {
+    "credit": "Courtois et al. 2023 A&A 670 L15; Dupuy & Courtois 2023 A&A 678 A176 / Cosmicflows-4",
+    "source": "https://projets.ip2i.in2p3.fr/cosmicflows/",
+    "coordinateUnit": "Mpc, scene frame",
+    "h": 0.75,
+    "grid": "Ungrouped CF4, 64^3 velocity grid over 1000 Mpc/h; basin 1 from 128^3 watershed grid. XYZ velocity components, ZYX array axes.",
+    "integration": "RK2 normalized vector field; 2 Mpc/h step; up to 110 steps; gold seed inside Laniakea basin, blue outside. Curves are not galaxy trajectories or density filaments.",
+    "uncertainty": "Reconstructed, smoothed present-day peculiar velocity field; boundary is the 2023 watershed solution, not an exact material surface."
+  },
+  "sha256": {
+    "cosmos.bin": "633a528d47d837625d4b90223f296c04ac89607148df7dc3b6f76fc4811fa305",
+    "2mrs-full.tsv": "874629ea343941eff589c122f1da551e90e09a6ad42a132f5e8cbdac043746ac",
+    "cf-velocity-ungrouped.fits": "3c536f327dc844d97a3dceeafded1d26f4ffb1b7f9b995d93146bd3add576948",
+    "cf-basins.zip": "9056733ac715cb59622039703afeda096e88a54c6bb977d8c17166eb4ae1c5cc"
+  }
+}

@@ -8,7 +8,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { degreesLat, degreesLong, eciToGeodetic, gstime, propagate } from './satellite-core.js';
 import { geoEquirectangular, geoPath } from 'd3-geo';
 import { feature } from 'topojson-client';
-import countriesTopology from 'world-atlas/countries-110m.json';
+import countriesTopology from 'world-atlas/countries-110m.json' with { type: 'json' };
 import { EARTH_RADIUS_KM, GROUP_STYLES, ORBIT_STYLES, isCatalogDateReliable } from './catalog.js';
 import {
   AU_KM,
@@ -24,7 +24,7 @@ import {
   planetPositionAu,
 } from './solar-data.js';
 
-const BASE_URL = import.meta.env.BASE_URL;
+const BASE_URL = import.meta.env?.BASE_URL ?? "/";
 const OBLIQUITY = THREE.MathUtils.degToRad(23.43928);
 const X_AXIS = new THREE.Vector3(1, 0, 0);
 const PLANET_IDS = new Set(['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']);
@@ -332,7 +332,7 @@ export class OrbitalScene {
     this.renderCamera = this.camera.clone();
     this.renderUnit = 1;
     this.showLabels = true;
-    this.showPlanetOrbits = false;
+    this.showPlanetOrbits = true;
     this.createBodies();
     this.createPlanetOrbits();
     this.createCatalogPoints();
@@ -347,7 +347,7 @@ export class OrbitalScene {
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(container);
     this.resize();
-    this.animate();
+    requestAnimationFrame(() => this.animate());
   }
 
   createLights() {
@@ -700,6 +700,8 @@ export class OrbitalScene {
   focusBody(id, notify = true) {
     const body = this.bodyNodes.get(id);
     if (!body) return false;
+    this.drawSelectedOrbit(null);
+    this.cosmos.selectedItem=null;
     this.focus = { type: 'body', id };
     this.selected = body.surface.userData.item;
     this.updateWorld(this.simulationDate, true);
@@ -710,6 +712,7 @@ export class OrbitalScene {
 
   focusItem(item, notify = true) {
     if (!item) return false;
+    if (!item.satrec) this.drawSelectedOrbit(null);
     if (item.satrec && !this.catalogReliable) return false;
     if (this.bodyNodes.has(item.id)) return this.focusBody(item.id, notify);
     if (item.cosmic || item.satrec || item.kind === 'spacecraft' || item.kind === 'lagrange') {
@@ -717,7 +720,7 @@ export class OrbitalScene {
       this.selected = item;
       this.updateWorld(this.simulationDate, true);
       this.resetCamera();
-      if(item.cosmic && item.kind === 'star') this.cosmos.selectStar(item);
+      if(item.cosmic && (item.kind === 'star'||item.catalogGalaxy)) this.cosmos.selectStar(item);
       if (notify) this.onFocus?.(item);
       return true;
     }
@@ -993,11 +996,20 @@ export class OrbitalScene {
     }
   }
 
+  clearSelection(notify = true) {
+    this.selected = null;
+    this.drawSelectedOrbit(null);
+    if (this.cosmos.selectedMarker) this.cosmos.selectedMarker.visible = false;
+    this.cosmos.selectedItem = null;
+    if (notify) this.onSelect?.(null);
+  }
+
   drawSelectedOrbit(record) {
     if (this.selectedOrbit) {
       this.scene.remove(this.selectedOrbit);
       this.selectedOrbit.geometry.dispose();
       this.selectedOrbit.material.dispose();
+      this.selectedOrbit = null;
     }
     if (!record?.satrec || !this.catalogReliable) return;
     const points = [];
@@ -1059,7 +1071,8 @@ export class OrbitalScene {
     canvas.addEventListener('pointerup', (event) => {
       if (!this.pointerStart || Math.hypot(event.clientX - this.pointerStart.x, event.clientY - this.pointerStart.y) > 5) return;
       const item = this.pick(event);
-      if (!item) return;
+      if (!item) { this.clearSelection(); return; }
+      this.drawSelectedOrbit(null);
       this.selected = item;
       this.onSelect?.(item);
       if (item.satrec) this.drawSelectedOrbit(item);

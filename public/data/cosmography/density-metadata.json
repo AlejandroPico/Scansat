@@ -1,0 +1,13 @@
+{
+  "seed": 941107,
+  "model": "First-order Lagrangian (Zel’dovich) displacement from a Gaussian field; CDM-like illustrative spectrum, not fitted or constrained by observations. Importance-sampled density tracers, not individual galaxies.",
+  "boxMpc": 2000.0,
+  "grid": 160,
+  "innerSamples": 299263,
+  "outerSamples": 479474,
+  "outerModel": "Statistically homogeneous group centres with 12 Mpc dispersion. Unresolved structures become a smooth distribution at horizon scale.",
+  "radiusLy": 46500000000.0,
+  "reference": "https://academic.oup.com/mnras/article/437/4/3442/1005676",
+  "color": "False-colour density: violet low, warm high. Not visible-light colour.",
+  "limitations": "No N-body evolution, baryon physics, cosmological light cone or measured unobserved galaxies."
+}

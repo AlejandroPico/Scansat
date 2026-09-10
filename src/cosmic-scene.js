@@ -1,8 +1,9 @@
 import * as THREE from 'three';
+import { galaxyPopulation } from './galaxy-model.js';
+import { CosmicSurveys } from './cosmic-surveys.js';
 import { closestPointOnRay } from './picking.js';
-import { COSMIC_OBJECTS, LY_KM, PC_KM, OBSERVABLE_RADIUS_KM, galacticPosition, equatorialPosition } from './cosmic-data.js';
+import { COSMIC_OBJECTS, LY_KM, PC_KM, equatorialPosition } from './cosmic-data.js';
 
-function random(seed=7319) { return ()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;}; }
 function cloud(positions,colors,size,texture) {
   const geometry=new THREE.BufferGeometry();
   geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
@@ -11,58 +12,22 @@ function cloud(positions,colors,size,texture) {
 }
 export class CosmicScene {
   constructor(owner) {
-    this.owner=owner; this.stars=[]; this.layers={stars:true,galaxies:true,structure:true,labels:true};
-    this.nodes=[]; this.targets=[...COSMIC_OBJECTS]; this.starState='pending'; this.magnitudeLimit={value:7}; this.unitPc={value:1/PC_KM};
-    const rng=random();
+    this.owner=owner; this.stars=[]; this.layers={stars:true,galaxies:true,structure:true,labels:true,sdss:true,twoMrs:true,flows:true};
+    this.nodes=[]; this.targets=[...COSMIC_OBJECTS]; this.starState='pending'; this.magnitudeLimit={value:8.5}; this.unitPc={value:1/PC_KM};
+    this.surveys=new CosmicSurveys(this);
     for(const item of COSMIC_OBJECTS.filter(x=>x.kind==='galaxy')) {
-      const p=[],c=[]; const count=item.id==='milky-way'?48000:2200;
-      for(let i=0;i<count;i++) {
-        const bulge=rng()<.20; const r=Math.pow(rng(),bulge?1.8:.62)*item.radiusLy;
-        const arm=i%4; const theta=bulge?rng()*Math.PI*2:arm*Math.PI/2+Math.log(Math.max(.008,r/item.radiusLy))*3.7+(rng()-.5)*.65;
-        const thickness=(rng()+rng()+rng()-1.5)*(bulge?item.radiusLy*.24:item.radiusLy*.025)*Math.exp(-r/item.radiusLy);
-        let v=[r*Math.cos(theta),r*Math.sin(theta),thickness];
-        if(item.id==='milky-way') v=galacticPosition(...v);
-        else { const q=new THREE.Vector3(...v).applyEuler(new THREE.Euler(.6+item.dec*.02,item.ra,1)); v=q.toArray(); }
-        p.push(...v);
-        const warm=bulge||r<item.radiusLy*.2;
-        const color=new THREE.Color(warm?'#ffd5a0':i%7===0?'#d1a3ef':'#92bfee');
-        color.multiplyScalar(.45+rng()*.7); c.push(color.r,color.g,color.b);
-      }
-      const node=cloud(p,c,item.id==='milky-way'?2.3:2.1,owner.dotTexture);
+      const count=item.id==='milky-way'?320000:item.id==='andromeda'?80000:18000;
+      const {positions,colors}=galaxyPopulation(item,count);
+      const node=cloud(positions,colors,item.id==='milky-way'?2.4:2.2,owner.dotTexture);
       node.scale.setScalar(LY_KM); owner.scene.add(node); this.nodes.push({node,item,layer:'galaxies'});
     }
-    // Multiresolution illustrative cosmic web. Every shell is fixed in physical
-    // space, deterministic, and labelled as a model rather than measured galaxies.
-    for(const [outerLy,innerLy,count] of [[1e9,5e6,35000],[8e9,7e8,26000],[46.5e9,6e9,34000]]) {
-      const centers=Array.from({length:170},()=>{
-        const r=Math.cbrt(rng())*outerLy, az=rng()*Math.PI*2, z=rng()*2-1;
-        return new THREE.Vector3(Math.sqrt(1-z*z)*Math.cos(az)*r,z*r,Math.sqrt(1-z*z)*Math.sin(az)*r);
-      });
-      if(outerLy===1e9) for(const object of COSMIC_OBJECTS.filter(x=>['cluster','structure'].includes(x.kind)))centers.push(new THREE.Vector3(...object.position).divideScalar(LY_KM));
-      const edges=[];
-      centers.forEach((a,i)=>centers.map((b,j)=>({b,j,d:a.distanceToSquared(b)})).filter(x=>x.j!==i).sort((a,b)=>a.d-b.d).slice(0,3).forEach(x=>{if(x.j>i)edges.push([a,x.b]);}));
-      const p=[],c=[];
-      for(let i=0;i<count;i++) {
-        const [a,b]=edges[i%edges.length],t=rng();
-        const v=a.clone().lerp(b,t); const spread=outerLy*.008;
-        v.add(new THREE.Vector3((rng()+rng()-1)*spread,(rng()+rng()-1)*spread,(rng()+rng()-1)*spread));
-        if(v.length()<innerLy||v.length()>outerLy)continue;
-        p.push(...v.toArray());
-        const color=new THREE.Color(t<.12||t>.88?'#ffdc9b':i%3===0?'#8b73db':'#bc96d7');
-        color.multiplyScalar(.4+rng()*.6); c.push(color.r,color.g,color.b);
-      }
-      const node=cloud(p,c,2.4,owner.dotTexture);node.scale.setScalar(LY_KM);owner.scene.add(node);
-      this.nodes.push({node,item:{position:[0,0,0],radiusLy:outerLy},layer:'structure',innerLy});
-    }
-    const boundary=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(1,3)),new THREE.LineBasicMaterial({color:'#9a82bf',transparent:true,opacity:.085,depthWrite:false}));
-    boundary.scale.setScalar(OBSERVABLE_RADIUS_KM);owner.scene.add(boundary);
-    this.nodes.push({node:boundary,item:{position:[0,0,0],radiusLy:46.5e9},layer:'structure',boundary:true});
     for(const item of COSMIC_OBJECTS) {
       const marker=owner.makeCosmicMarker(item);
       this.nodes.push({node:marker,item,layer:item.kind==='galaxy'?'galaxies':'structure',marker:true});
     }
   }
   selectStar(item) {
+    this.selectedItem=item;
     if(!this.selectedMarker) {
       this.selectedMarker=this.owner.makeCosmicMarker(item);
       this.selectedLabel=this.owner.labels[this.owner.labels.length-1];
@@ -70,7 +35,7 @@ export class CosmicScene {
     this.selectedMarker.userData.item=item;
     this.selectedMarker.material.color.set(item.color);
     this.selectedLabel.element.querySelector('strong').textContent=item.name;
-    this.selectedLabel.element.querySelector('span').textContent='ESTRELLA HYG';
+    this.selectedLabel.element.querySelector('span').textContent=item.kind==='star'?'ESTRELLA HYG':'GALAXIA CATALOGADA';
     this.selectedLabel.id=item.id;
   }
   async loadStars() {
@@ -108,9 +73,10 @@ export class CosmicScene {
   }
   update(origin,distance) {
     this.unitPc.value=this.owner.renderUnit/PC_KM;
+    this.surveys.update(origin,distance);
     if(this.selectedMarker) {
       this.selectedMarker.position.fromArray(this.selectedMarker.userData.item.position).sub(origin);
-      this.selectedMarker.visible=this.layers.stars && this.layers.labels;
+      this.selectedMarker.visible=!!this.selectedItem && this.layers.labels && this.layers[this.selectedItem.kind==='star'?'stars':'galaxies'];
     }
     if(this.starPoints) {
       this.starPoints.position.copy(origin).negate();
@@ -118,20 +84,27 @@ export class CosmicScene {
       this.starPoints.material.opacity=THREE.MathUtils.clamp(1-distance/(3e5*LY_KM),0,.85);
     }
     for(const entry of this.nodes) {
-      const {node,item,layer,marker,boundary,innerLy}=entry;
+      const {node,item,layer,marker}=entry;
       node.position.fromArray(item.position).sub(origin);
       const observer=this.owner.camera.position.clone().add(origin);
       const range=observer.distanceTo(new THREE.Vector3(...item.position));
       const region=item.radiusLy*LY_KM;
-      node.visible=this.layers[layer] && (marker ? distance>region*.1 && distance<region*150 && this.layers.labels : boundary?distance>OBSERVABLE_RADIUS_KM*.6 : layer==='galaxies'? range>region*.02&&range<region*200 : distance>innerLy*LY_KM*2);
-      if(!marker&&!boundary) node.material.opacity=layer==='galaxies'?THREE.MathUtils.clamp(range/region*.75,.03,.85):THREE.MathUtils.clamp(distance/(item.radiusLy*LY_KM)*1.3,0,.75);
+      node.visible=this.layers[layer] && (marker ? distance>region*.1 && distance<region*150 && this.layers.labels : range<region*250);
+      if(!marker) node.material.opacity=THREE.MathUtils.smoothstep(range/region,.015,.65)*(1-THREE.MathUtils.smoothstep(range/region,70,250))*.8;
+
     }
   }
   pickPhysical(camera,direction,angle) {
-    if(!this.starPoints?.visible)return null;
-    return closestPointOnRay(this.stars,x=>x.position,camera,direction,angle,(star,distance)=>{
-      const apparent=star.mag+5*Math.log10(Math.max(1e-12,distance/(star.distanceLy*LY_KM)));
-      return apparent < this.magnitudeLimit.value+.5;
-    });
+    const hits=[];
+    const galaxy=this.surveys.pick(camera,direction,angle);
+    if(galaxy)hits.push(galaxy);
+    if(this.starPoints?.visible) {
+      const star=closestPointOnRay(this.stars,x=>x.position,camera,direction,angle,(star,distance)=>{
+        const apparent=star.mag+5*Math.log10(Math.max(1e-12,distance/(star.distanceLy*LY_KM)));
+        return apparent < this.magnitudeLimit.value+.5;
+      });
+      if(star)hits.push(star);
+    }
+    return hits.sort((a,b)=>a.distance-b.distance)[0]||null;
   }
 }
