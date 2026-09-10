@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { GalacticSectors } from './galactic-sectors.js';
+import { AstronomyPhotos } from './astronomy-photos.js';
 import { galaxyPopulation } from './galaxy-model.js';
 import { CosmicSurveys } from './cosmic-surveys.js';
 import { closestPointOnRay } from './picking.js';
@@ -12,14 +14,24 @@ function cloud(positions,colors,size,texture) {
 }
 export class CosmicScene {
   constructor(owner) {
-    this.owner=owner; this.stars=[]; this.layers={stars:true,galaxies:true,structure:true,labels:true,sdss:true,twoMrs:true,flows:true};
+    this.owner=owner; this.stars=[]; this.layers={stars:true,galaxies:true,structure:true,labels:true,sdss:true,twoMrs:true,flows:true,sky:true,population:true};
     this.nodes=[]; this.targets=[...COSMIC_OBJECTS]; this.starState='pending'; this.magnitudeLimit={value:8.5}; this.unitPc={value:1/PC_KM};
     this.surveys=new CosmicSurveys(this);
+    this.photos=new AstronomyPhotos(owner);this.sectors=new GalacticSectors(owner);
     for(const item of COSMIC_OBJECTS.filter(x=>x.kind==='galaxy')) {
       const count=item.id==='milky-way'?320000:item.id==='andromeda'?80000:18000;
       const {positions,colors}=galaxyPopulation(item,count);
       const node=cloud(positions,colors,item.id==='milky-way'?2.4:2.2,owner.dotTexture);
       node.scale.setScalar(LY_KM); owner.scene.add(node); this.nodes.push({node,item,layer:'galaxies'});
+      const hazePositions=[],hazeColors=[];
+      for(let i=0;i<positions.length;i+=18){hazePositions.push(...positions.subarray(i,i+3));hazeColors.push(...colors.subarray(i,i+3));}
+      const haze=cloud(hazePositions,hazeColors,1,owner.dotTexture);
+      haze.material.onBeforeCompile=shader=>{
+        shader.uniforms.galaxyUnit={value:LY_KM};
+        shader.vertexShader=shader.vertexShader.replace('gl_PointSize = size;',`gl_PointSize=clamp(${(item.radiusLy*.022).toFixed(3)}*projectionMatrix[1][1]*600.0/max(.0001,length(mvPosition.xyz)/length(modelMatrix[0].xyz)),1.0,90.0);`);
+        shader.fragmentShader=shader.fragmentShader.replace('#include <map_particle_fragment>',`vec2 q=gl_PointCoord*2.0-1.0;float r=dot(q,q);diffuseColor.a*=exp(-r*6.0)*(1.0-smoothstep(.65,1.0,r))*.028;`);
+      };
+      haze.scale.setScalar(LY_KM);owner.scene.add(haze);this.nodes.push({node:haze,item,layer:'galaxies'});
     }
     for(const item of COSMIC_OBJECTS) {
       const marker=owner.makeCosmicMarker(item);
@@ -35,7 +47,7 @@ export class CosmicScene {
     this.selectedMarker.userData.item=item;
     this.selectedMarker.material.color.set(item.color);
     this.selectedLabel.element.querySelector('strong').textContent=item.name;
-    this.selectedLabel.element.querySelector('span').textContent=item.kind==='star'?'ESTRELLA HYG':'GALAXIA CATALOGADA';
+    this.selectedLabel.element.querySelector('span').textContent=item.kind==='star'?(item.modeled?'ESTRELLA MODELADA':'ESTRELLA HYG'):'GALAXIA CATALOGADA';
     this.selectedLabel.id=item.id;
   }
   async loadStars() {
@@ -74,6 +86,8 @@ export class CosmicScene {
   update(origin,distance) {
     this.unitPc.value=this.owner.renderUnit/PC_KM;
     this.surveys.update(origin,distance);
+    this.photos.update(origin,distance,this.layers);
+    this.sectors.update(origin,distance,this.layers.population&&this.layers.stars);
     if(this.selectedMarker) {
       this.selectedMarker.position.fromArray(this.selectedMarker.userData.item.position).sub(origin);
       this.selectedMarker.visible=!!this.selectedItem && this.layers.labels && this.layers[this.selectedItem.kind==='star'?'stars':'galaxies'];
@@ -89,13 +103,18 @@ export class CosmicScene {
       const observer=this.owner.camera.position.clone().add(origin);
       const range=observer.distanceTo(new THREE.Vector3(...item.position));
       const region=item.radiusLy*LY_KM;
-      node.visible=this.layers[layer] && (marker ? distance>region*.1 && distance<region*150 && this.layers.labels : range<region*250);
-      if(!marker) node.material.opacity=THREE.MathUtils.smoothstep(range/region,.015,.65)*(1-THREE.MathUtils.smoothstep(range/region,70,250))*.8;
+      node.visible=this.layers[layer] && (marker ? distance>region*.1 && distance<region*150 && this.layers.labels : range<region*100);
+      if(!marker) {
+        node.material.opacity=THREE.MathUtils.smoothstep(range/region,.003,.20)*(1-THREE.MathUtils.smoothstep(range/region,12,100))*.8;
+        if(item.id==='andromeda')node.material.opacity*=1-this.photos.photoOpacity;
+        if(item.id==='milky-way'&&this.photos.sky.visible)node.material.opacity*=1-this.photos.sky.material.opacity;
+      }
 
     }
   }
   pickPhysical(camera,direction,angle) {
     const hits=[];
+    const modeled=this.sectors.pick(camera,direction,angle);if(modeled)hits.push(modeled);
     const galaxy=this.surveys.pick(camera,direction,angle);
     if(galaxy)hits.push(galaxy);
     if(this.starPoints?.visible) {

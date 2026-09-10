@@ -40,7 +40,7 @@
     <div id="app">
       <header class="topbar">
         <button class="focus-picker" id="focus-picker" type="button" aria-haspopup="true" aria-expanded="false">
-          <svg><use href="#i-target"/></svg><span>FOCO</span><strong id="focus-label">Tierra</strong><svg class="chevron"><use href="#i-chevron"/></svg>
+          <svg><use href="#i-target"/></svg><strong id="focus-label">Tierra</strong><svg class="chevron"><use href="#i-chevron"/></svg>
         </button>
         <div class="top-actions">
           <button class="icon-button utility-trigger" id="catalog-button" data-utility="catalog" aria-label="Abrir base de datos" aria-expanded="false" title="Base de datos">
@@ -52,8 +52,8 @@
           <button class="icon-button utility-trigger" id="filters-button" data-utility="filters" aria-label="Abrir filtros" aria-expanded="false" title="Filtros">
             <svg><use href="#i-filter"/></svg>
           </button>
-          <button class="time-button utility-trigger" id="time-button" data-utility="time" aria-label="Abrir control temporal" aria-expanded="false" title="Fecha y tiempo de simulación">
-            <svg><use href="#i-clock"/></svg><span class="utc-clock" id="utc-clock">--:--:-- UTC</span>
+          <button class="icon-button utility-trigger" id="time-button" data-utility="time" aria-label="Abrir control temporal" aria-expanded="false" title="Fecha y tiempo de simulación">
+            <svg><use href="#i-clock"/></svg>
           </button>
           <button class="icon-button" id="theme-button" aria-label="Cambiar tema" title="Tema">
             <svg><use id="theme-icon-use" href="#i-auto"/></svg>
@@ -84,7 +84,7 @@
             </section>
 
             <section class="panel-section catalog-summary" data-utility-section="catalog">
-              <div class="section-kicker">CATÁLOGO PÚBLICO</div>
+              <div class="section-kicker">CATÁLOGO PÚBLICO</div><p class="catalog-note">Objetos visibles: <strong id="visible-count">—</strong><br>Seleccionado: <strong id="selected-label">Ninguno</strong></p>
               <div class="catalog-count-row">
                 <strong id="catalog-count">—</strong>
                 <span>objetos activos</span>
@@ -106,8 +106,11 @@
                 <button class="layer-card" data-layer="political"><span class="layer-preview political"></span><span><strong>Fronteras</strong><small>Fronteras</small></span></button>
                 <button class="layer-card" data-layer="night"><span class="layer-preview night"></span><span><strong>Noche</strong><small>Black Marble</small></span></button>
               </div>
-              <div class="filter-title"><span>Universo y navegación</span></div>
+              <p id="evidence-note" class="catalog-note"></p><div class="filter-title"><span>Universo y navegación</span></div>
               <label class="switch-row"><span>Estrellas de catálogo HYG</span><input id="stars-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Cielo fotográfico · ESO</span><input id="sky-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Población galáctica modelada</span><input id="population-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <p class="catalog-note">Para explorar la galaxia: arrastra con el botón derecho, o usa W/A/S/D y Q/E sobre el visor. Mayús acelera. Las estrellas modeladas se distinguen de HYG.</p>
               <label class="switch-row"><span>Galaxias y Vía Láctea</span><input id="galaxies-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Galaxias cercanas · 2MRS</span><input id="twoMrs-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Galaxias del sondeo · SDSS</span><input id="sdss-toggle" type="checkbox" checked><span class="switch"></span></label>
@@ -117,6 +120,9 @@
               <label class="switch-row"><span>Órbitas de planetas y lunas</span><input id="planet-orbits-toggle" type="checkbox" checked><span class="switch"></span></label>
               <p id="galaxy-status" class="catalog-note" aria-live="polite">2MRS + SDSS se cargan al alejarte.</p><button id="load-galaxy-catalogs" type="button" class="text-button">Cargar catálogos de galaxias para buscar</button>
               <label class="time-field"><span>Magnitud estelar límite <output id="star-magnitude-value">8.5</output></span><input id="star-magnitude" type="range" min="3" max="14" step="0.5" value="8.5"></label><div class="filter-title"><span>Sistema solar</span></div>
+              <label class="switch-row"><span>Imagen terrestre de alta resolución</span><input id="earth-detail-toggle" type="checkbox" checked><span class="switch"></span></label>
+              <label class="switch-row"><span>Observación diaria NASA · nubes y superficie</span><input id="earth-weather-toggle" type="checkbox"><span class="switch"></span></label>
+              <p class="catalog-note" id="earth-detail-status">Imágenes por teselas al acercarse. La cobertura y resolución varían según el lugar; no son imágenes en directo.</p>
               <label class="switch-row"><span>Atmósfera</span><input id="atmosphere-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Basura espacial</span><input id="debris-toggle" type="checkbox" checked><span class="switch"></span></label>
               <label class="switch-row"><span>Misiones y Lagrange</span><input id="missions-toggle" type="checkbox" checked><span class="switch"></span></label>
@@ -143,7 +149,7 @@
             </section>
 
             <section class="panel-section time-section" id="time-section" data-utility-section="time">
-              <div class="time-now"><span>INSTANTE SIMULADO</span><strong id="time-panel-clock">—</strong></div>
+              <p id="simulation-status" class="catalog-note">TIEMPO REAL · 1×</p><div class="time-now"><span>INSTANTE SIMULADO</span><strong id="time-panel-clock">—</strong></div>
               <label class="time-field"><span>Fecha y hora UTC</span><input id="simulation-date-input" type="datetime-local" min="1957-10-04T00:00" max="2050-12-31T23:59" step="1"></label>
               <div class="time-actions primary-time-actions">
                 <button class="secondary-button" id="time-apply" type="button"><svg><use href="#i-calendar"/></svg> Aplicar fecha</button>
@@ -171,8 +177,8 @@
           <div id="scene-container"></div>
           <div class="view-label">
             <span class="eyebrow" id="view-eyebrow">SISTEMA SOLAR · FOCO TIERRA</span>
-            <h1 id="view-title">Tierra</h1>
-            <p id="view-description">Gira para explorar · rueda para viajar · doble clic para centrar</p>
+
+
           </div>
           <div class="scene-legend" id="scene-legend">
             <span><i class="leo"></i>LEO</span><span><i class="meo"></i>MEO</span><span><i class="geo"></i>GEO</span><span><i class="debris"></i>Basura</span><span><i class="mission"></i>Misión</span>
@@ -181,7 +187,7 @@
             <button class="tool-button" id="home-view" title="Volver a la Tierra" aria-label="Volver a la Tierra"><svg><use href="#i-target"/></svg></button>
             <button class="tool-button" id="solar-overview" title="Ir al Sol" aria-label="Ir al Sol"><svg><use href="#i-orbit"/></svg></button>
           </div>
-          <div class="evidence-note" id="evidence-note"></div><div class="scale-note" id="scale-note">Radios y distancias físicas · los iconos lejanos son ayudas de lectura.</div>
+          <div class="scale-note" id="scale-note"></div><div class="imagery-credits"><div class="map-credit" id="map-credit" hidden></div><div id="photo-credit" class="photo-credit" hidden></div></div>
         </section>
 
         <aside class="detail-panel" id="detail-panel" aria-label="Ficha del objeto" aria-hidden="true">
@@ -211,11 +217,7 @@
         </aside>
       </main>
 
-      <footer class="statusbar">
-        <div><span class="status-dot live"></span><span id="simulation-status">SIMULACIÓN EN VIVO</span></div>
-        <div class="status-center"><span>Objetos orbitales <strong id="visible-count">—</strong></span><span>Seleccionado <strong id="selected-label">Ninguno</strong></span></div>
-        <div><span id="fps-label">WEBGL</span><span class="desktop-only"> · SGP4 / OMM</span></div>
-      </footer>
+
     </div>
 
     <dialog class="app-dialog library-dialog" id="library-dialog">
@@ -229,7 +231,7 @@
     <dialog class="app-dialog about-dialog" id="about-dialog">
       <div class="dialog-shell compact">
         <header><div><span class="dialog-kicker">ACERCA DEL PROYECTO</span><h2>ScanSat</h2></div><button class="icon-button plain dialog-close" aria-label="Cerrar acerca de"><svg><use href="#i-close"/></svg></button></header>
-        <div class="about-hero"><span class="about-mark"><span></span></span><div><strong>ScanSat · Atlas del universo</strong><small>Versión 0.5.0 · Alfa</small></div></div>
+        <div class="about-hero"><span class="about-mark"><span></span></span><div><strong>ScanSat · Atlas del universo</strong><small>Versión 0.6.0 · Alfa</small></div></div>
         <p>ScanSat conecta la Tierra, los satélites, el sistema solar, las estrellas, las galaxias y el universo observable mediante una escala física común. Combina OMM/SGP4, JPL Horizons, 109.400 estrellas HYG y el archivo histórico GCAT. La cosmografía incorpora 431.263 registros SDSS/WWT, 43.380 registros 2MRS y las rejillas de velocidades y cuencas de Cosmicflows-4. La Vía Láctea y la densidad del volumen no cartografiado son modelos identificados. Los dos sondeos pueden contener galaxias en común; no constituyen un mapa observado completo.</p>
         <div class="about-links"><a href="https://alejandropico.github.io/Portfolio/" target="_blank" rel="noreferrer">Portfolio <span>↗</span></a><a href="https://github.com/AlejandroPico/Scansat" target="_blank" rel="noreferrer">Repositorio <span>↗</span></a></div>
         <div class="credits"><strong>Datos y atribuciones</strong><p>Órbitas terrestres y basura: CelesTrak / 18 SDS. Efemérides: NASA/JPL Horizons. Tierra: NASA Blue/Black Marble. Luna: LROC/LOLA. Sol: STEREO y SDO/AIA. Otras texturas: NASA, JPL, USGS y NASA 3D Resources. Propagación: satellite.js. Fronteras: Natural Earth.</p><p>Los iconos conservan legibilidad en pantalla, pero cuerpos y distancias utilizan kilómetros físicos. Herramienta educativa; no apta para navegación ni operaciones espaciales.</p></div>

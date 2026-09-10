@@ -331,8 +331,6 @@ function updateFocusUI(item) {
   $('#focus-label').textContent = name;
 
   $('#view-eyebrow').textContent = `FOCO · ${name.toUpperCase()}`;
-  $('#view-title').textContent = name;
-  $('#view-description').textContent = 'Gira para explorar · rueda para viajar · doble clic para centrar';
   renderTargetMenu($('#target-search').value);
 }
 
@@ -340,6 +338,13 @@ function updateStatus(status) {
   if (!status) return;
   const now = performance.now();
   if (now - lastStatusUpdate < 200) return;
+  const earth=scene.earthTiles;
+  $('#earth-detail-status').textContent=earth.status||'Imágenes por teselas al acercarse. Resolución variable según cobertura; no son imágenes en directo.';
+  const credit=$('#map-credit');credit.hidden=!earth.group.visible;
+  if(!credit.hidden)credit.innerHTML=earth.weather?`<a href="https://www.earthdata.nasa.gov/" target="_blank" rel="noreferrer">NASA GIBS / MODIS</a> · ${earth.date} · observación diaria`:'<a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9" target="_blank" rel="noreferrer">Esri World Imagery</a> · Esri, Vantor, Earthstar Geographics, GIS User Community';
+  const photos=scene.cosmos.photos,photoCredit=$('#photo-credit');
+  photoCredit.hidden=!(photos.sky.visible||photos.andromeda.visible);
+  photoCredit.innerHTML=[photos.sky.visible?'<a href="https://www.eso.org/public/images/eso0932a/" target="_blank" rel="noreferrer">Cielo: ESO/S. Brunier · CC BY 4.0</a>':'',photos.andromeda.visible?'<a href="https://esahubble.org/images/heic1502b/" target="_blank" rel="noreferrer">M31: NASA, ESA, Digitized Sky Survey 2 · Davide De Martin · CC BY 4.0</a>':''].filter(Boolean).join(' · ');
   const surveys=scene.cosmos.surveys;
   const catalogCount=surveys.catalogs.reduce((sum,cat)=>sum+cat.count,0);
   const loading=Object.values(surveys.states).includes('loading');
@@ -418,6 +423,11 @@ function openLibrary(entry = null) {
   if (entry) showLibraryArticle(entry); else renderLibrary();
 }
 
+function closeOverlays() {
+ closeDetail();closeUtilityPanel();closeTargetMenu();$('#theme-menu').hidden=true;
+ $$('dialog[open]').forEach(dialog=>dialog.close());
+}
+
 function closeUtilityPanel() {
   $('#control-panel').classList.remove('open');
   $('#control-panel').setAttribute('aria-hidden', 'true');
@@ -426,6 +436,8 @@ function closeUtilityPanel() {
 }
 
 function openUtilityPanel(name) {
+  closeDetail();closeTargetMenu();$('#theme-menu').hidden=true;
+  $$('dialog[open]').forEach(dialog=>dialog.close());
   const panel = $('#control-panel');
   if (panel.classList.contains('open') && state.utilityPanel === name) {
     closeUtilityPanel();
@@ -501,20 +513,22 @@ function setSimulationInstant(date, { pause = true } = {}) {
 }
 
 function bindInterface() {
-  for(const layer of ['stars','galaxies','structure','labels','sdss','twoMrs','flows']) $(`#${layer}-toggle`).addEventListener('change',event=>{
+  for(const layer of ['stars','galaxies','structure','labels','sdss','twoMrs','flows','sky','population']) $(`#${layer}-toggle`).addEventListener('change',event=>{
     scene.cosmos.layers[layer]=event.target.checked;
     if(layer==='labels')scene.showLabels=event.target.checked;
   });
   $('#load-galaxy-catalogs').addEventListener('click',async()=>{
     await Promise.all([scene.cosmos.surveys.loadCatalog('twoMrs'),scene.cosmos.surveys.loadCatalog('sdss')]);renderLibrary();renderTargetMenu($('#target-search').value);
   });
+  $('#earth-detail-toggle').addEventListener('change',e=>{scene.earthTiles.enabled=e.target.checked;});
+  $('#earth-weather-toggle').addEventListener('change',e=>{scene.earthTiles.weather=e.target.checked;});
   $('#components-toggle').addEventListener('change',event=>{scene.showComponents=event.target.checked;});
   $('#star-magnitude').addEventListener('input',event=>{scene.cosmos.magnitudeLimit.value=Number(event.target.value);$('#star-magnitude-value').textContent=event.target.value;});
   $('#planet-orbits-toggle').addEventListener('change',event=>{scene.showPlanetOrbits=event.target.checked;});
 
   $('#focus-picker').addEventListener('click', (event) => {
     event.stopPropagation();
-    $('#target-menu').hidden = !$('#target-menu').hidden;
+    const open=$('#target-menu').hidden;closeOverlays();$('#target-menu').hidden=!open;
     $('#focus-picker').setAttribute('aria-expanded', String(!$('#target-menu').hidden));
     if (!$('#target-menu').hidden) { renderTargetMenu($('#target-search').value); $('#target-search').focus(); }
   });
@@ -573,6 +587,7 @@ function bindInterface() {
     $('#time-rate-select').value = '1';
     scene.setTimeScale(1);
     setSimulationInstant(new Date(), { pause: false });
+    scene.liveTime=true;
     setRunning(true);
   });
   $$('[data-time-step]').forEach((button) => button.addEventListener('click', () => {
@@ -583,12 +598,12 @@ function bindInterface() {
     scene.setTimeScale(state.timeScale);
     updatePlaybackStatus();
   });
-  $('#library-button').addEventListener('click', () => { closeUtilityPanel(); openLibrary(); });
-  $('#about-button').addEventListener('click', () => { closeUtilityPanel(); $('#about-dialog').showModal(); });
+  $('#library-button').addEventListener('click', () => { closeOverlays(); openLibrary(); });
+  $('#about-button').addEventListener('click', () => { closeOverlays(); $('#about-dialog').showModal(); });
   $$('.dialog-close').forEach((button) => button.addEventListener('click', () => button.closest('dialog').close()));
   $$('.app-dialog').forEach((dialog) => dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); }));
   $('#library-search').addEventListener('input', renderLibrary);
-  $('#theme-button').addEventListener('click', (event) => { event.stopPropagation(); $('#theme-menu').hidden = !$('#theme-menu').hidden; });
+  $('#theme-button').addEventListener('click', (event) => { event.stopPropagation(); const open=$('#theme-menu').hidden;closeOverlays();$('#theme-menu').hidden=!open; });
   $$('#theme-menu button').forEach((button) => button.addEventListener('click', () => applyTheme(button.dataset.themeChoice)));
 }
 
@@ -633,7 +648,6 @@ async function initializeCatalog() {
 
 function updateClock() {
   const instant = formatSimulationInstant(scene.simulationDate);
-  $('#utc-clock').textContent = instant;
   $('#time-panel-clock').textContent = instant;
   if (document.activeElement !== $('#simulation-date-input')) $('#simulation-date-input').value = scene.simulationDate.toISOString().slice(0, 19);
   setTimeout(updateClock, 250);

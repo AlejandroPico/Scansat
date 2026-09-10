@@ -1,8 +1,22 @@
 # ScanSat · Atlas del universo
 
-**Versión 0.5.0-alpha** · [Abrir ScanSat](https://alejandropico.github.io/Scansat/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
+**Versión 0.6.0-alpha** · [Abrir ScanSat](https://alejandropico.github.io/Scansat/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
 
 Exploración continua desde la Tierra y el tráfico orbital hasta las estrellas, las galaxias y el volumen del universo observable. La rueda recorre todas las escalas sin cambiar de aplicación. Los radios de los cuerpos y las distancias comparten una unidad física; los marcadores son ayudas de localización, no diámetros agrandados.
+
+## Novedades de 0.6.0
+
+- **Densidad volumétrica continua**, integrada a través de campos 3D de 128³ y 192³ celdas, con horizonte suavizado y transición entre escalas. Sustituye los puntos de densidad que producían una esfera delimitada y un centro sobreexpuesto. Paleta violeta/dorada de falso color. Es una representación pedagógica: el campo exterior es una realización gruesa independiente, no un mapa observado de todo el universo ni filamentos individuales resueltos a esa escala.
+- **Flujos de Laniakea conservados**. Los sondeos de galaxias tienen algo más de luminosidad; las capas cercanas desaparecen gradualmente al dejar de resolverse, evitando apilar brillo en el centro.
+- **Galaxias con colas de densidad y emisión difusa**, sin cortar el disco en un radio fijo. Andrómeda incorpora una fotografía óptica DSS2, con contorno atenuado y transición a la reconstrucción tridimensional cuando se observa desde otro ángulo o desde dentro. La fotografía es una proyección desde la Tierra, no una tomografía 3D.
+- **Cielo fotográfico ESO de 6000 × 3000**, visible desde el sistema solar y su vecindad. La proyección sobre la esfera celeste se interpreta de forma aproximada: no se utiliza para astrometría. Se atenúa al abandonar la vecindad solar y da paso al modelo galáctico.
+- **Exploración libre de la galaxia** con traslación, zoom y estrellas locales por sectores deterministas de 60 años luz. Solo se mantienen los sectores próximos a la cámara. Estas estrellas están identificadas como modeladas y son seleccionables; no sustituyen HYG ni afirman catalogar cientos de miles de millones de estrellas observadas. Inspiración funcional: navegación y búsqueda del mapa galáctico del manual oficial de Elite Dangerous; no se reutilizan sus recursos.
+- **Tierra por teselas** Esri World Imagery, hasta nivel 19 y 80 metros de altura de cámara. La cobertura puede resolver calles y edificios donde el proveedor dispone de imágenes suficientes. Es una superficie esférica con imágenes: no hay edificios 3D, relieve de terreno ni Street View. El mosaico tiene fechas y resoluciones variables; la descarga necesita conexión.
+- Capa opcional **NASA GIBS/MODIS del día anterior**, con superficie y nubes en una misma observación, resolución máxima aproximada de 250–300 m. Puede tener huecos o retrasos. No es meteorología en directo ni sigue el reloj histórico del simulador. Al fallar una tesela se mantiene la imagen disponible de menor detalle.
+- **Zoom suave proporcional a la altura**, con pasos pequeños cerca de la Tierra y grandes a distancia cósmica. Cerca del suelo, la cámara acompaña la rotación terrestre.
+- Herramientas compactas arriba a la derecha; reloj reducido a un icono, fecha y velocidad dentro del panel, inicio en hora del sistema a 1×. Foco pequeño arriba a la izquierda. Eliminada la barra inferior; estadísticas en Base de datos. Etiquetas ancladas al escenario, con ocultación efectiva y filtro en Capas.
+
+Las siguientes secciones históricas describen versiones anteriores; los puntos de densidad y el mapa terrestre sin teselas de esas versiones quedan reemplazados por lo anterior.
 
 ## Novedades de 0.5.0
 
@@ -36,7 +50,9 @@ Exploración continua desde la Tierra y el tráfico orbital hasta las estrellas,
 | Acción | Resultado |
 |---|---|
 | Arrastrar / gesto táctil | Girar alrededor del foco |
-| Rueda / pellizco | Acercarse o alejarse; velocidad proporcional a la distancia |
+| Rueda / pellizco | Zoom suave, proporcional a la altura sobre el cuerpo o a la distancia en el espacio |
+| W/A/S/D, Q/E | Traslación libre y vertical en escalas estelares; clic previo en el visor |
+| Shift / arrastre derecho | Acelerar traslación / desplazar el foco en el espacio |
 | Clic en objeto / vacío | Abrir ficha / quitar selección y su órbita |
 | Cerrar ficha | Quitar selección y su órbita, conservando las órbitas generales |
 | Doble clic | Centrar un cuerpo, estrella, misión o estructura |
@@ -68,6 +84,14 @@ Exploración continua desde la Tierra y el tráfico orbital hasta las estrellas,
 
 La escala espacial común no convierte posiciones aproximadas en exactas. El reloj no reconstruye la evolución cosmológica ni mueve las estrellas de J2000; tampoco reproduce todos los vuelos históricos. Los lugares de superficie con fecha conocida aparecen a partir de su evento. El archivo histórico completo de elementos terrestres y las trayectorias históricas de cada sonda siguen requiriendo datos adicionales.
 
+## Fotografías y mapas de detalle
+
+- [Panorama ESO eso0932a](https://www.eso.org/public/images/eso0932a/): **ESO/S. Brunier**, CC BY 4.0. Fotografía de larga exposición, no brillo percibido a simple vista. [Condiciones ESO](https://www.eso.org/public/outreach/copyright/).
+- [Andrómeda DSS2 / heic1502b](https://esahubble.org/images/heic1502b/): **NASA, ESA, Digitized Sky Survey 2 (Acknowledgement: Davide De Martin)**, CC BY 4.0. Proyección y máscara suave realizadas en el visor; se conserva el JPEG original. [Condiciones ESA/Hubble](https://esahubble.org/copyright/).
+- [Esri World Imagery](https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9): Esri, Vantor, Earthstar Geographics y GIS User Community. Servicio externo con sus propias condiciones y disponibilidad. No se redistribuyen sus teselas en el repositorio.
+- [NASA GIBS](https://nasa-gibs.github.io/gibs-api-docs/access-basics/): MODIS Terra Corrected Reflectance True Color, WMTS EPSG:3857. Los casquetes fuera de ±85,051° conservan el mapa global de respaldo.
+- [Manual oficial de Elite Dangerous](https://hosting.zaonce.net/elite/website/assets/ELITE-DANGEROUS-GAME-MANUAL.pdf), páginas del mapa galáctico: referencia de controles y navegación, no fuente científica o licencia de sus imágenes.
+
 ## Fuentes y licencias de datos
 
 Los datos científicos conservan la atribución y las condiciones de sus proveedores; la licencia MIT del código no los relicencia. Los archivos de `public/data/cosmography/metadata.json` incluyen formato, parámetros, exclusiones, enlaces originales y SHA-256 de las entradas. `density-metadata.json` distingue el modelo generado de los catálogos.
@@ -92,7 +116,8 @@ Con Python 3, NumPy y SciPy, desde la raíz:
 
 ```bash
 python scripts/import-cosmography.py --cache /ruta/a/cache
-python scripts/build-density-model.py
+python scripts/build-density-model.py  # archivos de la versión anterior
+python scripts/build-volume-fields.py  # campos usados desde 0.6.0
 ```
 
 La importación conserva las rejillas originales y verifica formato, rangos y pertenencia del origen a Laniakea. El modelo de densidad tiene semilla fija y una caja de 2000 Mpc. Su realización no está constreñida por galaxias observadas. El universo exterior se homogeneiza estadísticamente; no se extiende una misma arista hasta decenas de miles de millones de años luz.
@@ -138,6 +163,8 @@ Las pruebas cubren conservación de escala, transformaciones de coordenadas, ocu
 - `src/encyclopedia.js`: fichas y categorías; importadores reproducibles en `scripts/`.
 
 ## Historial
+
+- **0.6.0-alpha** — volúmenes difusos, fotografías ESO/DSS2, vuelo galáctico por sectores, teselas terrestres y herramientas flotantes.
 
 - **0.5.0-alpha** — sondeos SDSS/2MRS, Laniakea CF4, nuevas poblaciones galácticas, densidad multiescala y correcciones de controles.
 - **0.4.0-alpha** — atlas multiescala, HYG, GCAT, enciclopedia ampliada, Laniakea/red cósmica, Roman, ocultación corregida y mapas lunares.

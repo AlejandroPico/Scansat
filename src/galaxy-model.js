@@ -14,7 +14,7 @@ export function galaxyPopulation(item, count) {
  for(let i=0;i<count;i++) {
   const population=rng();let x,y,z,color,brightness;
   if(elliptical || population<.19) {
-   const radius=Math.min(1,-Math.log(Math.max(1e-9,rng()))*(elliptical?.21:.065))*item.radiusLy;
+   const radius=(-Math.log(Math.max(1e-9,rng()))*(elliptical?.21:.065))*item.radiusLy;
    const az=rng()*TAU,cos=rng()*2-1,sin=Math.sqrt(1-cos*cos);
    x=radius*sin*Math.cos(az)*(elliptical?1:2.7);y=radius*sin*Math.sin(az);z=radius*cos*(elliptical?.78:.7);
    if(!elliptical){const angle=.48,a=x;x=a*Math.cos(angle)-y*Math.sin(angle);y=a*Math.sin(angle)+y*Math.cos(angle);}
@@ -24,7 +24,7 @@ export function galaxyPopulation(item, count) {
    x=radius*Math.sqrt(1-cos*cos)*Math.cos(az);y=radius*Math.sqrt(1-cos*cos)*Math.sin(az);z=radius*cos;
    color=old;brightness=.045;
   } else {
-   let r;do{r=-Math.log(Math.max(1e-9,rng()*rng()))*.22;}while(r>1);
+   const r=-Math.log(Math.max(1e-9,rng()*rng()))*.22;
    let theta=rng()*TAU;
    const youngArm=population>.77&&!irregular;
    if(youngArm) {
@@ -40,6 +40,7 @@ export function galaxyPopulation(item, count) {
    const phase=4*(theta-Math.log(Math.max(.055,r))*3.5-.15*Math.sin(r*27));
    const dust=Math.exp(-Math.pow(Math.sin(phase*.5)/.23,2))*.55;
    brightness=(youngArm?.23:.15)*(1-dust)*( .65+rng()*.7);
+   brightness*=Math.exp(-Math.max(0,r-.55)*1.7);
    color=youngArm?young:old;
   }
   vector.set(x,y,z);

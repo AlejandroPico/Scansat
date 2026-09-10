@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "local": {
+    "file": "local-volume.bin.gz",
+    "size": 128,
+    "sideMpc": 2000
+  },
+  "outer": {
+    "file": "cosmic-volume.bin.gz",
+    "size": 192,
+    "radiusLy": 46500000000.0
+  },
+  "encoding": "uint8 log(1+density)/log(25), x fastest for GPU; isotropic generated field",
+  "model": "Pedagogical Zel\u2019dovich density; independent coarse outer realization; not a fitted simulation, complete measured map, or light cone.",
+  "display": "Continuous volume integration; violet/gold are false-colour density. Soft horizon window and overlapping level-of-detail transitions. Outer grid does not resolve galaxy-scale filaments."
+}

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { DensityVolume, LOCAL_VOLUME_RADIUS } from './density-volume.js';
 import { equatorialPosition, PC_KM, LY_KM } from './cosmic-data.js';
 export const MPC_KM=PC_KM*1e6;
 export async function fetchPacked(name,json=false) {
@@ -37,7 +38,7 @@ export class CosmicSurveys {
    const warm=new THREE.Color('#efd4ac'),blue=new THREE.Color('#c7d7e5');
    for(let i=0;i<catalog.count;i++) {
     const r=((Math.imul(i+17,1664525)>>>0)%65536)/65536;
-    const color=r>.6?blue:warm,brightness=.40+r*.40;
+    const color=r>.6?blue:warm,brightness=.52+r*.44;
     colors.set([color.r*brightness,color.g*brightness,color.b*brightness],i*3);
     shape.set([r*6.283185, .35+((i*71)%100)/155],i*2);
    }
@@ -71,15 +72,8 @@ export class CosmicSurveys {
  async loadDensity() {
   if(this.states.density!=='pending')return;this.states.density='loading';
   try {
-   const results=await Promise.all(['density.bin.gz','outer-density.bin.gz'].map(x=>fetchPacked(x)));
-   for(let j=0;j<results.length;j++) {
-    const a=new Float32Array(results[j]),p=new Float32Array(a.length/4*3),c=new Float32Array(p.length);
-    const violet=new THREE.Color('#826eac'),gold=new THREE.Color('#edc58b'),color=new THREE.Color();
-    for(let i=0;i<a.length/4;i++){p.set(a.subarray(i*4,i*4+3),i*3);color.copy(violet).lerp(gold,smooth(.28,.85,a[i*4+3])).multiplyScalar(.25+a[i*4+3]*.6);color.toArray(c,i*3);}
-    const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.BufferAttribute(p,3));geo.setAttribute('color',new THREE.BufferAttribute(c,3));
-    const node=new THREE.Points(geo,new THREE.PointsMaterial({size:j?1.5:2.2,map:this.owner.dotTexture,vertexColors:true,sizeAttenuation:false,transparent:true,opacity:0,depthTest:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));
-    node.scale.setScalar(MPC_KM);node.visible=false;this.owner.scene.add(node);this.dataNodes.push({node,kind:'density',outer:j===1});
-   }
+   const results=await Promise.all(['local-volume.bin.gz','cosmic-volume.bin.gz'].map(x=>fetchPacked(x)));
+   this.volumes=[new DensityVolume(this.owner,results[0],128,LOCAL_VOLUME_RADIUS,false),new DensityVolume(this.owner,results[1],192,46.5e9*LY_KM,true)];
    this.states.density='ready';
   }catch(error){this.states.density='error';console.error('Densidad cósmica',error);}
  }
@@ -90,7 +84,8 @@ export class CosmicSurveys {
   // Load only the data needed for the approaching scale. Each dataset is cached.
   if(ly>1e6&&layers.galaxies){if(layers.twoMrs)void this.loadCatalog('twoMrs');if(ly>3e7&&layers.sdss)void this.loadCatalog('sdss');}
   if(ly>5e7&&layers.flows)void this.loadFlows();
-  if(ly>2e9&&layers.structure)void this.loadDensity();
+  if(ly>4e8&&layers.structure)void this.loadDensity();
+  for(const volume of this.volumes||[])volume.update(origin,distance,layers.structure);
   for(const cat of this.catalogs) {
    cat.node.position.copy(origin).negate();
    cat.node.material.opacity=smooth(2e5,3e6,ly)*(1-smooth(8e9,25e9,ly))*(cat.kind==='sdss'?.8:.95);

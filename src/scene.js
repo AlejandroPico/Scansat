@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { EarthTiles } from './earth-tiles.js';
+import { zoomDistance, interpolateZoom } from './navigation.js';
 import { physicalShader } from './shader-support.js';
 import { closestPointOnRay } from './picking.js';
 import { CosmicScene } from './cosmic-scene.js';
@@ -265,6 +267,7 @@ export class OrbitalScene {
     this.onFocus = onFocus;
     this.simulationDate = new Date();
     this.running = true;
+    this.liveTime = true;
     this.timeScale = 1;
     this.catalogReferenceDate = null;
     this.catalogReliable = true;
@@ -307,9 +310,11 @@ export class OrbitalScene {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.065;
-    this.controls.minDistance = EARTH_RADIUS_KM * 1.012;
+    this.controls.minDistance = EARTH_RADIUS_KM + .08;
     this.controls.maxDistance = OBSERVABLE_RADIUS_KM * 4;
-    this.controls.zoomSpeed = 3.2;
+    this.controls.enableZoom = false;
+    this.zoomTarget = null;
+    this.navigationKeys = new Set();
     this.controls.rotateSpeed = 0.42;
     this.controls.panSpeed = 0.5;
     this.controls.enablePan = false;
@@ -341,6 +346,7 @@ export class OrbitalScene {
     this.createSurfaceSites();
     this.setSpacecraft([]);
     this.cosmos = new CosmicScene(this);
+    this.earthTiles = new EarthTiles(this);
     this.bindEvents();
     this.updateWorld(this.simulationDate, true);
 
@@ -669,10 +675,11 @@ export class OrbitalScene {
 
   setRunning(running) {
     this.running = running;
+    if (!running) this.liveTime = false;
   }
 
   setTimeScale(scale) {
-    if (Number.isFinite(scale) && scale !== 0) this.timeScale = scale;
+    if (Number.isFinite(scale) && scale !== 0) {this.timeScale = scale;this.liveTime=false;}
   }
 
   catalogSupports(date) {
@@ -681,6 +688,7 @@ export class OrbitalScene {
 
   setSimulationDate(date) {
     if (!(date instanceof Date) || Number.isNaN(date.valueOf())) return false;
+    this.liveTime=false;
     this.simulationDate = new Date(date);
     this.catalogReliable = this.catalogSupports(this.simulationDate);
     if (!this.catalogReliable && this.focus.type === 'object' && this.focus.item?.satrec) {
@@ -702,6 +710,7 @@ export class OrbitalScene {
     if (!body) return false;
     this.drawSelectedOrbit(null);
     this.cosmos.selectedItem=null;
+    this.zoomTarget=null;
     this.focus = { type: 'body', id };
     this.selected = body.surface.userData.item;
     this.updateWorld(this.simulationDate, true);
@@ -716,6 +725,7 @@ export class OrbitalScene {
     if (item.satrec && !this.catalogReliable) return false;
     if (this.bodyNodes.has(item.id)) return this.focusBody(item.id, notify);
     if (item.cosmic || item.satrec || item.kind === 'spacecraft' || item.kind === 'lagrange') {
+      this.zoomTarget=null;
       this.focus = { type: 'object', item };
       this.selected = item;
       this.updateWorld(this.simulationDate, true);
@@ -743,7 +753,7 @@ export class OrbitalScene {
     if (this.focus.type === 'body') {
       const radius = this.bodyNodes.get(this.focus.id)?.definition.radiusKm || EARTH_RADIUS_KM;
       distance = this.focus.id === 'earth' ? 26_000 : Math.max(radius * 5.5, radius + 850);
-      this.controls.minDistance = Math.max(1, radius * 1.012);
+      this.controls.minDistance = radius + .08;
     } else {
       const record = this.focus.item;
       distance = record.viewDistanceKm || (record.satrec ? 2_500 : record.kind === 'lagrange' ? 180_000 : 80_000);
@@ -877,7 +887,14 @@ export class OrbitalScene {
 
     for (const [id, body] of this.bodyNodes) {
       body.root.position.copy(this.rawPositions.get(id)).sub(origin);
-      if (id === 'earth') body.spin.rotation.y = gstime(date);
+      if (id === 'earth') {
+        const angle=gstime(date),previous=body.spin.rotation.y;
+        if(this.focus.id==='earth'&&this.camera.position.length()<body.definition.radiusKm+500&&!force){
+          const axis=new THREE.Vector3(0,1,0).applyQuaternion(body.axialTilt.quaternion);
+          this.camera.position.applyAxisAngle(axis,angle-previous);
+        }
+        body.spin.rotation.y=angle;
+      }
       else if (body.definition.type === 'moon' && body.definition.parent) {
         const towardParent = this.rawPositions.get(body.definition.parent).clone().sub(this.rawPositions.get(id)).normalize();
         body.spin.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), towardParent);
@@ -1065,11 +1082,29 @@ export class OrbitalScene {
     return null;
   }
 
+  focusRadius() {return this.focus.type==='body' ? (this.bodyNodes.get(this.focus.id)?.definition.radiusKm||0) : 0;}
+
   bindEvents() {
     const canvas = this.renderer.domElement;
+    canvas.tabIndex=0;
+    canvas.addEventListener('wheel',event=>{
+      event.preventDefault();
+      const delta=event.deltaY*(event.deltaMode===1?16:event.deltaMode===2?this.container.clientHeight:1);
+      this.zoomTarget=zoomDistance(this.zoomTarget??this.camera.position.length(),this.focusRadius(),delta,this.controls.minDistance,this.controls.maxDistance);
+    },{passive:false});
+    const pointers=new Map();let pinch=null;let multiGesture=false;
+    canvas.addEventListener('pointerdown',event=>{canvas.focus({preventScroll:true});pointers.set(event.pointerId,[event.clientX,event.clientY]);if(pointers.size>1)multiGesture=true;else multiGesture=false;});
+    canvas.addEventListener('pointermove',event=>{
+      if(!pointers.has(event.pointerId))return;pointers.set(event.pointerId,[event.clientX,event.clientY]);
+      if(pointers.size===2){const [a,b]=[...pointers.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pinch&&d>0)this.zoomTarget=zoomDistance(this.zoomTarget??this.camera.position.length(),this.focusRadius(),Math.log(pinch/d)*500,this.controls.minDistance,this.controls.maxDistance);pinch=d;}
+    });
+    for(const name of ['pointerup','pointercancel'])canvas.addEventListener(name,event=>{pointers.delete(event.pointerId);pinch=null;});
+    canvas.addEventListener('keydown',event=>{if(['KeyW','KeyA','KeyS','KeyD','KeyQ','KeyE','ShiftLeft','ShiftRight'].includes(event.code)){event.preventDefault();this.navigationKeys.add(event.code);}});
+    canvas.addEventListener('keyup',event=>this.navigationKeys.delete(event.code));
+    canvas.addEventListener('blur',()=>this.navigationKeys.clear());
     canvas.addEventListener('pointerdown', (event) => { this.pointerStart = { x: event.clientX, y: event.clientY }; });
     canvas.addEventListener('pointerup', (event) => {
-      if (!this.pointerStart || Math.hypot(event.clientX - this.pointerStart.x, event.clientY - this.pointerStart.y) > 5) return;
+      if (multiGesture || event.button!==0 || !this.pointerStart || Math.hypot(event.clientX - this.pointerStart.x, event.clientY - this.pointerStart.y) > 5) return;
       const item = this.pick(event);
       if (!item) { this.clearSelection(); return; }
       this.drawSelectedOrbit(null);
@@ -1095,12 +1130,17 @@ export class OrbitalScene {
     const position = new THREE.Vector3();
     const occupied = [];
     for (const label of this.labels) {
-      if (this.bodyNodes.has(label.id) && !this.showLabels) this.bodyNodes.get(label.id).marker.visible=false;
+      const body = this.bodyNodes.get(label.id);
+      if(body){
+        body.root.getWorldPosition(position);
+        const d=position.distanceTo(this.renderCamera.position)*this.renderUnit;
+        const pixels=body.definition.radiusKm/Math.max(1,d)*height/Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2));
+        body.marker.visible=this.showLabels&&pixels<11&&label.id!==this.focus.id;
+      }
       if (!this.showLabels || !this.isVisible(label.object) || !label.object.parent) { label.element.hidden = true; continue; }
       label.object.getWorldPosition(position);
       const projected = position.clone().project(this.renderCamera);
-      const onScreen = projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < 1.15 && Math.abs(projected.y) < 1.15;
-      const body = this.bodyNodes.get(label.id);
+      const onScreen = projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < .95 && Math.abs(projected.y) < .93;
       const distance = position.distanceTo(this.renderCamera.position) * this.renderUnit;
       const radius = body?.definition.radiusKm || 0;
       const pixels = radius / Math.max(1, distance) * height / Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
@@ -1157,7 +1197,7 @@ export class OrbitalScene {
     }
     this.renderCamera.copy(this.camera);
     this.renderCamera.position.copy(this.camera.position).divideScalar(this.renderUnit);
-    this.renderCamera.near = Math.max(1e-8, this.controls.minDistance * .0001 / this.renderUnit);
+    this.renderCamera.near = Math.max(1e-8, Math.max(.00001,(this.camera.position.length()-this.focusRadius())*.001) / this.renderUnit);
     this.renderCamera.far = Math.max(this.camera.position.length()*100, LY_KM*100000) / this.renderUnit;
     this.renderCamera.updateProjectionMatrix();
     this.renderCamera.updateMatrixWorld();
@@ -1184,11 +1224,28 @@ export class OrbitalScene {
     this.renderer.setSize(width, height, false);
   }
 
+  updateNavigation(dt) {
+    if(!this.controls.enablePan)return;
+    const shift=this.controls.target.clone();
+    if(this.navigationKeys.size){
+      const forward=this.camera.getWorldDirection(new THREE.Vector3()),right=new THREE.Vector3().crossVectors(forward,this.camera.up).normalize(),up=this.camera.up.clone();
+      const speed=this.camera.position.length()*dt*(this.navigationKeys.has('ShiftLeft')||this.navigationKeys.has('ShiftRight')?2:.3);
+      for(const [key,vector,sign] of [['KeyW',forward,1],['KeyS',forward,-1],['KeyD',right,1],['KeyA',right,-1],['KeyE',up,1],['KeyQ',up,-1]])if(this.navigationKeys.has(key))shift.addScaledVector(vector,speed*sign);
+    }
+    if(shift.lengthSq()===0)return;
+    const pan=this.controls.target.clone();this.camera.position.sub(pan);this.controls.target.set(0,0,0);
+    const position=this.focusOrigin.clone().add(shift).toArray();
+    const entering=this.focus.item?.id!=='free-flight';
+    this.controls.minDistance=50;
+    this.focus={type:'object',item:{id:'free-flight',name:'Exploración libre',kind:'region',cosmic:true,position,viewDistanceKm:this.camera.position.length()}};
+    this.updateWorld(this.simulationDate);if(entering)this.onFocus?.(this.focus.item);
+  }
+
   animate() {
     requestAnimationFrame(() => this.animate());
     const delta = Math.min(this.clock.getDelta(), 0.1);
     if (this.running) {
-      const time=this.simulationDate.getTime()+delta*1000*this.timeScale;
+      const time=this.liveTime?Date.now():this.simulationDate.getTime()+delta*1000*this.timeScale;
       const bounded=THREE.MathUtils.clamp(time,Date.parse('1957-10-04T00:00:00Z'),Date.parse('2050-12-31T23:59:59Z'));
       this.simulationDate=new Date(bounded);if(time!==bounded)this.running=false;
     }
@@ -1197,11 +1254,17 @@ export class OrbitalScene {
       this.updateWorld(this.simulationDate);
       this.lastPositionUpdate = now;
     }
+    if(this.zoomTarget!==null){const distance=interpolateZoom(this.camera.position.length(),this.zoomTarget,this.focusRadius(),delta);this.camera.position.setLength(distance);if(Math.abs(distance-this.zoomTarget)<Math.max(.000001,this.zoomTarget*1e-8))this.zoomTarget=null;}
+    const radius=this.focusRadius(),altitude=Math.max(.08,this.camera.position.length()-radius);
+    this.controls.rotateSpeed=radius?Math.min(.42,.42*altitude/radius):.42;
+    this.controls.enablePan=this.camera.position.length()>LY_KM*.1 || !!this.focus.item?.cosmic;
     this.controls.update();
+    this.updateNavigation(delta);
     this.updateCatalogPositions(this.simulationDate);
     this.updateVisibility();
     this.cosmos.update(this.focusOrigin, this.camera.position.length());
     this.prepareRender();
+    this.earthTiles.update();
     this.updateLabels();
     const sun = this.bodyNodes.get('sun')?.surface;
     if (sun?.material.uniforms?.time) sun.material.uniforms.time.value += delta;
