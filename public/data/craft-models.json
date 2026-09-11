@@ -1,0 +1,287 @@
+[
+  {
+    "id": "hubble",
+    "ids": [
+      "20580"
+    ],
+    "file": "models/craft/hubble.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Hubble%20Space%20Telescope%20%28B%29/Hubble%20Space%20Telescope%20%28B%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Hubble%20Space%20Telescope%20%28B%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "915d70497e567cbcd229d2a06c0a707303a29efb",
+    "extentMeters": 13.2,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "jwst",
+    "ids": [
+      "jwst"
+    ],
+    "file": "models/craft/jwst.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/James%20Webb%20Space%20Telescope%20%28A%29/James%20Webb%20Space%20Telescope%20%28A%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/James%20Webb%20Space%20Telescope%20%28A%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "4c00d7b2565a0229dbdbac12b4caa469d359aaf1",
+    "extentMeters": 21.2,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "voyager",
+    "ids": [
+      "voyager-1",
+      "voyager-2"
+    ],
+    "file": "models/craft/voyager.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Voyager%20Probe%20%28B%29/Voyager%20Probe%20%28B%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Voyager%20Probe%20%28B%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "bb997a2f539b54574d6e24a8123855ecc83748ac",
+    "extentMeters": 19.7,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "parker",
+    "ids": [
+      "parker"
+    ],
+    "file": "models/craft/parker.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Parker%20Solar%20Probe/Parker%20Solar%20Probe.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Parker%20Solar%20Probe",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "a405306c4ad6c67b5a6556b2057d4ddaed40be57",
+    "extentMeters": 3,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "maven",
+    "ids": [
+      "maven"
+    ],
+    "file": "models/craft/maven.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Mars%20Atmosphere%20and%20Volatile%20EvolutioN%20%28MAVEN%29%20%28A%29/Mars%20Atmosphere%20and%20Volatile%20EvolutioN%20%28MAVEN%29%20%28A%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Mars%20Atmosphere%20and%20Volatile%20EvolutioN%20%28MAVEN%29%20%28A%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "4ccf2158292b2310e8a8c49dd60726f61cf1a564",
+    "extentMeters": 11.4,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "mro",
+    "ids": [
+      "mro"
+    ],
+    "file": "models/craft/mro.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Mars%20Reconnaissance%20Orbiter%20%28MRO%29%20%28A%29/Mars%20Reconnaissance%20Orbiter%20%28MRO%29%20%28A%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Mars%20Reconnaissance%20Orbiter%20%28MRO%29%20%28A%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "c2b8efefb25c214ff648696ef021c4bf21ff602d",
+    "extentMeters": 13.6,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "lro",
+    "ids": [
+      "lro"
+    ],
+    "file": "models/craft/lro.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Lunar%20Reconnaissance%20Orbiter%20%28A%29/Lunar%20Reconnaissance%20Orbiter%20%28A%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Lunar%20Reconnaissance%20Orbiter%20%28A%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "1f39b1d63fcaa1dbd9a2098ff4eb1d927558dca2",
+    "extentMeters": 5.5,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "roman",
+    "ids": [
+      "roman"
+    ],
+    "file": "models/craft/roman.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Nancy%20Grace%20Roman%20Space%20Telescope%20%28A%29/Nancy%20Grace%20Roman%20Space%20Telescope%20%28A%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Nancy%20Grace%20Roman%20Space%20Telescope%20%28A%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "d02a8920b6490a7029553e77e94fe79f3c5037e3",
+    "extentMeters": 12.7,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "iss",
+    "ids": [
+      "25544"
+    ],
+    "file": "models/craft/iss.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/International%20Space%20Station%20%28ISS%29%20%28B%29/International%20Space%20Station%20%28ISS%29%20%28B%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/International%20Space%20Station%20%28ISS%29%20%28B%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "884cdf03d96b28285c1cdfdd34fcfd4f5de0021d",
+    "extentMeters": 109,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "perseverance",
+    "ids": [
+      "perseverance"
+    ],
+    "file": "models/craft/perseverance.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Mars%202020%20Perseverance%20Rover/Mars%202020%20Perseverance%20Rover.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Mars%202020%20Perseverance%20Rover",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "eb129b730235dd2c751417914b3fb4017d0e7895",
+    "extentMeters": 3,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "insight",
+    "ids": [
+      "insight"
+    ],
+    "file": "models/craft/insight.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/InSight%20Cruise%20Lander/InSight%20Cruise%20Lander%20%28panels%20deployed%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/InSight%20Cruise%20Lander",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "bdec483d5fbbf17d444fce5c50322abb3e180416",
+    "extentMeters": 6,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "mer",
+    "ids": [
+      "opportunity",
+      "spirit"
+    ],
+    "file": "models/craft/mer.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Mars%20Exploration%20Rover%20-%20Opportunity%20%28MER-B%29/Mars%20Exploration%20Rover%20-%20Opportunity%20%28MER-B%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Mars%20Exploration%20Rover%20-%20Opportunity%20%28MER-B%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "4e154ed38a6d4bf128ecb52f7231baed716c4f55",
+    "extentMeters": 2.3,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "tess",
+    "ids": [
+      "43435"
+    ],
+    "file": "models/craft/tess.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Transiting%20Exoplanet%20Survey%20Satellite%20%28TESS%29%20%28B%29/Transiting%20Exoplanet%20Survey%20Satellite%20%28TESS%29%20%28B%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Transiting%20Exoplanet%20Survey%20Satellite%20%28TESS%29%20%28B%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "e75a98b8ddfc7b519a19d36c80dd03e0b0a0b2b7",
+    "extentMeters": 3.9,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "chandra",
+    "ids": [
+      "25867"
+    ],
+    "file": "models/craft/chandra.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Chandra%20X-ray%20Observatory/Chandra%20X-ray%20Observatory.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Chandra%20X-ray%20Observatory",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "6df24c9cbc2d125db5d0970bde2daf7910929378",
+    "extentMeters": 19.5,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "swift",
+    "ids": [
+      "28485"
+    ],
+    "file": "models/craft/swift.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Swift/Swift.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Swift",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "ff9446720cafd4e88cef9474c8a824824b4dd0f3",
+    "extentMeters": 5.4,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "aqua",
+    "ids": [
+      "27424"
+    ],
+    "file": "models/craft/aqua.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Aqua%20%28B%29/Aqua%20%28B%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Aqua%20%28B%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "3ecd7ac34388a2a53076bc5fa53c4f8b9d12b246",
+    "extentMeters": 16.7,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "landsat8",
+    "ids": [
+      "39084"
+    ],
+    "file": "models/craft/landsat8.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Landsat%208/Landsat%208.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Landsat%208",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "bdfcbc85202e78092493d7534fcc5619c9a2b14e",
+    "extentMeters": 9,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "landsat7",
+    "ids": [
+      "25682"
+    ],
+    "file": "models/craft/landsat7.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Landsat%207/Landsat%207.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Landsat%207",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "a72c72214d3c0b9c701be1569c1251797f47575c",
+    "extentMeters": 4.3,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "wmap",
+    "ids": [
+      "wmap"
+    ],
+    "file": "models/craft/wmap.glb",
+    "url": "https://raw.githubusercontent.com/nasa/NASA-3D-Resources/master/3D%20Models/Wilkinson%20Microwave%20Anisotropy%20Probe%20%28WMAP%29/Wilkinson%20Microwave%20Anisotropy%20Probe%20%28WMAP%29.glb",
+    "sourceUrl": "https://github.com/nasa/NASA-3D-Resources/tree/master/3D%20Models/Wilkinson%20Microwave%20Anisotropy%20Probe%20%28WMAP%29",
+    "credit": "NASA · NASA 3D Resources",
+    "gitBlobSha": "1db1ea346a44e0e45583214e969f7a786b9cef58",
+    "extentMeters": 5.1,
+    "note": "Modelo publicado por NASA. Dimensión máxima de visualización aproximada; orientación ilustrativa, no telemetría de actitud."
+  },
+  {
+    "id": "curiosity",
+    "ids": [
+      "curiosity"
+    ],
+    "file": "models/craft/curiosity.glb",
+    "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/c/Curiosity_static.glb",
+    "sourceUrl": "https://science.nasa.gov/resource/curiosity-3d-model/",
+    "credit": "NASA / JPL · VTAD",
+    "extentMeters": 3,
+    "note": "Modelo NASA. Dimensión máxima aproximada y actitud ilustrativa."
+  },
+  {
+    "id": "new-horizons",
+    "ids": [
+      "new-horizons"
+    ],
+    "file": "models/craft/new-horizons.glb",
+    "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/n/New_Horizons.glb",
+    "sourceUrl": "https://science.nasa.gov/resource/new-horizons-3d-model/",
+    "credit": "NASA / JPL · VTAD",
+    "extentMeters": 2.7,
+    "note": "Modelo NASA. Dimensión máxima aproximada y actitud ilustrativa."
+  },
+  {
+    "id": "europa-clipper",
+    "ids": [
+      "europa-clipper"
+    ],
+    "file": "models/craft/europa-clipper.glb",
+    "url": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/c/clipper_spacecraft.glb",
+    "sourceUrl": "https://science.nasa.gov/resource/europa-clipper-3d-model/",
+    "credit": "NASA / JPL · VTAD",
+    "extentMeters": 30.5,
+    "note": "Modelo NASA. Dimensión máxima aproximada y actitud ilustrativa."
+  }
+]

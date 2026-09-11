@@ -1,3 +1,4 @@
+import {craftSpec} from './craft-models.js';
 import { ATLAS_LAYERS } from './atlas-data.js';
 import atlasImages from '../public/data/atlas/image-manifest.json' with {type:'json'};
 import { mediaFor,evidenceFor } from './encyclopedia-media.js';
@@ -161,6 +162,11 @@ function showDetail(item) {
   if (!item) return;
   state.selected = item;
   scene.selected = item;
+  const spec=craftSpec(item);
+  $('#craft-inspect').hidden=!spec;
+  $('#craft-inspect').onclick=()=>scene.craftModels.inspect(item);
+  $('#craft-description').hidden=!spec;
+  $('#craft-description').textContent=spec?spec.note:'';
   const satellite = Boolean(item.satrec);
   const body = Number.isFinite(item.radiusKm);
   const surface = item.kind === 'rover' || item.kind === 'landing';
@@ -266,7 +272,7 @@ function searchCatalog(query) {
   const normalized = normalize(query.trim());
   if (!normalized) { resultsBox.hidden = true; return; }
   const special = [...scene.getFocusTargets().filter((item) => normalize(`${escapeHTML(item.name)} ${item.id}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,5),...scene.cosmos.atlas.search(normalized,5)].slice(0, 5);
-  const records = state.records.filter((record) => record.name.toUpperCase().includes(normalized)
+  const records = state.records.filter((record) => normalize(`${record.name} ${record.aliases||''}`).includes(normalized)
     || record.id.includes(normalized) || record.internationalId.toUpperCase().includes(normalized)).slice(0, 9 - special.length);
   resultsBox.replaceChildren();
   for (const item of special) {
@@ -290,7 +296,7 @@ function searchCatalog(query) {
 function renderTargetMenu(query = '') {
   const normalized = normalize(query.trim());
   const targets = [...scene.getFocusTargets().filter((item) => !normalized || normalize(`${escapeHTML(item.name)} ${item.id} ${item.kind}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,18), ...scene.cosmos.atlas.search(normalized,12)];
-  const records = normalized ? state.records.filter((record) => `${record.name} ${record.id}`.toUpperCase().includes(normalized)).slice(0, 12) : [];
+  const records = normalized ? state.records.filter((record) => `${record.name} ${record.aliases||''} ${record.id}`.toUpperCase().includes(normalized)).slice(0, 12) : [];
   const container = $('#target-results');
   container.replaceChildren();
   const groups = [

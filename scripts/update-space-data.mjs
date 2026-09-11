@@ -33,7 +33,7 @@ async function fetchVector(target) {
   let response;
   for (let attempt = 0; attempt < 3; attempt += 1) {
     response = await fetch(url, {
-      headers: { 'user-agent': 'Universal/0.8.1 (+https://github.com/AlejandroPico/Universal)' },
+      headers: { 'user-agent': 'Universal/0.9.0 (+https://github.com/AlejandroPico/Universal)' },
       signal: AbortSignal.timeout(90_000),
     });
     if (response.ok && response.headers.get('content-type')?.includes('json')) break;

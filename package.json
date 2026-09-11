@@ -1,13 +1,13 @@
 {
   "name": "universal",
   "private": true,
-  "version": "0.8.1",
+  "version": "0.9.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "predev": "npm run assets:prepare",
+    "predev": "npm run assets:prepare && node scripts/prepare-craft-models.mjs",
     "build": "vite build",
-    "prebuild": "npm run assets:prepare",
+    "prebuild": "npm run assets:prepare && node scripts/prepare-craft-models.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "test": "node --test",
     "validate": "node scripts/validate.mjs",

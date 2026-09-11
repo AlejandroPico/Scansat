@@ -1,8 +1,17 @@
 # Universal · Atlas del universo
 
-**Versión 0.8.1-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
+**Versión 0.9.0-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
 
 Exploración continua desde la Tierra y el tráfico orbital hasta las estrellas, las galaxias y el volumen del universo observable. La rueda recorre todas las escalas sin cambiar de aplicación. Los radios de los cuerpos y las distancias comparten una unidad física; los marcadores son ayudas de localización, no diámetros agrandados.
+
+## Novedades de 0.9.0 · Primera entrega de modelos de naves
+
+- 22 modelos publicados por NASA, reutilizados para 24 destinos: Hubble, Webb, Voyager 1/2, Parker, MAVEN, MRO, LRO, Roman, ISS, Perseverance, InSight, Spirit/Opportunity, TESS, Chandra, Swift, Aqua, Landsat 7/8, WMAP, Curiosity, New Horizons y Europa Clipper. Solo aparecen si el objeto está en los catálogos del visor; disponer de un modelo no inventa una órbita.
+- Representación esquemática compartida de Starlink de primera generación; no asigna versiones V2/V3 a satélites sin identificación de variante. Fuente de configuración: [Starlink](https://www.starlink.com/technology).
+- Los modelos se descargan al acercarse a unos cientos de metros o kilómetros, según su tamaño. Solo se representa el objeto seleccionado o enfocado, y se conservan como máximo tres modelos en memoria. El botón **Ver modelo 3D** abre la escala de inspección. Los objetos sin modelo conservan su marcador.
+- Modelos a escala física aproximada, actitud ilustrativa e iluminación de inspección; no telemetría de orientación ni réplica de ingeniería. Los vehículos de superficie usan el emplazamiento de referencia del catálogo, no su recorrido actual. Las órbitas locales siguen siendo modelos aproximados.
+- Hubble se identifica por **NORAD 20580**, nombre HST y alias Hubble; no se confunde con otros satélites que contienen Hubble en su nombre.
+- Procedencia y correspondencias: `public/data/craft-models.json`. Modelos descargados durante la compilación a `public/models/craft`, excluidos de Git; `scripts/prepare-craft-models.mjs` valida cabecera y, para la colección GitHub NASA, SHA del contenido. Incluye el decodificador Draco de Three.js. Créditos: [NASA 3D Resources](https://github.com/nasa/NASA-3D-Resources), [NASA VTAD](https://science.nasa.gov/3d-resources/). El contenido NASA conserva sus condiciones originales, no se relicencia como código MIT de Universal.
 
 ## Novedades de 0.8.1 · Lectura visual y navegación
 

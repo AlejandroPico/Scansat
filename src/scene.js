@@ -1,3 +1,4 @@
+import {CraftModels,craftSpec,craftMinDistance} from './craft-models.js';
 import * as THREE from 'three';
 import { EarthTiles } from './earth-tiles.js';
 import { zoomDistance, interpolateZoom } from './navigation.js';
@@ -358,6 +359,7 @@ export class OrbitalScene {
     this.setSpacecraft([]);
     this.cosmos = new CosmicScene(this);
     this.earthTiles = new EarthTiles(this);
+    this.craftModels = new CraftModels(this);
     this.bindEvents();
     this.updateWorld(this.simulationDate, true);
 
@@ -742,7 +744,7 @@ export class OrbitalScene {
       if (['dwarf','asteroid','minor'].includes(item.kind)) this.cosmos.atlas.enable('minor');
       return this.focusBody(item.id, notify);
     }
-    if (item.cosmic || item.satrec || item.kind === 'spacecraft' || item.kind === 'lagrange') {
+    if (item.cosmic || item.satrec || item.kind === 'spacecraft' || item.kind === 'lagrange' || (item.body && craftSpec(item))) {
       this.zoomTarget=null;
       this.focus = { type: 'object', item };
       this.selected = item;
@@ -753,6 +755,7 @@ export class OrbitalScene {
         const normal=new THREE.Vector3(...item.position).normalize().negate();
         this.camera.position.copy(normal.multiplyScalar(item.viewDistanceKm));this.controls.update();
       }
+      if(item.body){const normal=this.surfaceNormal(item);this.camera.position.copy(normal.multiplyScalar(Math.max(.05,(craftSpec(item)?.extentMeters||3)*.01)));this.controls.update();}
       if (notify) this.onFocus?.(item);
       return true;
     }
@@ -779,7 +782,7 @@ export class OrbitalScene {
     } else {
       const record = this.focus.item;
       distance = record.viewDistanceKm || (record.satrec ? 2_500 : record.kind === 'lagrange' ? 180_000 : 80_000);
-      this.controls.minDistance = record.satrec ? 5 : 50;
+      this.controls.minDistance = craftMinDistance(record) ?? (record.satrec ? 5 : 50);
     }
     const direction = this.camera.position.lengthSq() > 0
       ? this.camera.position.clone().normalize()
@@ -819,9 +822,15 @@ export class OrbitalScene {
     return record || null;
   }
 
+  surfaceNormal(item) {
+    const body=this.bodyNodes.get(item.body);
+    return surfacePosition(item,1).applyQuaternion(body.spin.quaternion).applyQuaternion(body.axialTilt.quaternion).normalize();
+  }
+
   currentAbsolutePosition(item, date) {
     if (!item) return null;
     if (item.cosmic) return new THREE.Vector3(...item.position);
+    if(item.body && this.bodyNodes.has(item.body))return this.rawPositions.get(item.body).clone().addScaledVector(this.surfaceNormal(item),this.bodyNodes.get(item.body).definition.radiusKm);
     if (this.rawPositions.has(item.id)) return this.rawPositions.get(item.id).clone();
     if (item.satrec) {
       const earth = this.rawPositions.get('earth');
@@ -1273,7 +1282,7 @@ export class OrbitalScene {
       this.simulationDate=new Date(bounded);if(time!==bounded)this.running=false;
     }
     const now = performance.now();
-    if (now - this.lastPositionUpdate > 250) {
+    if (now - this.lastPositionUpdate > 250 || (craftSpec(this.focus.item)&&this.camera.position.length()<10)) {
       this.updateWorld(this.simulationDate);
       this.lastPositionUpdate = now;
     }
@@ -1286,6 +1295,7 @@ export class OrbitalScene {
     this.updateCatalogPositions(this.simulationDate);
     this.updateVisibility();
     this.cosmos.update(this.focusOrigin, this.camera.position.length());
+    this.craftModels.update();
     this.prepareRender();
     this.earthTiles.update();
     this.updateLabels();

@@ -652,3 +652,7 @@ kbd { padding: 2px 6px; border: 1px solid var(--line); color: var(--faint); font
 #layers-section input[type=range] { width:100%; }
 #layers-section .secondary-button,#layers-section .text-button { font-size:14px; white-space:normal; }
 @media(max-width:600px) { .layer-group-content { padding-left:10px; } #layers-section { padding-inline:12px; } }
+
+.craft-status {position:absolute;bottom:12px;left:14px;max-width:min(600px,65vw);z-index:8;background:var(--panel);color:var(--muted);font-size:12px;line-height:1.4;padding:6px 9px;pointer-events:none;}
+.craft-status[hidden]{display:none;}
+@media(max-width:600px){.craft-status{max-width:calc(100vw - 28px);bottom:8px;}}
