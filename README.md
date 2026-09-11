@@ -1,8 +1,16 @@
 # Universal · Atlas del universo
 
-**Versión 0.8.0-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
+**Versión 0.8.1-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
 
 Exploración continua desde la Tierra y el tráfico orbital hasta las estrellas, las galaxias y el volumen del universo observable. La rueda recorre todas las escalas sin cambiar de aplicación. Los radios de los cuerpos y las distancias comparten una unidad física; los marcadores son ayudas de localización, no diámetros agrandados.
+
+## Novedades de 0.8.1 · Lectura visual y navegación
+
+- Heliosfera, burbujas de Fermi, corrientes estelares y vacíos desactivados al iniciar; siguen disponibles mediante sus interruptores y botones Ir.
+- Polvo en ocres, ámbar y marrones de bajo brillo, con puntos difusos superpuestos. Burbuja Local como envolvente azul grisácea tenue, sin nube de vértices; ambas capas se desvanecen hacia la escala galáctica. Se preservan las coordenadas reconstruidas; el color del polvo representa densidad, no emisión óptica.
+- Vía Láctea con **900.000 trazadores**, frente a 320.000; mayor proporción y altura del disco grueso y del halo. Más población por sectores y transición gradual desde HYG. Son trazadores de un modelo, no 900.000 estrellas identificadas ni una estrella por punto; se conserva el radio físico de referencia y la escala común de distancias.
+- Capas con un único diseño plegable: presentación general, Tierra y órbitas, sistema solar, vecindad estelar, Vía Láctea, galaxias y grandes estructuras, Abell 2744 y universo observable/CMB al final. Cada grupo oculta todo su contenido al cerrarse.
+- Rueda y pellizco conservan la respuesta del sistema solar y reducen progresivamente su avance en distancias interestelares, galácticas y cosmológicas; en la escala más lejana hacen falta aproximadamente seis veces más pasos por el mismo factor de distancia. Los botones Ir mantienen el acceso directo.
 
 ## Novedades de 0.8.0 · Atlas astronómico
 

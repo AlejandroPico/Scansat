@@ -716,13 +716,13 @@ function syncAtlasControls(){
  updateAtlasCredit();
 }
 function mountAtlasControls(){
- const host=$('#atlas-controls');
- for(const group of ['Sistema solar','Vecindad y galaxia','Universo profundo']){
-  const section=document.createElement('details');section.className='atlas-group';section.open=group==='Sistema solar';
-  section.innerHTML=`<summary>${group}</summary>`;
-  for(const spec of ATLAS_LAYERS.filter(x=>x.group===group)){
+ const groups={solar:['minor','belts','heliosphere','oort'],nearby:['clusters','bubble','dust','nebulae'],galactic:['fermi','streams'],galaxies:['voids','desi'],lensing:['mass']};
+ for(const [group,ids] of Object.entries(groups)){
+  const section=document.querySelector(`[data-atlas-group="${group}"]`);
+  for(const id of ids){
+   const spec=ATLAS_LAYERS.find(x=>x.id===id);
    const row=document.createElement('div');row.className='atlas-layer-row';
-   row.innerHTML=`<label><input type="checkbox" id="atlas-${spec.id}" checked><span>${spec.name}<small id="atlas-status-${spec.id}"></small></span></label><button type="button" class="atlas-go" aria-label="Ir a ${spec.name}">Ir</button>`;
+   row.innerHTML=`<label><input type="checkbox" id="atlas-${spec.id}" ${scene.cosmos.atlas.enabled[spec.id]?'checked':''}><span>${spec.name}<small id="atlas-status-${spec.id}"></small></span></label><button type="button" class="atlas-go" aria-label="Ir a ${spec.name}">Ir</button>`;
    $('input',row).addEventListener('change',e=>{scene.cosmos.atlas.enabled[spec.id]=e.target.checked;if(e.target.checked)scene.cosmos.atlas.load(spec.id);syncAtlasControls();});
    $('button',row).addEventListener('click',async e=>{
     const button=e.currentTarget;button.disabled=true;
@@ -735,7 +735,7 @@ function mountAtlasControls(){
     }finally{button.disabled=false;syncAtlasControls();}
    });section.appendChild(row);
   }
-  host.appendChild(section);
+
  }
  $('#atlas-opacity').addEventListener('input',e=>{scene.cosmos.atlas.opacity=Number(e.target.value);$('#atlas-opacity-value').textContent=Math.round(Number(e.target.value)*100)+'%';});
  $('#atlas-wave').addEventListener('change',e=>{

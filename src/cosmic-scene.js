@@ -22,12 +22,13 @@ export class CosmicScene {
     this.cmb=new MicrowaveBackground(owner);this.photos=new AstronomyPhotos(owner);this.sectors=new GalacticSectors(owner);
     this.atlas=new LayerAtlas(this);
     for(const item of COSMIC_OBJECTS.filter(x=>x.kind==='galaxy')) {
-      const count=item.id==='milky-way'?320000:item.id==='andromeda'?80000:18000;
+      const count=item.id==='milky-way'?900000:item.id==='andromeda'?80000:18000;
       const {positions,colors}=galaxyPopulation(item,count);
-      const node=cloud(positions,colors,item.id==='milky-way'?2.4:2.2,owner.dotTexture);
+      if(item.id==='milky-way')for(let i=0;i<colors.length;i++)colors[i]*=.62;
+      const node=cloud(positions,colors,item.id==='milky-way'?1.9:2.2,owner.dotTexture);
       node.scale.setScalar(LY_KM); owner.scene.add(node); this.nodes.push({node,item,layer:'galaxies'});
       const hazePositions=[],hazeColors=[];
-      for(let i=0;i<positions.length;i+=18){hazePositions.push(...positions.subarray(i,i+3));hazeColors.push(...colors.subarray(i,i+3));}
+      for(let i=0;i<positions.length;i+=(item.id==='milky-way'?54:18)){hazePositions.push(...positions.subarray(i,i+3));hazeColors.push(...colors.subarray(i,i+3));}
       const haze=cloud(hazePositions,hazeColors,1,owner.dotTexture);
       haze.material.onBeforeCompile=shader=>{
         shader.uniforms.galaxyUnit={value:LY_KM};
@@ -99,8 +100,8 @@ export class CosmicScene {
     }
     if(this.starPoints) {
       this.starPoints.position.copy(origin).negate();
-      this.starPoints.visible=this.layers.stars&&distance<3e5*LY_KM;
-      this.starPoints.material.opacity=THREE.MathUtils.clamp(1-distance/(3e5*LY_KM),0,.85);
+      this.starPoints.visible=this.layers.stars&&distance<12000*LY_KM;
+      this.starPoints.material.opacity=.85*(1-THREE.MathUtils.smoothstep(distance/LY_KM,500,12000));
     }
     for(const entry of this.nodes) {
       const {node,item,layer,marker}=entry;

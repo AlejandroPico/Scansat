@@ -41,7 +41,7 @@ for (const [relativePath, url] of assets) {
   } catch { /* El recurso todavía no existe. */ }
 
   const response = await fetch(url, {
-    headers: { 'user-agent': 'Universal/0.8.0 (+https://github.com/AlejandroPico/Universal)' },
+    headers: { 'user-agent': 'Universal/0.8.1 (+https://github.com/AlejandroPico/Universal)' },
     signal: AbortSignal.timeout(120_000),
   });
   if (!response.ok) throw new Error(`No se pudo descargar ${url} (${response.status}).`);

@@ -97,55 +97,35 @@
               <div class="progress-track" id="load-progress"><span></span></div>
             </section>
 
-            <section class="panel-section" id="layers-section" data-utility-section="layers">
-              <button class="section-heading" type="button" aria-expanded="true">
-                <span><svg><use href="#i-layers"/></svg> Capas y objetos</span><svg class="chevron"><use href="#i-chevron"/></svg>
-              </button>
-              <div class="section-content layer-grid">
+<section class="panel-section" id="layers-section" data-utility-section="layers"><h2 class="layers-title">Capas</h2><div id="atlas-controls" class="layers-accordion"><details class="layer-group" id="layer-group-view"><summary>Presentación</summary><div class="layer-group-content"><label class="switch-row"><span>Etiquetas y localizadores</span><input id="labels-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="time-field"><span>Intensidad de las nuevas capas <output id="atlas-opacity-value">70%</output></span><input id="atlas-opacity" type="range" min="0.1" max="1" step="0.05" value="0.7"></label><p id="evidence-note" class="catalog-note"></p></div></details><details class="layer-group" id="layer-group-earth" open><summary>Tierra y órbitas</summary><div class="layer-group-content"><div class="layer-grid">
                 <button class="layer-card active" data-layer="satellite"><span class="layer-preview satellite"></span><span><strong>Color natural</strong><small>NASA · color natural</small></span></button>
                 <button class="layer-card" data-layer="political"><span class="layer-preview political"></span><span><strong>Fronteras</strong><small>Fronteras</small></span></button>
                 <button class="layer-card" data-layer="night"><span class="layer-preview night"></span><span><strong>Noche</strong><small>Black Marble</small></span></button>
-              </div>
-              <div class="filter-title"><span>Atlas astronómico</span></div>
-              <div id="atlas-controls"></div>
-              <label class="time-field"><span>Intensidad de las nuevas capas <output id="atlas-opacity-value">70%</output></span><input id="atlas-opacity" type="range" min="0.1" max="1" step="0.05" value="0.7"></label>
-              <details class="atlas-group"><summary>Cielo por longitud de onda</summary>
-                <label class="time-field"><span>Observación desde el entorno solar</span><select id="atlas-wave"><option value="optical">Visible · ESO</option><option value="infrared">Infrarrojo · IRIS 100 μm</option><option value="radio">Radio · Haslam 408 MHz</option><option value="xray">Rayos X · ROSAT</option><option value="gamma">Rayos gamma · Fermi</option><option value="microwave">Microondas · WMAP</option></select></label>
-                <p id="atlas-sky-status" class="catalog-note" aria-live="polite"></p>
-              </details>
-              <details class="atlas-group"><summary>Abell 2744 · imagen y masa</summary>
-                <label class="time-field"><span>Mostrar</span><select id="atlas-mass-mode"><option value="overlay">Imagen + masa por lentes</option><option value="optical">Imagen observada</option><option value="mass">Masa proyectada κ</option></select></label>
-                <label class="time-field"><span>Imagen de fondo</span><select id="atlas-mass-background"><option value="optical">Galaxias · Hubble / DSS2</option><option value="xray">Emisión X · Chandra</option></select></label>
-                <label class="time-field"><span>Superposición de masa</span><input id="atlas-mass-mix" type="range" min="0" max="1" step="0.05" value="0.6"></label>
-                <p class="catalog-note">κ traza masa total proyectada, dominada por materia oscura; no su profundidad 3D. Escala logarítmica relativa. Chandra muestra emisión de plasma caliente, fuentes puntuales y fondo; no densidad de gas pura.</p>
-              </details>
-              <p id="evidence-note" class="catalog-note"></p><div class="filter-title"><span>Universo y navegación</span></div>
-              <label class="switch-row"><span>Estrellas de catálogo HYG</span><input id="stars-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Fondo cósmico de microondas · WMAP</span><input id="cmb-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <button class="secondary-button" id="cmb-focus">Ver la última luz primordial</button>
-              <p class="catalog-note" id="cmb-status">WMAP · temperatura en falso color · ±200 μK. Visible al alejarse hasta la escala del horizonte.</p>
-              <label class="switch-row"><span>Cielo fotográfico · ESO</span><input id="sky-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Población galáctica modelada</span><input id="population-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <p class="catalog-note">Para explorar la galaxia: arrastra con el botón derecho, o usa W/A/S/D y Q/E sobre el visor. Mayús acelera. Las estrellas modeladas se distinguen de HYG.</p>
-              <label class="switch-row"><span>Galaxias y Vía Láctea</span><input id="galaxies-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Galaxias cercanas · 2MRS</span><input id="twoMrs-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Galaxias del sondeo · SDSS</span><input id="sdss-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Flujos de Laniakea · CF4</span><input id="flows-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Densidad cósmica · modelo</span><input id="structure-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Etiquetas y localizadores</span><input id="labels-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Órbitas de planetas y lunas</span><input id="planet-orbits-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <p id="galaxy-status" class="catalog-note" aria-live="polite">2MRS + SDSS se cargan al alejarte.</p><button id="load-galaxy-catalogs" type="button" class="text-button">Cargar catálogos de galaxias para buscar</button>
-              <label class="time-field"><span>Magnitud estelar límite <output id="star-magnitude-value">8.5</output></span><input id="star-magnitude" type="range" min="3" max="14" step="0.5" value="8.5"></label><div class="filter-title"><span>Sistema solar</span></div>
-              <label class="switch-row"><span>Imagen terrestre de alta resolución</span><input id="earth-detail-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Observación diaria NASA · nubes y superficie</span><input id="earth-weather-toggle" type="checkbox"><span class="switch"></span></label>
-              <p class="catalog-note" id="earth-detail-status">Imágenes por teselas al acercarse. La cobertura y resolución varían según el lugar; no son imágenes en directo.</p>
-              <label class="switch-row"><span>Atmósfera</span><input id="atmosphere-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Basura espacial</span><input id="debris-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Misiones y Lagrange</span><input id="missions-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Lugares de superficie</span><input id="surface-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row"><span>Componentes e impactos secundarios</span><input id="components-toggle" type="checkbox"><span class="switch"></span></label><label class="switch-row"><span>Órbita seleccionada</span><input id="orbit-toggle" type="checkbox" checked><span class="switch"></span></label>
-              <label class="switch-row" hidden><span>Cobertura estimada</span><input id="coverage-toggle" type="checkbox"><span class="switch"></span></label>
-            </section>
+              </div><label class="switch-row"><span>Imagen terrestre de alta resolución</span><input id="earth-detail-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="switch-row"><span>Observación diaria NASA · nubes y superficie</span><input id="earth-weather-toggle" type="checkbox"><span class="switch"></span></label>
+<p class="catalog-note" id="earth-detail-status">Imágenes por teselas al acercarse. La cobertura y resolución varían según el lugar; no son imágenes en directo.</p>
+<label class="switch-row"><span>Atmósfera</span><input id="atmosphere-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="switch-row"><span>Basura espacial</span><input id="debris-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="switch-row"><span>Órbita seleccionada</span><input id="orbit-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="switch-row" hidden><span>Cobertura estimada</span><input id="coverage-toggle" type="checkbox"><span class="switch"></span></label></div></details><details class="layer-group" id="layer-group-solar"><summary>Sistema solar</summary><div class="layer-group-content"><label class="switch-row"><span>Órbitas de planetas y lunas</span><input id="planet-orbits-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="switch-row"><span>Misiones y Lagrange</span><input id="missions-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="switch-row"><span>Lugares de superficie</span><input id="surface-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="switch-row"><span>Componentes e impactos secundarios</span><input id="components-toggle" type="checkbox"><span class="switch"></span></label><div data-atlas-group="solar"></div></div></details><details class="layer-group" id="layer-group-nearby"><summary>Vecindad estelar</summary><div class="layer-group-content"><label class="switch-row"><span>Estrellas de catálogo HYG</span><input id="stars-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="time-field"><span>Magnitud estelar límite <output id="star-magnitude-value">8.5</output></span><input id="star-magnitude" type="range" min="3" max="14" step="0.5" value="8.5"></label>
+<label class="switch-row"><span>Cielo fotográfico · ESO</span><input id="sky-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="time-field"><span>Observación desde el entorno solar</span><select id="atlas-wave"><option value="optical">Visible · ESO</option><option value="infrared">Infrarrojo · IRIS 100 μm</option><option value="radio">Radio · Haslam 408 MHz</option><option value="xray">Rayos X · ROSAT</option><option value="gamma">Rayos gamma · Fermi</option><option value="microwave">Microondas · WMAP</option></select></label>
+<p id="atlas-sky-status" class="catalog-note" aria-live="polite"></p><div data-atlas-group="nearby"></div></div></details><details class="layer-group" id="layer-group-galactic"><summary>Vía Láctea</summary><div class="layer-group-content"><label class="switch-row"><span>Población galáctica modelada</span><input id="population-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="switch-row"><span>Galaxias y Vía Láctea</span><input id="galaxies-toggle" type="checkbox" checked><span class="switch"></span></label><div data-atlas-group="galactic"></div><p class="catalog-note">Desplázate con el botón derecho o W/A/S/D y Q/E. Mayús acelera. La población modelada complementa las estrellas de catálogo.</p></div></details><details class="layer-group" id="layer-group-galaxies"><summary>Galaxias y grandes estructuras</summary><div class="layer-group-content"><label class="switch-row"><span>Galaxias cercanas · 2MRS</span><input id="twoMrs-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="switch-row"><span>Galaxias del sondeo · SDSS</span><input id="sdss-toggle" type="checkbox" checked><span class="switch"></span></label>
+<p id="galaxy-status" class="catalog-note" aria-live="polite">2MRS + SDSS se cargan al alejarte.</p>
+<button id="load-galaxy-catalogs" type="button" class="text-button">Cargar catálogos de galaxias para buscar</button>
+<label class="switch-row"><span>Flujos de Laniakea · CF4</span><input id="flows-toggle" type="checkbox" checked><span class="switch"></span></label><div data-atlas-group="galaxies"></div></div></details><details class="layer-group" id="layer-group-lensing"><summary>Universo profundo · Abell 2744</summary><div class="layer-group-content"><div data-atlas-group="lensing"></div><label class="time-field"><span>Mostrar</span><select id="atlas-mass-mode"><option value="overlay">Imagen + masa por lentes</option><option value="optical">Imagen observada</option><option value="mass">Masa proyectada κ</option></select></label>
+<label class="time-field"><span>Imagen de fondo</span><select id="atlas-mass-background"><option value="optical">Galaxias · Hubble / DSS2</option><option value="xray">Emisión X · Chandra</option></select></label>
+<label class="time-field"><span>Superposición de masa</span><input id="atlas-mass-mix" type="range" min="0" max="1" step="0.05" value="0.6"></label><p class="catalog-note">Masa total proyectada por lentes; no profundidad 3D. Chandra muestra emisión X de plasma, fuentes y fondo.</p></div></details><details class="layer-group" id="layer-group-horizon"><summary>Universo observable y fondo de microondas</summary><div class="layer-group-content"><label class="switch-row"><span>Densidad cósmica · modelo</span><input id="structure-toggle" type="checkbox" checked><span class="switch"></span></label>
+<label class="switch-row"><span>Fondo cósmico de microondas · WMAP</span><input id="cmb-toggle" type="checkbox" checked><span class="switch"></span></label>
+<button class="secondary-button" id="cmb-focus">Ver la última luz primordial</button>
+<p class="catalog-note" id="cmb-status">WMAP · temperatura en falso color · ±200 μK. Visible al alejarse hasta la escala del horizonte.</p></div></details></div></section>
 
             <section class="panel-section" id="filters-section" data-utility-section="filters">
               <button class="section-heading" type="button" aria-expanded="true">
@@ -254,10 +234,10 @@
     <dialog class="app-dialog about-dialog" id="about-dialog">
       <div class="dialog-shell compact">
         <header><div><span class="dialog-kicker">ACERCA DEL PROYECTO</span><h2>Universal</h2></div><button class="icon-button plain dialog-close" aria-label="Cerrar acerca de"><svg><use href="#i-close"/></svg></button></header>
-        <div class="about-hero"><img class="universal-mark" src="./favicon.svg" alt="" width="56" height="56"><div><strong>Universal · Atlas del universo</strong><small>Versión 0.8.0 · Alfa</small></div></div>
+        <div class="about-hero"><img class="universal-mark" src="./favicon.svg" alt="" width="56" height="56"><div><strong>Universal · Atlas del universo</strong><small>Versión 0.8.1 · Alfa</small></div></div>
         <p>Universal es un atlas interactivo para explorar el espacio y consultar su enciclopedia ilustrada. Conecta la Tierra, los satélites, el sistema solar, las estrellas, las galaxias y el universo observable mediante una escala física común. Combina OMM/SGP4, JPL Horizons, 109.400 estrellas HYG y el archivo histórico GCAT. La cosmografía incorpora 431.263 registros SDSS/WWT, 43.380 registros 2MRS y las rejillas de velocidades y cuencas de Cosmicflows-4. Incluye imágenes terrestres de detalle, fotografías ESO y DSS2, exploración galáctica y el fondo cósmico de microondas observado por WMAP. La Vía Láctea y la densidad del volumen no cartografiado son modelos identificados. Los dos sondeos pueden contener galaxias en común; no constituyen un mapa observado completo.</p>
         <p>La versión 0.8.0 añade ocho cuerpos menores, cinturones y regiones exteriores, la Burbuja Local, polvo 3D, corrientes estelares, cúmulos, nebulosas, 48 vacíos VAST, 15.795 galaxias DESI y un mapa de masa por lentes de Abell 2744. Cielo observado en visible, infrarrojo, radio, rayos X, gamma y microondas. Cada capa identifica sus fuentes y distingue observación, reconstrucción y modelo.</p>
-        <div class="about-links"><a href="https://alejandropico.github.io/Portfolio/" target="_blank" rel="noreferrer">Portfolio <span>↗</span></a><a href="https://github.com/AlejandroPico/Universal" target="_blank" rel="noreferrer">Repositorio <span>↗</span></a></div>
+        <p>0.8.1: capas ordenadas por distancia, inicio más limpio, polvo ocre difuso, Burbuja Local tenue y una Vía Láctea con 900.000 trazadores, disco grueso y halo más presentes. Zoom progresivamente más pausado fuera del sistema solar.</p><div class="about-links"><a href="https://alejandropico.github.io/Portfolio/" target="_blank" rel="noreferrer">Portfolio <span>↗</span></a><a href="https://github.com/AlejandroPico/Universal" target="_blank" rel="noreferrer">Repositorio <span>↗</span></a></div>
         <div class="credits"><strong>Datos y atribuciones</strong><p>Atlas: O’Neill, Zucker, Goodman y Edenhofer; galstreams / Mateu; DESI Collaboration; VAST / Douglass, Veyrat y BenZvi; CATS / Jauzac y Hubble Frontier Fields; NASA/ESA Hubble y CDS HiPS2FITS. Créditos completos junto a las imágenes y en sus fichas. Órbitas terrestres y basura: CelesTrak / 18 SDS. Efemérides: NASA/JPL Horizons. Tierra: NASA Blue/Black Marble. Luna: LROC/LOLA. Sol: STEREO y SDO/AIA. Otras texturas: NASA, JPL, USGS y NASA 3D Resources. Propagación: satellite.js. Fronteras: Natural Earth.</p><p>Los iconos conservan legibilidad en pantalla, pero cuerpos y distancias utilizan kilómetros físicos. Herramienta educativa; no apta para navegación ni operaciones espaciales.</p></div>
       <p class="about-data-credits">Datos estelares: <a href="https://github.com/astronexus/HYG-Database" target="_blank" rel="noreferrer">HYG v4.1 · David Nash · CC BY-SA 4.0</a>. Exploración: <a href="https://planet4589.org/space/gcat/" target="_blank" rel="noreferrer">GCAT · Jonathan McDowell · CC BY 4.0</a>. Mapas: NASA/GSFC y NASA 3D Resources.</p></div>
     </dialog>

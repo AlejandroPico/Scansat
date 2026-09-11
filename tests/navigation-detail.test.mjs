@@ -11,7 +11,7 @@ import { LY_KM } from '../src/cosmic-data.js';
 test('zoom continuo desde horizonte cosmológico a 80 m sin atravesar la Tierra',()=>{
  const radius=6371,min=radius+.08,max=120e9*LY_KM;
  let d=max,previousStep=Infinity;
- for(let i=0;i<500;i++){
+ for(let i=0;i<2000;i++){
   const next=zoomDistance(d,radius,-100,min,max);assert.ok(next>=min&&next<=d);
   if(d-radius<100){assert.ok(d-next<previousStep+1e-6);previousStep=d-next;}
   const intermediate=interpolateZoom(d,next,radius,1/60);assert.ok(intermediate>=next-1e-9&&intermediate<=d+1e-9);d=next;
@@ -55,4 +55,13 @@ test('controles reorganizados conservan todos los destinos DOM del código',asyn
  const ids=[...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]);assert.equal(ids.length,new Set(ids).size);
  for(const match of app.matchAll(/\$\('#([\w-]+)'\)/g))assert.ok(ids.includes(match[1]),match[1]);
  assert.ok(!html.includes('class="statusbar"'));assert.ok(!ids.includes('utc-clock'));
+});
+
+test('la rueda conserva el sistema solar y necesita más pasos en distancias cósmicas',()=>{
+ const max=120e9*LY_KM;
+ const step=d=>Math.log(zoomDistance(d,0,100,1,max)/d);
+ assert.ok(Math.abs(step(1e9)-.32)<1e-10);
+ assert.ok(step(LY_KM)>step(1e4*LY_KM));
+ assert.ok(step(1e4*LY_KM)>step(1e8*LY_KM));
+ assert.ok(step(1e8*LY_KM)<.32/5);
 });

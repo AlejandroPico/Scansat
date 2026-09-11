@@ -12,7 +12,7 @@ const clamp=THREE.MathUtils.clamp;
 export class LayerAtlas {
  constructor(cosmos){
   this.cosmos=cosmos;this.owner=cosmos.owner;
-  this.enabled=Object.fromEntries(ATLAS_LAYERS.map(x=>[x.id,true]));
+  this.enabled=Object.fromEntries(ATLAS_LAYERS.map(x=>[x.id,x.defaultEnabled!==false]));
   this.states=Object.fromEntries(ATLAS_LAYERS.map(x=>[x.id,'pending']));
   this.errors={};this.nodes=[];this.targets=ATLAS_TARGETS.map(x=>({...x,position:[...x.position]}));
   this.cosmos.targets.push(...this.targets);this.opacity=.7;this.wavelength='optical';this.skyMaps={};this.massMode='overlay';this.massBackground='optical';this.massMix=.6;this.desiItems=[];
@@ -63,15 +63,28 @@ export class LayerAtlas {
   if(raw.length%3||indices.some(i=>i>=raw.length/3))throw new Error('Superficie de la Burbuja Local inválida');
   for(let i=0;i<raw.length;i+=3)p.set(gal(raw.subarray(i,i+3)),i);
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));g.setIndex(new THREE.BufferAttribute(indices,1));g.computeVertexNormals();
-  const material=new THREE.MeshBasicMaterial({color:'#67c6ca',transparent:true,opacity:.15,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
-  const node=new THREE.Mesh(g,material);node.scale.setScalar(PC_KM);this.add(node,'bubble',this.target('local-bubble'),.18);
-  const outline=this.points(p,null,1.3);outline.scale.setScalar(PC_KM);this.add(outline,'bubble',this.target('local-bubble'),.35);
+  const material=new THREE.MeshBasicMaterial({color:'#8bbfc0',transparent:true,opacity:.04,depthWrite:false,side:THREE.DoubleSide,toneMapped:false});
+  const node=new THREE.Mesh(g,material);node.scale.setScalar(PC_KM);this.add(node,'bubble',this.target('local-bubble'),.07);
+  // Soft silhouette on the measured surface, without a dotted mesh overlay.
+  material.onBeforeCompile=shader=>{
+   shader.vertexShader='varying vec3 bubbleNormal; varying vec3 bubbleView;\n'+shader.vertexShader;
+   shader.vertexShader=shader.vertexShader.replace('#include <project_vertex>','#include <project_vertex>\nbubbleNormal=normalize(normalMatrix*normal);bubbleView=-mvPosition.xyz;');
+   shader.fragmentShader='varying vec3 bubbleNormal; varying vec3 bubbleView;\n'+shader.fragmentShader;
+   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat rim=1.0-abs(dot(normalize(bubbleNormal),normalize(bubbleView)));diffuseColor.a*=0.12+0.88*pow(rim,2.2);');
+  };
  }
  async loadDust(){
   const raw=new Float32Array(await this.fetch('nearby-dust-points.f32',true));if(raw.length%4)throw new Error('Polvo truncado');
   const p=[],c=[];
-  for(let i=0;i<raw.length;i+=4){p.push(...gal(raw.subarray(i,i+3)));const v=clamp(Math.log1p(raw[i+3])/3,0,1);const col=new THREE.Color().setRGB(.27+.63*v,.15+.5*v,.37+.3*v);c.push(col.r,col.g,col.b);}
-  const node=this.points(p,c,2,16);node.scale.setScalar(PC_KM);this.add(node,'dust',this.target('local-dust'),.24);
+  for(let i=0;i<raw.length;i+=4){p.push(...gal(raw.subarray(i,i+3)));const v=clamp(Math.log1p(raw[i+3])/3,0,1);const col=new THREE.Color().setRGB(.20+.32*v,.085+.20*v,.025+.075*v);c.push(col.r,col.g,col.b);}
+  const node=this.points(p,c,2,26);
+  node.material.blending=THREE.NormalBlending;
+  const compile=node.material.onBeforeCompile;
+  node.material.onBeforeCompile=shader=>{
+   compile(shader);
+   shader.fragmentShader=shader.fragmentShader.replace('#include <map_particle_fragment>','vec2 q=gl_PointCoord*2.0-1.0;float r=dot(q,q);diffuseColor.a*=exp(-r*4.5)*(1.0-smoothstep(.55,1.0,r));');
+  };
+  node.scale.setScalar(PC_KM);this.add(node,'dust',this.target('local-dust'),.18);
  }
  async loadStreams(){
   const data=await this.fetch('streams.json');
@@ -217,7 +230,11 @@ export class LayerAtlas {
     else if(!item.solarRegion)visible=visible&&(focus?.atlasLayer===layer||ly<spec.maxLy);
    }else visible=visible&&ly<spec.maxLy&&(ly>spec.minLy||focus?.atlasLayer===layer||focus?.catalogGalaxy);
    node.visible=visible;
-   if(!marker&&node.material)node.material.opacity=entry.opacity*this.opacity;
+   if(!marker&&node.material){
+    const fade=['bubble','dust'].includes(layer)&&focus?.atlasLayer!==layer
+      ? THREE.MathUtils.smoothstep(ly,spec.minLy,spec.minLy*3)*(1-THREE.MathUtils.smoothstep(ly,8000,50000)) : 1;
+    node.material.opacity=entry.opacity*this.opacity*fade;
+   }
    if(layer==='mass'&&!marker){
     const background=node!==this.massKappa, matchingBackground=this.massBackground==='xray'?node===this.massXray:node!==this.massXray;node.visible=visible&&(background?this.massMode!=='mass'&&matchingBackground:this.massMode!=='optical');node.material.opacity=background?1:(this.massMode==='mass'?1:this.massMix);
    }

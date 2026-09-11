@@ -10,7 +10,7 @@ export function sectorPopulation(x,y,z){
  const absolute=[(x+.5)*CELL,(y+.5)*CELL,(z+.5)*CELL],delta=absolute.map((v,i)=>v-center[i]);
  const g=axes.map(axis=>axis.reduce((sum,v,i)=>sum+v*delta[i],0));
  const density=Math.exp(-Math.hypot(g[0],g[1])/22000)*Math.exp(-Math.abs(g[2])/1100);
- const count=Math.floor(420*density),stars=[];
+ const count=Math.floor(720*density),stars=[];
  for(let i=0;i<count;i++){
   const position=[(x+random())*CELL,(y+random())*CELL,(z+random())*CELL].map(v=>v*LY_KM);
   const temperature=random(),color=temperature<.65?'#ffbc87':temperature<.91?'#fff0d4':'#b7d3ff';
@@ -21,7 +21,7 @@ export class GalacticSectors {
  constructor(owner){this.owner=owner;this.key='';this.stars=[];this.cache=new Map();this.node=new THREE.Points(new THREE.BufferGeometry(),new THREE.PointsMaterial({size:2,sizeAttenuation:false,vertexColors:true,map:owner.dotTexture,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false}));this.node.frustumCulled=false;this.node.scale.setScalar(LY_KM);owner.scene.add(this.node);}
  update(origin,distance,enabled){
   const observer=this.owner.camera.position.clone().add(origin).divideScalar(LY_KM),solDistance=observer.length();
-  this.node.visible=enabled&&distance<4000*LY_KM&&solDistance>120&&solDistance<150000;
+  this.node.visible=enabled&&distance<8000*LY_KM&&solDistance>120&&solDistance<150000;
   if(!this.node.visible)return;
   const cell=observer.toArray().map(v=>Math.floor(v/CELL)),key=cell.join(':');
   if(key!==this.key){
@@ -36,7 +36,7 @@ export class GalacticSectors {
    this.node.geometry.dispose();this.node.geometry=new THREE.BufferGeometry();this.node.geometry.setAttribute('position',new THREE.Float32BufferAttribute(p,3));this.node.geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
   }
   this.node.position.copy(this.anchor).multiplyScalar(LY_KM).sub(origin);
-  this.node.material.opacity=THREE.MathUtils.smoothstep(solDistance,120,350)*(1-THREE.MathUtils.smoothstep(distance/LY_KM,1500,4000))*.65;
+  this.node.material.opacity=THREE.MathUtils.smoothstep(solDistance,120,350)*(1-THREE.MathUtils.smoothstep(distance/LY_KM,1200,8000))*.65;
   // Spherical fade is observer-relative and smaller than the loaded cube, so
   // cell boundaries never become visible as stars enter/leave the cache.
   this.node.material.onBeforeCompile=shader=>{

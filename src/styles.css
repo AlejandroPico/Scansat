@@ -627,3 +627,28 @@ kbd { padding: 2px 6px; border: 1px solid var(--line); color: var(--faint); font
 .atlas-credit { position:fixed; left:16px; bottom:12px; max-width:min(620px,calc(100vw - 32px)); background:var(--panel,rgba(12,18,24,.88)); color:var(--text,#dce5ea); font-size:12px; line-height:1.5; padding:7px 10px; pointer-events:none; z-index:5; }
 .atlas-credit[hidden] { display:none; }
 @media(max-width:700px) { .atlas-credit { max-width:calc(100vw - 20px); left:10px; bottom:8px; font-size:12px; } }
+
+/* One collapse model for all layers; closed groups contain no exposed controls. */
+#layers-section { padding:10px 16px 16px; }
+.layers-title { margin:4px 0 12px; font-size:16px; font-weight:600; }
+.layer-group { border-top:1px solid var(--line); }
+.layer-group > summary { display:flex; align-items:center; gap:10px; padding:13px 0; font-size:14px; font-weight:600; line-height:1.4; cursor:pointer; list-style:none; }
+.layer-group > summary::-webkit-details-marker { display:none; }
+.layer-group > summary::before { content:'›'; width:12px; flex:none; color:var(--muted); font-size:20px; transform-origin:center; transition:transform .15s; }
+.layer-group[open] > summary::before { transform:rotate(90deg); }
+.layer-group > summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.layer-group:not([open]) > .layer-group-content { display:none !important; }
+.layer-group-content { padding:0 0 14px 22px; min-width:0; }
+#layers-section .switch-row { font-size:14px; line-height:1.45; min-height:38px; gap:10px; }
+#layers-section .switch-row > span:first-child { flex:1; min-width:0; }
+#layers-section .time-field { font-size:14px; margin:10px 0; }
+#layers-section .time-field select { width:100%; min-width:0; font-size:14px; }
+#layers-section .catalog-note { font-size:12px; line-height:1.5; margin:6px 0 10px; }
+#layers-section .layer-card strong { font-size:12px; white-space:normal; }
+#layers-section .layer-card small { font-size:12px; white-space:normal; }
+#layers-section .atlas-layer-row { border-top:1px solid var(--line); }
+#layers-section .atlas-layer-row:first-child { border-top:0; }
+#layers-section .atlas-go { min-height:32px; }
+#layers-section input[type=range] { width:100%; }
+#layers-section .secondary-button,#layers-section .text-button { font-size:14px; white-space:normal; }
+@media(max-width:600px) { .layer-group-content { padding-left:10px; } #layers-section { padding-inline:12px; } }

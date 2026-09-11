@@ -67,3 +67,14 @@ test('un fallo de imagen conserva otras capas y un reintento no duplica planos',
  await atlas.load('nebulae');assert.equal(atlas.states.nebulae,'error');assert.equal(atlas.nodes.filter(x=>x.layer==='nebulae'&&!x.marker).length,0);assert.ok(atlas.nodes.some(x=>x.layer==='clusters'&&!x.marker));
  atlas.texture=texture;await atlas.load('nebulae');assert.equal(atlas.states.nebulae,'ready');assert.equal(atlas.nodes.filter(x=>x.layer==='nebulae'&&!x.marker).length,3);
 });
+
+test('las capas auxiliares empiezan apagadas y siguen disponibles al activarlas',async()=>{
+ const {atlas,owner}=fixture();
+ for(const id of ['heliosphere','fermi','streams','voids'])assert.equal(atlas.enabled[id],false);
+ for(const ly of [.01,100,10000,1e8]){
+  owner.camera.position.set(0,0,ly*LY_KM);atlas.update(new THREE.Vector3(),ly*LY_KM);
+  assert.ok(atlas.nodes.filter(x=>['heliosphere','fermi','streams','voids'].includes(x.layer)).every(x=>!x.node.visible));
+ }
+ atlas.enable('heliosphere');const item=atlas.target('heliosphere');owner.focus={item};owner.camera.position.set(0,0,item.viewDistanceKm);atlas.update(new THREE.Vector3(),item.viewDistanceKm);
+ assert.ok(atlas.nodes.some(x=>x.layer==='heliosphere'&&!x.marker&&x.node.visible));
+});
