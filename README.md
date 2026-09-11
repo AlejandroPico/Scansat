@@ -1,8 +1,44 @@
 # Universal · Atlas del universo
 
-**Versión 0.7.0-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
+**Versión 0.8.0-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
 
 Exploración continua desde la Tierra y el tráfico orbital hasta las estrellas, las galaxias y el volumen del universo observable. La rueda recorre todas las escalas sin cambiar de aplicación. Los radios de los cuerpos y las distancias comparten una unidad física; los marcadores son ayudas de localización, no diámetros agrandados.
+
+## Novedades de 0.8.0 · Atlas astronómico
+
+Las propuestas **1–11** se incorporan a **Capas → Atlas astronómico**. Cada capa tiene interruptor, estado de carga y botón **Ir**; los objetos aparecen en búsqueda y enciclopedia. No se incluyen exoplanetas ni las herramientas de las propuestas 12–20.
+
+| Propuesta | Incorporación | Naturaleza y alcance |
+|---|---|---|
+| 1 · Burbuja Local | 12.288 vértices y 18.877 triángulos | Superficie de O’Neill et al. (2024), reconstruida a partir del polvo; interpolación de visualización, no pared exacta. |
+| 2 · Polvo 3D | 38.852 celdas densas, muestreo de unos 15 pc | Mapa Edenhofer publicado en figuras de O’Neill; recorte 69–650 pc, densidad relativa en falso color. No hay datos dentro de 69 pc. |
+| 3 · Fermi | Lóbulos sobre y bajo la Vía Láctea | Geometría elipsoidal pedagógica; la profundidad no se conoce directamente. Mapa gamma observado separado. |
+| 4 · Corrientes | GD-1, Palomar 5 y Sagitario | Trazados medios con distancias de galstreams; no miembros individuales ni órbitas animadas. |
+| 5 · Cúmulos estelares | Pléyades, Híades, Omega Centauri, M13 y 47 Tucanae | Centros y dimensiones aproximados; población interna modelada, explícita y reproducible. |
+| 6 · Nebulosas | Orión, Cangrejo y Hélice | Imágenes Hubble observadas en planos con campo angular/orientación; no volúmenes fabricados. |
+| 7 · Vacíos y paredes | 48 esferas máximas VAST SDSS DR7 | Los 48 mayores con `edge=0`; no son radios efectivos ni contornos completos. SDSS/2MRS aporta el contexto de galaxias, no la misma selección NSA. |
+| 8 · DESI | 15.795 galaxias DR1 / iron | 32 píxeles HEALPix, muestra determinista main/dark; selección incompleta, IDs preservados, localizadores seleccionables. |
+| 9 · Multibanda | Visible, IRIS 100 μm, Haslam 408 MHz, ROSAT, Fermi y WMAP | Mapas angulares observados desde la vecindad solar, ocultos al alejarse de ella. CAR galáctica y paridad corregida; créditos y huecos del sondeo conservados. |
+| 10 · Materia oscura | Abell 2744, CATS v4.1 / LENSTOOL | Mapa κ de **masa total proyectada**, no materia oscura pura ni reconstrucción 3D. Comparación con imágenes Hubble/DSS2 y emisión X Chandra registradas por WCS (plasma, fuentes puntuales y fondo; no gas puro). |
+| 11 · Sistema solar | Ceres, Plutón, Eris, Haumea, Makemake, Vesta, Palas y Sedna; cinturón principal, Kuiper, disco disperso, heliosfera y Oort | Cuerpos con elementos osculadores JPL y propagación kepleriana aproximada. Cinturones, heliosfera y Oort son regiones modeladas, no catálogos de sus partículas. |
+
+**Uso:** abre una sección de Atlas astronómico y pulsa **Ir**. Las capas pesadas se cargan por escala o por petición explícita; las casillas desactivadas no se reactivan solas. Los planos de nebulosas y de lentes se abren mirando su cara observada y pueden rodearse. Los botones de galaxias DESI permiten búsqueda por TARGETID después de cargar su capa. El selector multibanda vuelve al entorno terrestre, conserva la dirección de cámara y no transforma el mapa del cielo en una distancia 3D. WMAP conserva también su esfera cosmológica independiente.
+
+**Datos:** DESI usa `SPECTYPE=GALAXY`, `ZWARN=0`, `DELTACHI2>25`, `COADD_FIBERSTATUS=0` y `0.005<z<2`; distancia comóvil en ΛCDM plano con H₀=70, Ωm=0,3. La muestra no es estadísticamente representativa de todo DESI. VAST convierte h⁻¹ Mpc con h=0,674; las diferencias de cosmología entre sondeos se mantienen documentadas. Ninguna capa extrapola galaxias o polvo con el reloj. Los cuerpos menores usan elementos de su época JD y una órbita a dos cuerpos: no son efemérides operacionales ni incluyen perturbaciones.
+
+**Fuentes y atribución:**
+
+- [O’Neill et al. 2024, The Local Bubble is a Local Chimney](https://arxiv.org/abs/2403.04961), [datos y figuras publicados](https://theo-oneill.github.io/localbubble/), [Edenhofer et al., polvo 3D](https://arxiv.org/abs/2308.01295). Procesado y limitaciones en `public/data/atlas/dust-provenance.json`.
+- [galstreams / Mateu](https://github.com/cmateu/galstreams). Licencia BSD adjunta; referencias específicas de cada trazado en `streams.json`.
+- [Su, Slatyer y Finkbeiner, burbujas de Fermi](https://arxiv.org/abs/1005.5480).
+- [VAST: Douglass, Veyrat y BenZvi](https://doi.org/10.5281/zenodo.7406035), CC BY 4.0. Se conservan identificadores del catálogo.
+- [DESI DR1](https://data.desi.lbl.gov/doc/releases/dr1/), DESI Collaboration / DOE / LBNL. Los 32 archivos fuente y filtros están en `desi.json`.
+- [CATS / Hubble Frontier Fields](https://archive.stsci.edu/prepds/frontier/lensmodels/). Convergencia logarítmica relativa κ=0,03–3; el mapa conserva su marco FK5 J2000 TAN.
+- Nebulosas: NASA/ESA Hubble y equipos científicos, CC BY 4.0; créditos completos junto a las imágenes y en la enciclopedia. Son observaciones, no recursos generados.
+- Mapas observados reproyectados con [CDS HiPS2FITS](https://alasky.cds.unistra.fr/hips-image-services/hips2fits): IRAS/IRIS e IRAP/CADE; ROSAT; Haslam/LAMBDA; Fermi/NASA/HEASARC. Proveniencia, solicitudes WCS, créditos y condiciones de redistribución en `image-manifest.json` e `image-abell2744-manifest.json`. Los productos CDS que lo declaran mantienen ODbL-1.0; no se relicencian bajo MIT.
+- [JPL Small-Body Database](https://ssd-api.jpl.nasa.gov/doc/sbdb.html). Elementos de época descargados secuencialmente. Las superficies de los nuevos cuerpos son esferas esquemáticas de radio medio, sin inventar texturas observadas.
+
+Las instantáneas están versionadas y los recursos nuevos son pequeños (ninguno supera 2 MB). Las descargas científicas son preparación manual, no parte del despliegue ni de cada visita. Scripts: `prepare-atlas-catalogs.py`, `prepare-desi-sample.py`, `prepare-void-sample.py`, `prepare-lensing-map.py`, `prepare-dust-assets.py`; requieren Python y, para FITS, astropy/numpy/Pillow; para el polvo, scipy/msgpack. El sitio no incorpora estas dependencias de Python.
 
 ## Novedades de 0.7.0 · Universal
 
@@ -179,6 +215,7 @@ Las pruebas cubren conservación de escala, transformaciones de coordenadas, ocu
 
 ## Historial
 
+- **0.8.0-alpha** — once ampliaciones del atlas: medio interestelar, corrientes, cúmulos, nebulosas, vacíos, DESI, mapas multibanda, masa por lentes y sistema solar exterior.
 - **0.7.0-alpha** — identidad Universal, superficie terrestre unificada, contraste, densidad de mayor resolución, CMB WMAP y enciclopedia ilustrada.
 
 - **0.6.0-alpha** — volúmenes difusos, fotografías ESO/DSS2, vuelo galáctico por sectores, teselas terrestres y herramientas flotantes.

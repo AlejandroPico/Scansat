@@ -613,3 +613,17 @@ kbd { padding: 2px 6px; border: 1px solid var(--line); color: var(--faint); font
  .article-gallery img{max-height:240px;}
 }
 @media(max-width:430px){.library-workspace .library-article dl{grid-template-columns:1fr;}.library-workspace .library-article h3{font-size:28px;}.article-tabs{gap:12px;}.article-tabs button{font-size:14px;}}
+
+/* Additional astronomy layers share the compact, square-edged control surface. */
+.atlas-group { border-top:1px solid var(--border, #39444b); padding:8px 0; }
+.atlas-group summary { cursor:pointer; font-size:14px; font-weight:600; padding:5px 0; }
+.atlas-layer-row { display:flex; align-items:center; gap:10px; padding:8px 0; }
+.atlas-layer-row label { display:flex; align-items:center; gap:9px; flex:1; min-width:0; font-size:14px; cursor:pointer; }
+.atlas-layer-row input { flex:none; accent-color:#7abeca; }
+.atlas-layer-row small { display:block; font-size:12px; opacity:.7; margin-top:3px; }
+.atlas-go { flex:none; border:1px solid var(--border, #39444b); background:transparent; color:inherit; padding:6px 10px; font:inherit; cursor:pointer; }
+.atlas-go:hover { background:rgba(115,184,202,.15); }
+.atlas-go:disabled { opacity:.5; cursor:wait; }
+.atlas-credit { position:fixed; left:16px; bottom:12px; max-width:min(620px,calc(100vw - 32px)); background:var(--panel,rgba(12,18,24,.88)); color:var(--text,#dce5ea); font-size:12px; line-height:1.5; padding:7px 10px; pointer-events:none; z-index:5; }
+.atlas-credit[hidden] { display:none; }
+@media(max-width:700px) { .atlas-credit { max-width:calc(100vw - 20px); left:10px; bottom:8px; font-size:12px; } }

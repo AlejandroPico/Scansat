@@ -41,7 +41,7 @@ const methods=[
  ['lagrange-guide','Los cinco puntos de Lagrange','Sol–Tierra L1, L2, L3, L4 y L5','Son posiciones de equilibrio del problema restringido de tres cuerpos en un marco que gira con los primarios. L1, L2 y L3 son inestables; los observatorios recorren órbitas de halo o Lissajous y requieren correcciones. L4 y L5 forman triángulos aproximadamente equiláteros. El visor usa posiciones aproximadas y distingue un destino de despliegue de una efeméride medida.',['L1 y L2','A unos 1,5 millones de km de la Tierra'],['Representación','Modelo aproximado']],
 ];
 export function entryFor(item) {
- const category=item.kind==='history'?'history':item.cosmic?(item.kind==='star'?'stars':item.kind==='galaxy'?'galaxies':'cosmology'):item.kind==='history'?'history':item.body?'surface':item.radiusKm?'solar':'deep-space';
+ const category=item.atlasLayer?(['minor','belts','oort','heliosphere'].includes(item.atlasLayer)?'solar':['clusters','streams','nebulae','dust','bubble'].includes(item.atlasLayer)?'stars':'cosmology'):item.kind==='history'?'history':item.cosmic?(item.kind==='star'?'stars':item.kind==='galaxy'?'galaxies':'cosmology'):item.kind==='history'?'history':item.body?'surface':item.radiusKm?'solar':'deep-space';
  let body=bodyNotes[item.id] || item.summary || `${item.name} forma parte del catálogo público de exploración espacial.`;
  const facts=[];
  if(item.radiusKm)facts.push(['Radio',`${item.radiusKm.toLocaleString('es-ES')} km`],['Centro orbital',item.parent||'Sistema solar'],['Rotación',item.rotationHours?`${Math.abs(item.rotationHours)} h`:'Síncrona / modelo aproximado']);
@@ -58,6 +58,9 @@ export function entryFor(item) {
  if(item.launchDate)facts.push(['Lanzamiento',item.launchDate.slice(0,10)]);
  if(item.status)facts.push(['Estado / referencia',item.status]);
  if(item.periodHours)facts.push(['Periodo de modelo',`${item.periodHours} horas`]);
+ if(item.evidence)facts.push(['Naturaleza de la capa',item.evidence]);
+ if(item.redshift!==undefined)facts.push(['Corrimiento al rojo z',String(item.redshift)]);
+ if(item.elements)facts.push(['Semieje mayor',`${item.elements.a} UA`],['Excentricidad',String(item.elements.e)],['Inclinación',`${item.elements.i}°`],['Época de elementos',`JD ${item.epoch}`]);
  if(item.source)facts.push(['Fuente',item.source]);
  if(item.positionKm)body+=' La posición corresponde a la época de la instantánea JPL. Se permite una interpolación lineal local de hasta dos días; fuera de ese intervalo se oculta. No es una trayectoria histórica completa.';
  if(item.parent&&item.periodHours)body+=' La trayectoria local es un modelo orbital aproximado, no una solución operacional de navegación.';

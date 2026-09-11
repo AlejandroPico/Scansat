@@ -1,0 +1,137 @@
+{
+  "allSkyProjection": {
+    "frame": "Galactic (IAU)",
+    "projection": "CAR / plate carree / equirectangular",
+    "width": 1024,
+    "height": 512,
+    "wcs": {
+      "NAXIS1": 1024,
+      "NAXIS2": 512,
+      "CTYPE1": "GLON-CAR",
+      "CTYPE2": "GLAT-CAR",
+      "CRPIX1": 512.5,
+      "CRPIX2": 256.5,
+      "CRVAL1": 0.0,
+      "CRVAL2": 0.0,
+      "CDELT1": -0.3515625,
+      "CDELT2": 0.3515625,
+      "CUNIT1": "deg",
+      "CUNIT2": "deg"
+    },
+    "orientation": "North at top. Center Galactic l=0,b=0. Longitude decreases left to right: left +180, center 0, right -180 (180). Latitude +90 at top to -90 at bottom. Pixel centers offset half a pixel from boundaries.",
+    "apiDocumentation": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits",
+    "processing": "HiPS2FITS reprojection of observed surveys, with contrast/color rendering, not synthetic sky. Not calibrated photometric images."
+  },
+  "maps": [
+    {
+      "id": "infrared",
+      "title": "IRAS/IRIS 100 μm",
+      "file": "atlas/infrared.jpg",
+      "bytes": 50669,
+      "imageUrl": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=ov-gso%2FP%2FIRIS%2F4&wcs=%7B%22NAXIS1%22%3A+1024%2C+%22NAXIS2%22%3A+512%2C+%22CTYPE1%22%3A+%22GLON-CAR%22%2C+%22CTYPE2%22%3A+%22GLAT-CAR%22%2C+%22CRPIX1%22%3A+512.5%2C+%22CRPIX2%22%3A+256.5%2C+%22CRVAL1%22%3A+0.0%2C+%22CRVAL2%22%3A+0.0%2C+%22CDELT1%22%3A+-0.3515625%2C+%22CDELT2%22%3A+0.3515625%2C+%22CUNIT1%22%3A+%22deg%22%2C+%22CUNIT2%22%3A+%22deg%22%7D&width=1024&height=512&format=jpg&stretch=asinh&cmap=inferno&min_cut=0&max_cut=100",
+      "hips": "ov-gso/P/IRIS/4",
+      "sourceUrl": "https://cade.irap.omp.eu/documents/Ancillary/4Aladin/IRIS_04/properties",
+      "credit": "IRAS/IRIS; D. Paradis (IRAP/CADE); CDS HiPS2FITS",
+      "description": "Far infrared dust emission. Fixed display cuts 0–100 MJy/sr, asinh, inferno. Survey gaps retained.",
+      "reuse": "Public observational data; credit originating survey and CDS HiPS2FITS. CDS gamma/radio HiPS metadata declare ODbL-1.0. IRAP/CADE maps publicly distributed; no explicit license declared in retrieved metadata."
+    },
+    {
+      "id": "xray",
+      "title": "ROSAT All-Sky Survey 0.1–2.4 keV",
+      "file": "atlas/xray.jpg",
+      "bytes": 163020,
+      "imageUrl": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=ov-gso%2FP%2FRASS&wcs=%7B%22NAXIS1%22%3A+1024%2C+%22NAXIS2%22%3A+512%2C+%22CTYPE1%22%3A+%22GLON-CAR%22%2C+%22CTYPE2%22%3A+%22GLAT-CAR%22%2C+%22CRPIX1%22%3A+512.5%2C+%22CRPIX2%22%3A+256.5%2C+%22CRVAL1%22%3A+0.0%2C+%22CRVAL2%22%3A+0.0%2C+%22CDELT1%22%3A+-0.3515625%2C+%22CDELT2%22%3A+0.3515625%2C+%22CUNIT1%22%3A+%22deg%22%2C+%22CUNIT2%22%3A+%22deg%22%7D&width=1024&height=512&format=jpg&stretch=asinh&cmap=magma&min_cut=0.5%25&max_cut=99.5%25",
+      "hips": "ov-gso/P/RASS",
+      "sourceUrl": "https://cade.irap.omp.eu/documents/Ancillary/4Aladin/RASS/properties",
+      "credit": "ROSAT; D. Paradis (IRAP/CADE); CDS HiPS2FITS",
+      "description": "X-ray survey. Asinh false color magma. Scan patterns and gaps are observational artifacts, not celestial structures.",
+      "reuse": "Public observational data; credit originating survey and CDS HiPS2FITS. CDS gamma/radio HiPS metadata declare ODbL-1.0. IRAP/CADE maps publicly distributed; no explicit license declared in retrieved metadata."
+    },
+    {
+      "id": "gamma",
+      "title": "Fermi LAT gamma-ray RGB",
+      "file": "atlas/gamma.jpg",
+      "bytes": 149499,
+      "imageUrl": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FFermi%2Fcolor&wcs=%7B%22NAXIS1%22%3A+1024%2C+%22NAXIS2%22%3A+512%2C+%22CTYPE1%22%3A+%22GLON-CAR%22%2C+%22CTYPE2%22%3A+%22GLAT-CAR%22%2C+%22CRPIX1%22%3A+512.5%2C+%22CRPIX2%22%3A+256.5%2C+%22CRVAL1%22%3A+0.0%2C+%22CRVAL2%22%3A+0.0%2C+%22CDELT1%22%3A+-0.3515625%2C+%22CDELT2%22%3A+0.3515625%2C+%22CUNIT1%22%3A+%22deg%22%2C+%22CUNIT2%22%3A+%22deg%22%7D&width=1024&height=512&format=jpg&stretch=asinh&cmap=viridis&min_cut=0.5%25&max_cut=99.5%25",
+      "hips": "CDS/P/Fermi/color",
+      "sourceUrl": "https://alasky.cds.unistra.fr/Fermi/Color/properties",
+      "credit": "NASA/HEASARC; SkyView; CDS; HiPS2FITS",
+      "description": "RGB: red 300–1000 MeV, green 1–3 GeV, blue 3–300 GeV. Underlying HiPS equatorial; explicitly reprojected Galactic CAR.",
+      "reuse": "Public observational data; credit originating survey and CDS HiPS2FITS. CDS gamma/radio HiPS metadata declare ODbL-1.0. IRAP/CADE maps publicly distributed; no explicit license declared in retrieved metadata."
+    },
+    {
+      "id": "radio",
+      "title": "Haslam 408 MHz radio",
+      "file": "atlas/radio.jpg",
+      "bytes": 34515,
+      "imageUrl": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FHaslam408&wcs=%7B%22NAXIS1%22%3A+1024%2C+%22NAXIS2%22%3A+512%2C+%22CTYPE1%22%3A+%22GLON-CAR%22%2C+%22CTYPE2%22%3A+%22GLAT-CAR%22%2C+%22CRPIX1%22%3A+512.5%2C+%22CRPIX2%22%3A+256.5%2C+%22CRVAL1%22%3A+0.0%2C+%22CRVAL2%22%3A+0.0%2C+%22CDELT1%22%3A+-0.3515625%2C+%22CDELT2%22%3A+0.3515625%2C+%22CUNIT1%22%3A+%22deg%22%2C+%22CUNIT2%22%3A+%22deg%22%7D&width=1024&height=512&format=jpg&stretch=asinh&cmap=plasma&min_cut=0.5%25&max_cut=99.5%25",
+      "hips": "CDS/P/Haslam408",
+      "sourceUrl": "https://alasky.cds.unistra.fr/Haslam408/properties",
+      "credit": "Haslam et al. (1982); LAMBDA/NASA; CDS HiPS2FITS",
+      "description": "Diffuse radio continuum. Fourier-processed to mitigate striping and strong point sources; false-color plasma/asinh.",
+      "reuse": "Public observational data; credit originating survey and CDS HiPS2FITS. CDS gamma/radio HiPS metadata declare ODbL-1.0. IRAP/CADE maps publicly distributed; no explicit license declared in retrieved metadata."
+    }
+  ],
+  "nebulae": [
+    {
+      "id": "orion",
+      "file": "atlas/orion.jpg",
+      "imageUrl": "https://cdn.esahubble.org/archives/images/screen/heic0601a.jpg",
+      "sourceUrl": "https://esahubble.org/images/heic0601a/",
+      "credit": "NASA, ESA, M. Robberto (Space Telescope Science Institute/ESA) and the Hubble Space Telescope Orion Treasury Project Team",
+      "reuse": "CC BY 4.0. Full credit must be clearly visible and associated with image; link source.",
+      "licenseUrl": "https://esahubble.org/copyright/",
+      "width": 1280,
+      "height": 1280,
+      "type": "Observed image mosaic",
+      "projection": "Local astronomical image; use as object inspection image, not whole-sky texture",
+      "raDeg": 83.79054167,
+      "decDeg": -5.41397778,
+      "fovArcmin": [
+        30.03,
+        30.03
+      ],
+      "northLeftOfVerticalDeg": 0
+    },
+    {
+      "id": "crab",
+      "file": "atlas/crab.jpg",
+      "imageUrl": "https://cdn.esahubble.org/archives/images/screen/heic0515a.jpg",
+      "sourceUrl": "https://esahubble.org/images/heic0515a/",
+      "credit": "NASA, ESA and Allison Loll/Jeff Hester (Arizona State University). Acknowledgement: Davide De Martin (ESA/Hubble)",
+      "reuse": "CC BY 4.0. Full credit must be clearly visible and associated with image; link source.",
+      "licenseUrl": "https://esahubble.org/copyright/",
+      "width": 1280,
+      "height": 1280,
+      "type": "Observed image mosaic",
+      "projection": "Local astronomical image; use as object inspection image, not whole-sky texture",
+      "raDeg": 83.63554167,
+      "decDeg": 22.01524167,
+      "fovArcmin": [
+        6.41,
+        6.41
+      ],
+      "northLeftOfVerticalDeg": 0
+    },
+    {
+      "id": "helix",
+      "file": "atlas/helix.jpg",
+      "imageUrl": "https://cdn.esahubble.org/archives/images/screen/heic0307a.jpg",
+      "sourceUrl": "https://esahubble.org/images/heic0307a/",
+      "credit": "NASA, NOAO, ESA, the Hubble Helix Nebula Team, M. Meixner (STScI), and T.A. Rector (NRAO).",
+      "reuse": "CC BY 4.0. Full credit must be clearly visible and associated with image; link source.",
+      "licenseUrl": "https://esahubble.org/copyright/",
+      "width": 1280,
+      "height": 1280,
+      "type": "Observed image mosaic",
+      "projection": "Local astronomical image; use as object inspection image, not whole-sky texture",
+      "raDeg": 337.41591667,
+      "decDeg": -20.83883611,
+      "fovArcmin": [
+        26.64,
+        26.64
+      ],
+      "northLeftOfVerticalDeg": 0.4
+    }
+  ]
+}

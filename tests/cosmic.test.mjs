@@ -59,6 +59,7 @@ test('catálogos estelar e histórico no inventan distancias ni lugares desconoc
 test('las capas cósmicas tienen geometría finita y destinos para toda la navegación',()=>{
  const owner={textureLoader:{load(){return new THREE.Texture();}},scene:new THREE.Scene(),dotTexture:null,camera:new THREE.PerspectiveCamera(),renderUnit:1,makeCosmicMarker(item){const sprite=new THREE.Sprite();sprite.userData.item=item;this.scene.add(sprite);return sprite;}};
  const cosmos=new CosmicScene(owner);
+ cosmos.atlas.load=async()=>{};
  cosmos.surveys.loadCatalog=async()=>{};cosmos.surveys.loadFlows=async()=>{};cosmos.surveys.loadDensity=async()=>{};
  for(const stop of SCALE_STOPS.filter(s=>!['earth','sun'].includes(s.id)))assert.ok(COSMIC_OBJECTS.some(s=>s.id===stop.id));
  for(const distance of [26000,40*LY_KM,200000*LY_KM,900e6*LY_KM,120e9*LY_KM]) {

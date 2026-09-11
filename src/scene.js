@@ -29,7 +29,7 @@ import {
 const BASE_URL = import.meta.env?.BASE_URL ?? "/";
 const OBLIQUITY = THREE.MathUtils.degToRad(23.43928);
 const X_AXIS = new THREE.Vector3(1, 0, 0);
-const PLANET_IDS = new Set(['mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune']);
+const PLANET_IDS = new Set(CELESTIAL_BODIES.filter(body=>['planet','dwarf','asteroid','minor'].includes(body.type)).map(body=>body.id));
 
 function seededRandom(seed) {
   const value = Math.sin(seed * 999.91) * 43_758.5453;
@@ -418,7 +418,7 @@ export class OrbitalScene {
       surface.userData.item = {
         ...definition,
         kind: definition.type,
-        summary: `${definition.name} se representa con su radio físico. Su posición y su órbita comparten la misma escala espacial del resto del sistema.`,
+        summary: definition.summary || `${definition.name} se representa con su radio físico. Su posición y su órbita comparten la misma escala espacial del resto del sistema.`,
       };
       spin.add(surface);
       this.interactive.push(surface);
@@ -492,7 +492,7 @@ export class OrbitalScene {
       this.interactive.push(marker);
       this.scene.add(root);
       this.bodyNodes.set(definition.id, { definition, root, axialTilt, spin, surface, marker });
-      this.addLabel(root, definition.name, definition.type === 'moon' ? 'LUNA' : definition.type === 'star' ? 'ESTRELLA' : 'PLANETA', definition.id);
+      this.addLabel(root, definition.name, definition.type === 'moon' ? 'LUNA' : definition.type === 'star' ? 'ESTRELLA' : definition.type === 'dwarf' ? 'PLANETA ENANO' : ['asteroid','minor'].includes(definition.type) ? 'CUERPO MENOR' : 'PLANETA', definition.id);
 
       if (['mercury', 'uranus'].includes(definition.id)) {
         loader.load(`${BASE_URL}models/${definition.id}.glb`, (gltf) => {
@@ -737,7 +737,11 @@ export class OrbitalScene {
     if (!item) return false;
     if (!item.satrec) this.drawSelectedOrbit(null);
     if (item.satrec && !this.catalogReliable) return false;
-    if (this.bodyNodes.has(item.id)) return this.focusBody(item.id, notify);
+    if (item.atlasLayer) this.cosmos.atlas.enable(item.atlasLayer);
+    if (this.bodyNodes.has(item.id)) {
+      if (['dwarf','asteroid','minor'].includes(item.kind)) this.cosmos.atlas.enable('minor');
+      return this.focusBody(item.id, notify);
+    }
     if (item.cosmic || item.satrec || item.kind === 'spacecraft' || item.kind === 'lagrange') {
       this.zoomTarget=null;
       this.focus = { type: 'object', item };
@@ -745,6 +749,10 @@ export class OrbitalScene {
       this.updateWorld(this.simulationDate, true);
       this.resetCamera();
       if(item.cosmic && (item.kind === 'star'||item.catalogGalaxy)) this.cosmos.selectStar(item);
+      if (['nebula','mass-map'].includes(item.kind)) {
+        const normal=new THREE.Vector3(...item.position).normalize().negate();
+        this.camera.position.copy(normal.multiplyScalar(item.viewDistanceKm));this.controls.update();
+      }
       if (notify) this.onFocus?.(item);
       return true;
     }
@@ -1003,10 +1011,11 @@ export class OrbitalScene {
   updateVisibility() {
     const cameraDistance = this.camera.position.length();
     const focusBody = this.focus.type === 'body' ? this.focus.id : null;
-    const solarVisible = !this.focus.item?.cosmic && cameraDistance < LY_KM * .1;
+    const solarVisible = (!this.focus.item?.cosmic || this.focus.item?.solarRegion) && cameraDistance < LY_KM * .1;
     this.planetOrbitRoot.visible = this.showPlanetOrbits && solarVisible;
     if(this.selectedOrbit)this.selectedOrbit.visible = solarVisible && this.showOrbit && this.catalogReliable;
-    for (const body of this.bodyNodes.values()) body.root.visible = solarVisible;
+    for (const body of this.bodyNodes.values()) body.root.visible = solarVisible && (!['dwarf','asteroid','minor'].includes(body.definition.type) || this.cosmos?.atlas.enabled.minor !== false);
+    for (const line of this.planetOrbitRoot.children) {const body=this.bodyNodes.get(line.userData.planetId);line.visible=!body || !['dwarf','asteroid','minor'].includes(body.definition.type) || this.cosmos?.atlas.enabled.minor !== false;}
     this.activePoints.visible = solarVisible && this.catalogReliable && cameraDistance < 8e6;
     this.debrisPoints.visible = solarVisible && this.catalogReliable && this.showDebris && cameraDistance < 8e6;
     for (const node of this.surfaceNodes) {

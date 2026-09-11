@@ -1,3 +1,4 @@
+import minorBodies from '../public/data/atlas/minor-bodies.json' with { type: 'json' };
 export const AU_KM = 149_597_870.7;
 export const J2000_JD = 2_451_545;
 
@@ -57,6 +58,8 @@ export const CELESTIAL_BODIES = [
   { id: 'neptune', name: 'Neptuno', parent: 'sun', radiusKm: 24_622, color: '#4167cb', texture: 'neptune.jpg', rotationHours: 16.11, type: 'planet' },
   { id: 'triton', texture: 'triton.jpg', name: 'Tritón', parent: 'neptune', radiusKm: 1_353.4, color: '#b9b3ac', orbitKm: 354_759, periodDays: -5.876854, inclination: 156.885, type: 'moon' },
 ];
+
+CELESTIAL_BODIES.push(...minorBodies);
 
 export const SURFACE_SITES = [
   { id: 'apollo-11', name: 'Apollo 11 · Tranquility Base', body: 'moon', lat: 0.674, lon: 23.473, kind: 'landing', status: 'Histórico', agency: 'NASA', color: '#f4d58d' },
@@ -128,6 +131,12 @@ function solveKepler(meanAnomaly, eccentricity) {
 }
 
 function elementsAt(id, date) {
+  const minor = minorBodies.find(body => body.id === id);
+  if (minor) {
+    const e=minor.elements, days=julianDate(date)-minor.epoch;
+    const longitude=e.ma+e.w+e.om+days*360/e.per;
+    return [e.a,e.e,e.i,longitude,e.w+e.om,e.om];
+  }
   const source = PLANET_ELEMENTS[id];
   if (!source) return null;
   const centuries = (julianDate(date) - J2000_JD) / 36_525;

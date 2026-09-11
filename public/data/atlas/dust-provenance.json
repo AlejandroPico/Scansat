@@ -1,0 +1,96 @@
+{
+  "frame": "Heliocentric Galactic Cartesian",
+  "units": "pc",
+  "axes": {
+    "x": "toward Galactic center l=0 b=0",
+    "y": "toward l=90 b=0",
+    "z": "toward North Galactic Pole b=90"
+  },
+  "origin": "Sun",
+  "sourcePaper": "https://arxiv.org/html/2403.04961v2",
+  "sourceDataDOI": "https://doi.org/10.7910/DVN/INB1RB",
+  "attribution": "O\u2019Neill, Zucker, Goodman & Edenhofer (2024), The Local Bubble is a Local Chimney; underlying Edenhofer et al. (2024) 3D dust map.",
+  "surface": {
+    "source": "https://theo-oneill.github.io/localbubble/plots/distance_interactive.html",
+    "sourcePoints": 786392,
+    "sampling": "Every 64th point in author HEALPix-ordered K3D figure. Coordinates retained unchanged as float32. Triangles constructed on normalized directions; faces with an edge over 60 pc removed. Mesh is visualization interpolation of sampled measured/modelled positions.",
+    "positions": {
+      "file": "local-bubble-positions.f32",
+      "dtype": "float32",
+      "shape": [
+        12288,
+        3
+      ],
+      "bytes": 147456
+    },
+    "distance": {
+      "file": "local-bubble-radius.f32",
+      "dtype": "float32",
+      "shape": [
+        12288
+      ],
+      "bytes": 49152
+    },
+    "triangles": {
+      "file": "local-bubble-triangles.u32",
+      "dtype": "uint32",
+      "shape": [
+        18877,
+        3
+      ],
+      "bytes": 226524
+    },
+    "limits": "Dust-based reconstructed peak-extinction surface, not exact physical gas boundary. Low density chimney has larger uncertainty; no inferred structure inside 69 pc."
+  },
+  "dust": {
+    "source": "https://theo-oneill.github.io/localbubble/plots/shell_dust.html",
+    "sourceObject": "3D Dust",
+    "sourceShapeZYX": [
+      261,
+      261,
+      261
+    ],
+    "sampling": "Arithmetic mean of each nonoverlapping 3x3x3 block of author 5 pc figure voxels, resulting 87^3 grid. Point representation keeps finite values >=0.3 and heliocentric radius 69\u2013650 pc. No random placement/jitter. Coordinates use exact published K3D texture bounds; roughly 15 pc effective resolution.",
+    "boundsXYZ": [
+      [
+        -650,
+        650
+      ],
+      [
+        -650,
+        650
+      ],
+      [
+        -650,
+        650
+      ]
+    ],
+    "gridOrder": "C-order [z,y,x]; x varies fastest",
+    "grid": {
+      "file": "nearby-dust-grid.f32",
+      "dtype": "float32",
+      "shape": [
+        87,
+        87,
+        87
+      ],
+      "bytes": 2634012
+    },
+    "pointsXYZvalue": {
+      "file": "nearby-dust-points.f32",
+      "dtype": "float32",
+      "shape": [
+        38852,
+        4
+      ],
+      "bytes": 621632
+    },
+    "valueMeaning": "Unmodified density/intensity values from published visualization; use relative opacity/color rather than a calibrated numeric legend.",
+    "pointThreshold": 0.3,
+    "limits": "Edenhofer map reconstruction, not a photograph. Region within 69 pc unmeasured by this map; outer displayed radius cropped to 650 pc. Coarse visualization loses fine clouds. Colors and point opacity are display choices."
+  },
+  "sourceChecksums": {
+    "distance.html": "d8f8e8d583f7691780d6d143793c545f000e40a117cc7c95548e4af0fa5e454a",
+    "shell_dust.html": "08d59cb39bbe02aa86939f34ea383805831a3695054c4a90564d63a8fe7ec617"
+  }
+}

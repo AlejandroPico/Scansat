@@ -1,0 +1,67 @@
+{
+  "images": [
+    {
+      "id": "abell2744-dss2",
+      "file": "atlas/abell2744-dss2.jpg",
+      "imageUrl": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FDSS2%2Fcolor&wcs=%7B%22NAXIS1%22%3A+512%2C+%22NAXIS2%22%3A+512%2C+%22CTYPE1%22%3A+%22RA---TAN%22%2C+%22CTYPE2%22%3A+%22DEC--TAN%22%2C+%22CRPIX1%22%3A+256.5%2C+%22CRPIX2%22%3A+256.5%2C+%22CRVAL1%22%3A+3.586259%2C+%22CRVAL2%22%3A+-30.400174%2C+%22CDELT1%22%3A+-0.00032568359375%2C+%22CDELT2%22%3A+0.00032568359375%2C+%22CUNIT1%22%3A+%22deg%22%2C+%22CUNIT2%22%3A+%22deg%22%2C+%22RADESYS%22%3A+%22ICRS%22%7D&width=512&height=512&format=jpg",
+      "wcs": {
+        "NAXIS1": 512,
+        "NAXIS2": 512,
+        "CTYPE1": "RA---TAN",
+        "CTYPE2": "DEC--TAN",
+        "CRPIX1": 256.5,
+        "CRPIX2": 256.5,
+        "CRVAL1": 3.586259,
+        "CRVAL2": -30.400174,
+        "CDELT1": -0.00032568359375,
+        "CDELT2": 0.00032568359375,
+        "CUNIT1": "deg",
+        "CUNIT2": "deg",
+        "RADESYS": "ICRS"
+      },
+      "sourceUrl": "https://alasky.cds.unistra.fr/DSS/DSSColor/properties",
+      "credit": "Digitized Sky Survey – STScI/NASA; colored and HEALPixed by CDS; reprojection by CDS HiPS2FITS.",
+      "description": "Observed photographic survey color composite; lower angular resolution than Hubble. Complete footprint. A plate artifact line remains.",
+      "reuse": "CDS HiPS metadata declares ODbL-1.0. Credit original observatory/archive and CDS. Original acknowledgement preserved in adjacent properties file.",
+      "projection": "ICRS TAN, north up and east left",
+      "footprintDeg": [
+        0.16675,
+        0.16675
+      ],
+      "apiDocumentation": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits"
+    },
+    {
+      "id": "abell2744-hst",
+      "file": "atlas/abell2744-hst.jpg",
+      "imageUrl": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FHST%2Fcolor&wcs=%7B%22NAXIS1%22%3A+512%2C+%22NAXIS2%22%3A+512%2C+%22CTYPE1%22%3A+%22RA---TAN%22%2C+%22CTYPE2%22%3A+%22DEC--TAN%22%2C+%22CRPIX1%22%3A+256.5%2C+%22CRPIX2%22%3A+256.5%2C+%22CRVAL1%22%3A+3.586259%2C+%22CRVAL2%22%3A+-30.400174%2C+%22CDELT1%22%3A+-0.00032568359375%2C+%22CDELT2%22%3A+0.00032568359375%2C+%22CUNIT1%22%3A+%22deg%22%2C+%22CUNIT2%22%3A+%22deg%22%2C+%22RADESYS%22%3A+%22ICRS%22%7D&width=512&height=512&format=jpg",
+      "wcs": {
+        "NAXIS1": 512,
+        "NAXIS2": 512,
+        "CTYPE1": "RA---TAN",
+        "CTYPE2": "DEC--TAN",
+        "CRPIX1": 256.5,
+        "CRPIX2": 256.5,
+        "CRVAL1": 3.586259,
+        "CRVAL2": -30.400174,
+        "CDELT1": -0.00032568359375,
+        "CDELT2": 0.00032568359375,
+        "CUNIT1": "deg",
+        "CUNIT2": "deg",
+        "RADESYS": "ICRS"
+      },
+      "sourceUrl": "https://alasky.cds.unistra.fr/HST-hips/color/properties",
+      "credit": "NASA/ESA Hubble Space Telescope; STScI archive; experimental color HiPS by CDS; reprojection by CDS HiPS2FITS.",
+      "description": "Experimental multi-filter HST color mosaic; footprint gaps, exposure seams and artifacts remain. Use DSS2 for uniform coverage.",
+      "reuse": "CDS HiPS metadata declares ODbL-1.0. Credit original observatory/archive and CDS. Original acknowledgement preserved in adjacent properties file.",
+      "projection": "ICRS TAN, north up and east left",
+      "footprintDeg": [
+        0.16675,
+        0.16675
+      ],
+      "apiDocumentation": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits",
+      "pngFile": "atlas/abell2744-hst.png",
+      "pngUrl": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FHST%2Fcolor&wcs=%7B%22NAXIS1%22%3A+512%2C+%22NAXIS2%22%3A+512%2C+%22CTYPE1%22%3A+%22RA---TAN%22%2C+%22CTYPE2%22%3A+%22DEC--TAN%22%2C+%22CRPIX1%22%3A+256.5%2C+%22CRPIX2%22%3A+256.5%2C+%22CRVAL1%22%3A+3.586259%2C+%22CRVAL2%22%3A+-30.400174%2C+%22CDELT1%22%3A+-0.00032568359375%2C+%22CDELT2%22%3A+0.00032568359375%2C+%22CUNIT1%22%3A+%22deg%22%2C+%22CUNIT2%22%3A+%22deg%22%2C+%22RADESYS%22%3A+%22ICRS%22%7D&width=512&height=512&format=png",
+      "pngMode": "RGBA"
+    }
+  ]
+}

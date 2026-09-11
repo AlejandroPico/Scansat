@@ -1,3 +1,4 @@
+import { LayerAtlas } from './atlas-scene.js';
 import * as THREE from 'three';
 import { MicrowaveBackground } from './cmb-scene.js';
 import { GalacticSectors } from './galactic-sectors.js';
@@ -19,6 +20,7 @@ export class CosmicScene {
     this.nodes=[]; this.targets=[...COSMIC_OBJECTS]; this.starState='pending'; this.magnitudeLimit={value:8.5}; this.unitPc={value:1/PC_KM};
     this.surveys=new CosmicSurveys(this);
     this.cmb=new MicrowaveBackground(owner);this.photos=new AstronomyPhotos(owner);this.sectors=new GalacticSectors(owner);
+    this.atlas=new LayerAtlas(this);
     for(const item of COSMIC_OBJECTS.filter(x=>x.kind==='galaxy')) {
       const count=item.id==='milky-way'?320000:item.id==='andromeda'?80000:18000;
       const {positions,colors}=galaxyPopulation(item,count);
@@ -90,9 +92,10 @@ export class CosmicScene {
     this.photos.update(origin,distance,this.layers);
     this.cmb.update(origin,distance,this.layers.cmb);
     this.sectors.update(origin,distance,this.layers.population&&this.layers.stars);
+    this.atlas.update(origin,distance);
     if(this.selectedMarker) {
       this.selectedMarker.position.fromArray(this.selectedMarker.userData.item.position).sub(origin);
-      this.selectedMarker.visible=!!this.selectedItem && this.layers.labels && this.layers[this.selectedItem.kind==='star'?'stars':'galaxies'];
+      this.selectedMarker.visible=!!this.selectedItem && (!this.selectedItem.atlasLayer || this.atlas.enabled[this.selectedItem.atlasLayer]) && this.layers.labels && this.layers[this.selectedItem.kind==='star'?'stars':'galaxies'];
     }
     if(this.starPoints) {
       this.starPoints.position.copy(origin).negate();
@@ -116,6 +119,7 @@ export class CosmicScene {
   }
   pickPhysical(camera,direction,angle) {
     const hits=[];
+    const atlasHit=this.atlas.pick(camera,direction,angle);if(atlasHit)hits.push(atlasHit);
     const modeled=this.sectors.pick(camera,direction,angle);if(modeled)hits.push(modeled);
     const galaxy=this.surveys.pick(camera,direction,angle);
     if(galaxy)hits.push(galaxy);

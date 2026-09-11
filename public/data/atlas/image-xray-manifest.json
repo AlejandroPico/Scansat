@@ -1,0 +1,67 @@
+{
+  "images": [
+    {
+      "id": "abell2744-chandra",
+      "file": "atlas/abell2744-chandra.png",
+      "bytes": 353883,
+      "imageUrl": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=cxc.harvard.edu%2FP%2Fcda%2Fhips%2Fallsky%2Frgb&wcs=%7B%22NAXIS1%22%3A+512%2C+%22NAXIS2%22%3A+512%2C+%22CTYPE1%22%3A+%22RA---TAN%22%2C+%22CTYPE2%22%3A+%22DEC--TAN%22%2C+%22CRPIX1%22%3A+256.5%2C+%22CRPIX2%22%3A+256.5%2C+%22CRVAL1%22%3A+3.586259%2C+%22CRVAL2%22%3A+-30.400174%2C+%22CDELT1%22%3A+-0.00032568359375%2C+%22CDELT2%22%3A+0.00032568359375%2C+%22CUNIT1%22%3A+%22deg%22%2C+%22CUNIT2%22%3A+%22deg%22%2C+%22RADESYS%22%3A+%22ICRS%22%7D&width=512&height=512&format=png",
+      "sourceUrl": "https://alasky.cds.unistra.fr/CHANDRA/cxc.harvard.edu_P_cda_hips_allsky_rgb/properties",
+      "hips": "cxc.harvard.edu/P/cda/hips/allsky/rgb",
+      "credit": "NASA / Chandra X-ray Center (SAO/CXC); Chandra Data Archive; CDS HiPS2FITS",
+      "bands": "RGB soft / medium / hard bands; exact energy boundaries not specified in retrieved HiPS metadata.",
+      "description": "Observed Chandra public X-ray image. Resolved diffuse cluster emission and point sources are visible. Photon-counting noise remains. This is X-ray emission, not a pure gas-density or temperature map; no point-source removal or spectral gas separation applied.",
+      "wcs": {
+        "NAXIS1": 512,
+        "NAXIS2": 512,
+        "CTYPE1": "RA---TAN",
+        "CTYPE2": "DEC--TAN",
+        "CRPIX1": 256.5,
+        "CRPIX2": 256.5,
+        "CRVAL1": 3.586259,
+        "CRVAL2": -30.400174,
+        "CDELT1": -0.00032568359375,
+        "CDELT2": 0.00032568359375,
+        "CUNIT1": "deg",
+        "CUNIT2": "deg",
+        "RADESYS": "ICRS"
+      },
+      "projection": "ICRS TAN; north up, east left; 512×512; 0.166750 degree square footprint",
+      "processing": "Only documented CDS HiPS2FITS reprojection; source color/contrast retained. No smoothing or synthetic spatial content introduced.",
+      "reuse": "Public archive data; retain observatory/archive and HiPS service credits. No explicit license string in retrieved original HiPS properties.",
+      "apiDocumentation": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits"
+    },
+    {
+      "id": "abell2744-xmm",
+      "file": "atlas/abell2744-xmm.png",
+      "bytes": 358559,
+      "imageUrl": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=xcatdb%2FP%2FXMM%2FPN%2Fcolor&wcs=%7B%22NAXIS1%22%3A+512%2C+%22NAXIS2%22%3A+512%2C+%22CTYPE1%22%3A+%22RA---TAN%22%2C+%22CTYPE2%22%3A+%22DEC--TAN%22%2C+%22CRPIX1%22%3A+256.5%2C+%22CRPIX2%22%3A+256.5%2C+%22CRVAL1%22%3A+3.586259%2C+%22CRVAL2%22%3A+-30.400174%2C+%22CDELT1%22%3A+-0.00032568359375%2C+%22CDELT2%22%3A+0.00032568359375%2C+%22CUNIT1%22%3A+%22deg%22%2C+%22CUNIT2%22%3A+%22deg%22%2C+%22RADESYS%22%3A+%22ICRS%22%7D&width=512&height=512&format=png",
+      "sourceUrl": "https://alasky.cds.unistra.fr/SSC/xcatdb_P_XMM_PN_color/properties",
+      "hips": "xcatdb/P/XMM/PN/color",
+      "credit": "ESA / SSC XMM-Newton; Galhecos-Team (Strasbourg); L. Michel (Observatoire de Strasbourg); CDS HiPS2FITS",
+      "bands": "Red 0.5–1 keV; green 1–2 keV; blue 2–4.5 keV.",
+      "description": "Observed XMM-Newton PN color mosaic from 4XMM-DR12. Diffuse cluster emission and unresolved/point sources remain. X-ray emission image, not pure gas density. Lower native HiPS sampling than Chandra.",
+      "wcs": {
+        "NAXIS1": 512,
+        "NAXIS2": 512,
+        "CTYPE1": "RA---TAN",
+        "CTYPE2": "DEC--TAN",
+        "CRPIX1": 256.5,
+        "CRPIX2": 256.5,
+        "CRVAL1": 3.586259,
+        "CRVAL2": -30.400174,
+        "CDELT1": -0.00032568359375,
+        "CDELT2": 0.00032568359375,
+        "CUNIT1": "deg",
+        "CUNIT2": "deg",
+        "RADESYS": "ICRS"
+      },
+      "projection": "ICRS TAN; north up, east left; 512×512; 0.166750 degree square footprint",
+      "processing": "Only documented CDS HiPS2FITS reprojection; source color/contrast retained. No smoothing or synthetic spatial content introduced.",
+      "reuse": "Public archive data; retain observatory/archive and HiPS service credits. No explicit license string in retrieved original HiPS properties.",
+      "apiDocumentation": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits"
+    }
+  ],
+  "recommendedImage": "abell2744-chandra.png",
+  "uiLabel": "Observed X-ray emission (Chandra)",
+  "comparisonCaveat": "Includes hot intracluster plasma emission, point sources and background. CATS kappa is model-inferred projected total mass; optical is observed light. Neither X-ray intensity nor kappa directly images dark matter particles."
+}

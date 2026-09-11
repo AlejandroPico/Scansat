@@ -1,6 +1,9 @@
 import { access, readFile, stat } from 'node:fs/promises';
 
 const required = [
+  'src/atlas-data.js', 'src/atlas-scene.js',
+  ...['minor-bodies.json','streams.json','desi.json','voids.json','lensing.json','image-manifest.json','dust-provenance.json','local-bubble-positions.f32','local-bubble-triangles.u32','nearby-dust-points.f32'].map(x=>'public/data/atlas/'+x),
+  ...['infrared.jpg','radio.jpg','xray.jpg','gamma.jpg','orion.jpg','crab.jpg','helix.jpg','abell2744-dss2.jpg','abell2744-hst.png','abell2744-chandra.png','abell2744-kappa.png'].map(x=>'public/atlas/'+x),
   'index.html', 'favicon.svg', 'manifest.webmanifest', 'README.md', 'LICENSE',
   'src/app.js', 'src/scene.js', 'src/catalog.js', 'src/satellite-core.js', 'src/styles.css',
   'src/cmb-scene.js','src/encyclopedia-media.js','public/encyclopedia/reference-cosmic-web.png','public/encyclopedia/reference-cluster.png','src/density-volume.js','src/astronomy-photos.js','src/galactic-sectors.js','src/earth-tiles.js','src/navigation.js',
@@ -21,9 +24,9 @@ const debrisPaths = Array.from({ length: 4 }, (_, index) => `public/data/debris-
 const debris = (await Promise.all(debrisPaths.map(async (path) => JSON.parse(await readFile(path, 'utf8'))))).flat();
 const spacecraft = JSON.parse(await readFile('public/data/spacecraft.json', 'utf8'));
 
-if (pkg.version !== '0.7.0') throw new Error('La versión de package.json no es 0.7.0.');
-if (!html.includes('0.7.0')) throw new Error('La versión visible no coincide.');
-if (!readme.includes('0.7.0')) throw new Error('README no documenta la versión actual.');
+if (pkg.version !== '0.8.0') throw new Error('La versión de package.json no es 0.8.0.');
+if (!html.includes('0.8.0')) throw new Error('La versión visible no coincide.');
+if (!readme.includes('0.8.0')) throw new Error('README no documenta la versión actual.');
 if (!Array.isArray(catalog) || catalog.length < 10) throw new Error('El catálogo orbital de respaldo está incompleto.');
 if (!Array.isArray(debris) || debris.length < 500) throw new Error('La instantánea de basura espacial está incompleta.');
 if ((metadata.activeCount ?? metadata.recordCount) !== catalog.length) throw new Error('El contador activo de metadata no coincide con el catálogo.');

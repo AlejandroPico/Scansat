@@ -1,3 +1,5 @@
+import { ATLAS_LAYERS } from './atlas-data.js';
+import atlasImages from '../public/data/atlas/image-manifest.json' with {type:'json'};
 import { mediaFor,evidenceFor } from './encyclopedia-media.js';
 import './styles.css';
 import { LY_KM, SCALE_STOPS, COSMIC_OBJECTS } from './cosmic-data.js';
@@ -142,12 +144,14 @@ function updateLiveMetrics(record) {
 }
 
 function itemType(item) {
-  if (item?.cosmic && item.kind !== 'star') return ({galaxy:'GALAXIA',cluster:'CÚMULO DE GALAXIAS',structure:'ESTRUCTURA CÓSMICA',universe:'UNIVERSO OBSERVABLE'})[item.kind] || 'COSMOS';
+  if (item?.cosmic && item.kind !== 'star') return ({'stellar-cluster':'CÚMULO ESTELAR','stellar-stream':'CORRIENTE ESTELAR',nebula:'NEBULOSA',void:'VACÍO CÓSMICO','mass-map':'MASA POR LENTES','solar-region':'REGIÓN DEL SISTEMA SOLAR',galaxy:'GALAXIA',cluster:'CÚMULO DE GALAXIAS',structure:'ESTRUCTURA CÓSMICA',universe:'UNIVERSO OBSERVABLE'})[item.kind] || 'COSMOS';
   if (item?.satrec) return item.isDebris ? 'BASURA ESPACIAL RASTREADA' : 'OBJETO ORBITAL PÚBLICO';
   if (item?.kind === 'lagrange') return 'PUNTO DE LAGRANGE';
   if (item?.kind === 'spacecraft') return 'SONDA U OBSERVATORIO';
   if (item?.kind === 'rover' || item?.kind === 'landing') return 'MISIÓN DE SUPERFICIE';
   if (item?.kind === 'moon') return 'LUNA';
+  if (item?.kind === 'dwarf') return 'PLANETA ENANO';
+  if (['asteroid','minor'].includes(item?.kind)) return 'CUERPO MENOR';
   if (item?.kind === 'planet') return 'PLANETA';
   if (item?.kind === 'star') return 'ESTRELLA';
   return 'OBJETO DEL SISTEMA SOLAR';
@@ -163,6 +167,7 @@ function showDetail(item) {
   const vector = item.positionKm;
   const velocity = item.velocityKmS ? Math.hypot(item.velocityKmS.x, item.velocityKmS.y, item.velocityKmS.z) : NaN;
 
+  updateAtlasCredit(item);
   $('#detail-kicker').textContent = itemType(item);
   $('#detail-name').textContent = item.name || item.title || 'Objeto sin nombre';
   $('#detail-constellation').textContent = satellite ? item.groupLabel : item.agency || item.source || item.type || 'Sistema solar';
@@ -173,8 +178,8 @@ function showDetail(item) {
     setMetricLabels('DISTANCIA AL SOL', item.kind === 'star' ? 'TIPO ESPECTRAL' : 'EXTENSIÓN', 'DATOS', 'REFERENCIA');
     $('#metric-altitude').textContent = formatDistance(item.distanceLy * LY_KM);
     $('#metric-speed').textContent = item.spect || (item.radiusLy ? formatDistance(item.radiusLy*2*LY_KM) : '—');
-    $('#metric-inclination').textContent = item.kind === 'star' ? 'HYG v4.1' : 'Aproximados';
-    $('#metric-period').textContent = item.kind === 'star' ? 'J2000' : 'Cosmológica';
+    $('#metric-inclination').textContent = item.evidence || (item.kind === 'star' ? 'HYG v4.1' : 'Aproximados');
+    $('#metric-period').textContent = item.atlasLayer ? (item.solarRegion?'Heliocéntrica':'ICRS / galáctica') : item.kind === 'star' ? 'J2000' : 'Cosmológica';
   } else if (satellite) {
     setMetricLabels('ALTITUD', 'VELOCIDAD', 'INCLINACIÓN', 'PERIODO', ['kilómetros', 'km/s', 'grados', 'minutos']);
     $('#metric-altitude').textContent = formatNumber(item.position?.altitude ?? item.meanAltitude, 0);
@@ -186,7 +191,7 @@ function showDetail(item) {
     $('#metric-altitude').textContent = formatNumber(item.radiusKm, item.radiusKm < 100 ? 1 : 0);
     $('#metric-speed').textContent = item.rotationHours ? formatNumber(Math.abs(item.rotationHours), 2) : '—';
     $('#metric-inclination').textContent = item.parent ? item.parent.toUpperCase() : '—';
-    $('#metric-period').textContent = item.kind === 'moon' ? 'Luna' : item.kind === 'star' ? 'Estrella' : 'Planeta';
+    $('#metric-period').textContent = item.kind === 'moon' ? 'Luna' : item.kind === 'star' ? 'Estrella' : item.kind === 'dwarf' ? 'Planeta enano' : ['asteroid','minor'].includes(item.kind) ? 'Cuerpo menor' : 'Planeta';
   } else if (item.kind === 'spacecraft') {
     setMetricLabels('DISTANCIA SOL', 'VELOCIDAD', 'FUENTE', 'PERIODO', ['', 'km/s', '', 'horas']);
     $('#metric-altitude').textContent = vector ? formatDistance(Math.hypot(vector.x, vector.y, vector.z)) : item.parent?.toUpperCase() || 'L1/L2';
@@ -260,7 +265,7 @@ function searchCatalog(query) {
   const resultsBox = $('#search-results');
   const normalized = normalize(query.trim());
   if (!normalized) { resultsBox.hidden = true; return; }
-  const special = [...scene.getFocusTargets().filter((item) => normalize(`${escapeHTML(item.name)} ${item.id}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,5)].slice(0, 5);
+  const special = [...scene.getFocusTargets().filter((item) => normalize(`${escapeHTML(item.name)} ${item.id}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,5),...scene.cosmos.atlas.search(normalized,5)].slice(0, 5);
   const records = state.records.filter((record) => record.name.toUpperCase().includes(normalized)
     || record.id.includes(normalized) || record.internationalId.toUpperCase().includes(normalized)).slice(0, 9 - special.length);
   resultsBox.replaceChildren();
@@ -284,15 +289,15 @@ function searchCatalog(query) {
 
 function renderTargetMenu(query = '') {
   const normalized = normalize(query.trim());
-  const targets = [...scene.getFocusTargets().filter((item) => !normalized || normalize(`${escapeHTML(item.name)} ${item.id} ${item.kind}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,18)];
+  const targets = [...scene.getFocusTargets().filter((item) => !normalized || normalize(`${escapeHTML(item.name)} ${item.id} ${item.kind}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,18), ...scene.cosmos.atlas.search(normalized,12)];
   const records = normalized ? state.records.filter((record) => `${record.name} ${record.id}`.toUpperCase().includes(normalized)).slice(0, 12) : [];
   const container = $('#target-results');
   container.replaceChildren();
   const groups = [
-    ['Sistema solar', targets.filter((item) => !item.cosmic && ['star', 'planet', 'moon'].includes(item.kind))],
-    ['Galaxias y universo', targets.filter((item) => item.cosmic && item.kind !== 'star')],
+    ['Sistema solar', targets.filter((item) => item.solarRegion || (!item.cosmic && ['star', 'planet', 'moon', 'dwarf', 'asteroid', 'minor'].includes(item.kind)))],
+    ['Galaxias y universo', targets.filter((item) => item.cosmic && !item.solarRegion && item.kind !== 'star')],
     ['Estrellas HYG · busca por nombre o HIP', targets.filter((item) => item.cosmic && item.kind === 'star')],
-    ['Misiones y puntos', targets.filter((item) => !item.cosmic && !['star', 'planet', 'moon'].includes(item.kind))],
+    ['Misiones y puntos', targets.filter((item) => !item.cosmic && !['star', 'planet', 'moon', 'dwarf', 'asteroid', 'minor'].includes(item.kind))],
     ['Catálogo terrestre', records],
   ];
   for (const [title, items] of groups) {
@@ -328,6 +333,7 @@ function closeTargetMenu() {
 }
 
 function updateFocusUI(item) {
+  updateAtlasCredit(item);
   const name = item?.name || 'Tierra';
   $('#focus-label').textContent = name;
 
@@ -344,7 +350,7 @@ function updateStatus(status) {
   const credit=$('#map-credit');credit.hidden=!earth.group.visible;
   if(!credit.hidden)credit.innerHTML=earth.weather?`<a href="https://www.earthdata.nasa.gov/" target="_blank" rel="noreferrer">NASA GIBS / MODIS</a> · ${earth.date} · observación diaria`:'<a href="https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9" target="_blank" rel="noreferrer">Esri World Imagery</a> · Esri, Vantor, Earthstar Geographics, GIS User Community';
   const photos=scene.cosmos.photos,photoCredit=$('#photo-credit');
-  photoCredit.hidden=!(photos.sky.visible||photos.andromeda.visible||scene.cosmos.cmb.node.visible);
+  photoCredit.hidden=!$('#atlas-credit').hidden || !(photos.sky.visible||photos.andromeda.visible||scene.cosmos.cmb.node.visible);
   photoCredit.innerHTML=[scene.cosmos.cmb.node.visible?'<a href="https://lambda.gsfc.nasa.gov/product/wmap/dr4/sos/5year/" target="_blank" rel="noreferrer">CMB: NASA / WMAP Science Team · falso color ±200 μK</a>':'',photos.sky.visible?'<a href="https://www.eso.org/public/images/eso0932a/" target="_blank" rel="noreferrer">Cielo: ESO/S. Brunier · CC BY 4.0</a>':'',photos.andromeda.visible?'<a href="https://esahubble.org/images/heic1502b/" target="_blank" rel="noreferrer">M31: NASA, ESA, Digitized Sky Survey 2 · Davide De Martin · CC BY 4.0</a>':''].filter(Boolean).join(' · ');
   $('#cmb-status').textContent=scene.cosmos.cmb.error?'No se pudo cargar WMAP; recarga para reintentar.':'WMAP · variaciones de temperatura ±200 μK · radio comóvil aproximado 45.500 millones de años luz';
   const surveys=scene.cosmos.surveys;
@@ -378,7 +384,7 @@ function renderLibrary() {
   }));
   const query = normalize($('#library-search').value.trim());
   const candidates = [...encyclopedia];
-  if(query && ['all','galaxies'].includes(state.libraryCategory)) candidates.push(...scene.cosmos.surveys.search(query,60).map(entryFor));
+  if(query && ['all','galaxies'].includes(state.libraryCategory)) candidates.push(...scene.cosmos.surveys.search(query,60).map(entryFor),...scene.cosmos.atlas.search(query,60).map(entryFor));
   if (state.libraryCategory === 'stars' || (query && state.libraryCategory === 'all')) {
     const stars = scene.cosmos.stars.filter(item=>!query || normalize(`${item.name} ${item.id} ${item.aliases||''}`).includes(query));
     candidates.push(...stars.slice(0,120).map(entryFor));
@@ -673,6 +679,7 @@ function updateClock() {
   setTimeout(updateClock, 250);
 }
 
+mountAtlasControls();
 bindInterface();
 renderLibrary();
 renderTargetMenu();
@@ -690,3 +697,57 @@ scene.cosmos.loadStars().then(count=>{
   renderTargetMenu(); renderLibrary();
 });
 updateClock();
+
+function updateAtlasCredit(item=scene.focus.item){
+ const e=$('#atlas-credit');if(!e)return;
+ const atlas=scene.cosmos.atlas,sky=atlas.wavelength==='microwave'?{title:'WMAP · microondas',credit:'NASA / WMAP Science Team'}:atlasImages.maps.find(x=>x.id===atlas.wavelength),neb=atlasImages.nebulae.find(x=>x.id===item?.id);
+ const near=scene.camera.position.clone().add(scene.focusOrigin).length()<LY_KM;
+ const message=sky&&near?`${sky.title} · ${sky.credit}. Mapa angular observado desde el entorno solar; colores de visualización.`:neb?`${neb.credit} · CC BY 4.0 · Fotografía plana observada.`:item?.id==='abell2744-mass'?'Masa total proyectada: CATS / Jauzac et al. / HFF. Imágenes: NASA/ESA Hubble; STScI; DSS2; Chandra/CXC; CDS HiPS2FITS. Emisión X incluye plasma, fuentes puntuales y fondo.':item?.atlasLayer?`${item.source} · ${item.evidence||'Referencia'} · ${item.name}`:'';
+ e.textContent=message;e.hidden=!message;
+}
+function syncAtlasControls(){
+ const atlas=scene.cosmos.atlas;
+ for(const spec of ATLAS_LAYERS){
+  const input=$(`#atlas-${spec.id}`);if(input)input.checked=atlas.enabled[spec.id];
+  const status=$(`#atlas-status-${spec.id}`);if(status)status.textContent=({pending:'Se carga a su escala',loading:'Cargando…',ready:spec.id==='desi'?`${atlas.countDesi||0} galaxias`:'Disponible',error:'No disponible · pulsa Ir para reintentar'})[atlas.states[spec.id]];
+ }
+ const band=atlasImages.maps.find(x=>x.id===atlas.wavelength);
+ $('#atlas-sky-status').textContent=atlas.wavelength==='optical'?'Fotografía ESO en la vecindad solar.':atlas.skyState==='loading'?'Cargando mapa observado…':atlas.skyState==='error'?'No se pudo cargar el mapa. Selecciona la banda para reintentar.':`${band?.title||'WMAP'} · mapa angular galáctico. Se oculta al abandonar la vecindad solar.`;
+ updateAtlasCredit();
+}
+function mountAtlasControls(){
+ const host=$('#atlas-controls');
+ for(const group of ['Sistema solar','Vecindad y galaxia','Universo profundo']){
+  const section=document.createElement('details');section.className='atlas-group';section.open=group==='Sistema solar';
+  section.innerHTML=`<summary>${group}</summary>`;
+  for(const spec of ATLAS_LAYERS.filter(x=>x.group===group)){
+   const row=document.createElement('div');row.className='atlas-layer-row';
+   row.innerHTML=`<label><input type="checkbox" id="atlas-${spec.id}" checked><span>${spec.name}<small id="atlas-status-${spec.id}"></small></span></label><button type="button" class="atlas-go" aria-label="Ir a ${spec.name}">Ir</button>`;
+   $('input',row).addEventListener('change',e=>{scene.cosmos.atlas.enabled[spec.id]=e.target.checked;if(e.target.checked)scene.cosmos.atlas.load(spec.id);syncAtlasControls();});
+   $('button',row).addEventListener('click',async e=>{
+    const button=e.currentTarget;button.disabled=true;
+    try{
+     scene.cosmos.atlas.enabled[spec.id]=true;await scene.cosmos.atlas.load(spec.id);
+     const item=scene.getFocusTargets().find(x=>x.id===spec.focus);
+     if(item){scene.focusItem(item);showDetail(item);closeUtilityPanel();}
+     if(scene.cosmos.atlas.states[spec.id]==='error')toast('No se ha podido cargar esta capa; puedes reintentar con Ir.','warning');
+     if(spec.id==='voids'){scene.cosmos.layers.sdss=true;$('#sdss-toggle').checked=true;scene.cosmos.surveys.loadCatalog('sdss');}
+    }finally{button.disabled=false;syncAtlasControls();}
+   });section.appendChild(row);
+  }
+  host.appendChild(section);
+ }
+ $('#atlas-opacity').addEventListener('input',e=>{scene.cosmos.atlas.opacity=Number(e.target.value);$('#atlas-opacity-value').textContent=Math.round(Number(e.target.value)*100)+'%';});
+ $('#atlas-wave').addEventListener('change',e=>{
+  if(e.target.value!=='optical')scene.focusBody('earth');
+  else{scene.cosmos.layers.sky=true;$('#sky-toggle').checked=true;}
+  scene.cosmos.atlas.setWavelength(e.target.value);syncAtlasControls();
+ });
+ $('#atlas-mass-mode').addEventListener('change',e=>{scene.cosmos.atlas.massMode=e.target.value;scene.cosmos.atlas.enable('mass');});
+ $('#atlas-mass-background').addEventListener('change',e=>{scene.cosmos.atlas.massBackground=e.target.value;scene.cosmos.atlas.enable('mass');});
+ $('#atlas-mass-mix').addEventListener('input',e=>{scene.cosmos.atlas.massMix=Number(e.target.value);});
+ window.addEventListener('atlas-change',()=>{
+  encyclopedia=makeEncyclopedia([...scene.getFocusTargets().filter(x=>!x.cosmic||x.kind!=='star'),...explorationEntries]);renderLibrary();syncAtlasControls();
+ });
+ syncAtlasControls();setInterval(()=>updateAtlasCredit(),1500);
+}

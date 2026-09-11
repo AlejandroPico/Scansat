@@ -1,0 +1,18 @@
+{
+  "sourceUrl": "https://archive.stsci.edu/pub/hlsp/frontier/abell2744/models/cats/v4.1/hlsp_frontier_model_abell2744_cats_v4.1_kappa.fits",
+  "documentation": "https://archive.stsci.edu/prepds/frontier/lensmodels/",
+  "credit": "CATS / Jauzac et al. / LENSTOOL / Hubble Frontier Fields",
+  "meaning": "Convergence \u03ba: projected TOTAL mass inferred from lensing; not pure dark matter. Relative display, not calibrated photometry.",
+  "stretch": "log1p, \u03ba range .03 to 3, clipped; alpha follows relative value. North-up row reversal and Lanczos reduction 2000\u00b2 to 512\u00b2.",
+  "center": [
+    3.586259,
+    -30.400174
+  ],
+  "fovDeg": 0.1667500416875104,
+  "frame": "FK5 J2000 TAN",
+  "cosmology": {
+    "H0": 70,
+    "Om0": 0.3,
+    "Ode0": 0.7
+  }
+}
