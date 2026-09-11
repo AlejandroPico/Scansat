@@ -1,4 +1,5 @@
 import atlasImages from '../public/data/atlas/image-manifest.json' with {type:'json'};
+import {nebulaImageUrl} from './nebula-catalog.js';
 const asset=(file,caption,credit,url)=>({file,caption,credit,url});
 const sky=asset('textures/milky-way-eso0932a.jpg','La Vía Láctea desde nuestra vecindad: fotografía panorámica de larga exposición.','ESO/S. Brunier · CC BY 4.0','https://www.eso.org/public/images/eso0932a/');
 const m31=asset('textures/andromeda-full-dss2.jpg','Andrómeda: fotografía óptica del Digitized Sky Survey 2.','NASA, ESA, DSS2 · Davide De Martin · CC BY 4.0','https://esahubble.org/images/heic1502b/');
@@ -6,6 +7,7 @@ const web=asset('encyclopedia/reference-cosmic-web.png','Densidad de la red cós
 const node=asset('encyclopedia/reference-cluster.png','Detalle de un nodo y sus filamentos: la densidad aumenta gradualmente hacia las regiones doradas.','Imagen de referencia aportada por el usuario; autor y simulación no identificados.',null);
 const cmb=asset('textures/cmb-wmap-equirectangular.png','Mapa WMAP de cinco años en proyección equirectangular galáctica. Los colores representan diferencias de temperatura, ±200 μK.','NASA / WMAP Science Team','https://lambda.gsfc.nasa.gov/product/wmap/dr4/sos/5year/');
 export function mediaFor(entry){
+ if(entry.id==='carina'||entry.target?.catalogNebula)return[asset(entry.id==='carina'?'atlas/carina.jpg':entry.target.image||nebulaImageUrl(entry.target),'Campo óptico observado DSS2, norte arriba. Puede incluir estrellas de fondo; no es un volumen 3D.','Digitized Sky Survey / STScI / Caltech / UK Schmidt / CDS HiPS2FITS','https://archive.stsci.edu/dss/acknowledging.html')];
  const nebula=atlasImages.nebulae.find(x=>x.id===entry.id);
  if(nebula)return[asset(nebula.file,'Fotografía observada; plano de imagen, no reconstrucción volumétrica.',nebula.credit,nebula.sourceUrl)];
  if(entry.id==='abell2744-mass')return[asset('atlas/abell2744-hst.png','Imagen observada Hubble; huecos y mosaico conservados.','NASA/ESA Hubble Space Telescope; STScI archive; CDS HiPS2FITS','https://alasky.cds.unistra.fr/HST-hips/color/properties'),asset('atlas/abell2744-chandra.png','Emisión X observada: plasma caliente, fuentes puntuales y fondo. No es una densidad de gas pura.','Chandra / CXC; CDS HiPS2FITS','https://alasky.cds.unistra.fr/Chandra/'),asset('atlas/abell2744-kappa.png','Convergencia κ: masa total proyectada inferida por lentes; no materia oscura pura. Escala logarítmica relativa.','CATS / Jauzac et al. / LENSTOOL / Hubble Frontier Fields','https://archive.stsci.edu/prepds/frontier/lensmodels/')];

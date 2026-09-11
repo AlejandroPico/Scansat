@@ -8,7 +8,7 @@ export const ATLAS_LAYERS = [
  {id:'fermi',defaultEnabled:false,name:'Burbujas de Fermi',group:'Vecindad y galaxia',focus:'fermi-bubbles',minLy:1000,maxLy:2e6},
  {id:'streams',defaultEnabled:false,name:'Corrientes estelares',group:'Vecindad y galaxia',focus:'stream-gd-1',file:'streams.json',minLy:1000,maxLy:2e6},
  {id:'clusters',name:'Cúmulos estelares',group:'Vecindad y galaxia',focus:'pleiades',minLy:2,maxLy:2e5},
- {id:'nebulae',name:'Nebulosas y supernovas',group:'Vecindad y galaxia',focus:'orion',minLy:1,maxLy:1e5},
+ {id:'nebulae',name:'Nebulosas y supernovas',group:'Vecindad y galaxia',focus:'carina',minLy:1,maxLy:1e5},
  {id:'voids',defaultEnabled:false,name:'Vacíos y paredes de galaxias',group:'Universo profundo',focus:'void-survey',file:'voids.json',minLy:1e7,maxLy:5e9},
  {id:'desi',name:'Galaxias · DESI DR1',group:'Universo profundo',focus:'desi-survey',file:'desi.json',minLy:1e7,maxLy:3e10},
  {id:'mass',name:'Masa por lentes · Abell 2744',group:'Universo profundo',focus:'abell2744-mass',minLy:1e4,maxLy:1e10},
@@ -20,6 +20,10 @@ const common=(id,name,layer,position,radiusLy,summary,source,sourceUrl,extra={})
 const gal=(x,y,z)=>galacticPosition(x*PC_KM,y*PC_KM,z*PC_KM);
 const eq=(ra,dec,ly)=>equatorialPosition(ra/15,dec,ly*LY_KM);
 export const ATLAS_TARGETS = [
+ common('carina','Nebulosa de Carina · NGC 3372','nebulae',eq(161.2855417,-59.8666944,7500),7500*Math.tan(Math.PI/180),
+  'Gran región de formación estelar. Distancia de referencia NASA: unos 7.500 años luz. Centro J2000 de NGC 3372 (OpenNGC); imagen óptica DSS2 remuestreada con proyección TAN de 2,4°, norte arriba y este a la izquierda. La imagen es un plano observado desde el Sol, no un volumen tridimensional.',
+  'NASA · distancia; OpenNGC · coordenadas; DSS2 / STScI / CDS · imagen','https://science.nasa.gov/asset/hubble/carina-nebula/',
+  {kind:'nebula',aliases:'Carina Nebula; eta Carinae; NGC3372; Quilla',raDeg:161.2855417,decDeg:-59.8666944,fovDeg:2.4,dssImage:true,image:'atlas/carina.jpg',evidence:'Observación'}),
  common('local-bubble','Burbuja Local','bubble',[0,0,0],1100,'Superficie irregular reconstruida por O’Neill et al. (2024) a partir del mapa de polvo de Edenhofer et al. La abertura hacia el halo es parte de la reconstrucción. La envolvente no es una pared sólida. El muestreo se reduce para el navegador y no evoluciona con el reloj.','O’Neill et al. 2024 · reconstrucción','https://arxiv.org/abs/2403.04961',{evidence:'Reconstrucción'}),
  common('local-dust','Polvo de la vecindad solar','dust',[0,0,0],1600,'Distribución tridimensional de polvo inferida de la extinción estelar. El color representa densidad relativa del mapa, no emisión óptica. Se muestran celdas promediadas de unos 15 pc, entre 69 y 650 pc del Sol: el interior de 69 pc no está medido por este mapa. Las cavidades, nubes y filamentos conservan sus coordenadas galácticas; el recorte y la reducción de resolución se documentan con el conjunto de datos.','Edenhofer et al. · mapa de polvo 3D','https://arxiv.org/abs/2308.01295',{evidence:'Reconstrucción'}),
  common('fermi-bubbles','Burbujas de Fermi','fermi',gal(8178,0,0),36000,'Dos lóbulos de emisión gamma sobre y bajo el centro galáctico. Aquí se usa una envolvente elipsoidal ilustrativa (profundidad no medida directamente), no una reconstrucción tomográfica. El mapa observado Fermi puede consultarse en Cielo por longitud de onda desde el entorno solar. Su origen y edad siguen siendo objeto de investigación.','Su, Slatyer y Finkbeiner 2010 · modelo de geometría','https://arxiv.org/abs/1005.5480',{evidence:'Modelo',modeled:true}),

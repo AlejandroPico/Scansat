@@ -1,0 +1,65 @@
+[
+  {
+    "id": "wise-G206.316-02.103",
+    "aliases": "Roseta · Rosette",
+    "file": "atlas/wise-G206.316-02.103.jpg",
+    "url": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FDSS2%2Fcolor&width=768&height=768&fov=2.263328888888889&projection=TAN&coordsys=icrs&ra=97.9566551&dec=4.9186119&rotation_angle=0&format=jpg",
+    "fovDeg": 2.263328888888889,
+    "raDeg": 97.9566551,
+    "decDeg": 4.9186119
+  },
+  {
+    "id": "pn-037.7-34.5",
+    "aliases": "Saturno",
+    "file": "atlas/pn-037.7-34.5.jpg",
+    "url": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FDSS2%2Fcolor&width=768&height=768&fov=0.01011111111111111&projection=TAN&coordsys=icrs&ra=316.04532&dec=-11.3634&rotation_angle=0&format=jpg",
+    "fovDeg": 0.01011111111111111,
+    "raDeg": 316.04532,
+    "decDeg": -11.3634
+  },
+  {
+    "id": "pn-060.8-03.6",
+    "aliases": "Dumbbell · Mancuerna · M27",
+    "file": "atlas/pn-060.8-03.6.jpg",
+    "url": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FDSS2%2Fcolor&width=768&height=768&fov=0.17152777777777778&projection=TAN&coordsys=icrs&ra=299.90158&dec=22.72111&rotation_angle=0&format=jpg",
+    "fovDeg": 0.17152777777777778,
+    "raDeg": 299.90158,
+    "decDeg": 22.72111
+  },
+  {
+    "id": "pn-063.1+13.9",
+    "aliases": "Anillo · M57",
+    "file": "atlas/pn-063.1+13.9.jpg",
+    "url": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FDSS2%2Fcolor&width=768&height=768&fov=0.03213888888888889&projection=TAN&coordsys=icrs&ra=283.39615&dec=33.02917&rotation_angle=0&format=jpg",
+    "fovDeg": 0.03213888888888889,
+    "raDeg": 283.39615,
+    "decDeg": 33.02917
+  },
+  {
+    "id": "pn-096.4+29.9",
+    "aliases": "Ojo de Gato",
+    "file": "atlas/pn-096.4+29.9.jpg",
+    "url": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FDSS2%2Fcolor&width=768&height=768&fov=0.011013888888888889&projection=TAN&coordsys=icrs&ra=269.63919&dec=66.633&rotation_angle=0&format=jpg",
+    "fovDeg": 0.011013888888888889,
+    "raDeg": 269.63919,
+    "decDeg": 66.633
+  },
+  {
+    "id": "pn-106.5-17.6",
+    "aliases": "Bola de Nieve Azul",
+    "file": "atlas/pn-106.5-17.6.jpg",
+    "url": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FDSS2%2Fcolor&width=768&height=768&fov=0.011013888888888889&projection=TAN&coordsys=icrs&ra=351.47485&dec=42.53473&rotation_angle=0&format=jpg",
+    "fovDeg": 0.011013888888888889,
+    "raDeg": 351.47485,
+    "decDeg": 42.53473
+  },
+  {
+    "id": "pn-197.8+17.3",
+    "aliases": "Esquimal",
+    "file": "atlas/pn-197.8+17.3.jpg",
+    "url": "https://alasky.cds.unistra.fr/hips-image-services/hips2fits?hips=CDS%2FP%2FDSS2%2Fcolor&width=768&height=768&fov=0.01661111111111111&projection=TAN&coordsys=icrs&ra=112.29487&dec=20.91179&rotation_angle=0&format=jpg",
+    "fovDeg": 0.01661111111111111,
+    "raDeg": 112.29487,
+    "decDeg": 20.91179
+  }
+]

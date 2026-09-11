@@ -182,7 +182,7 @@ function showDetail(item) {
 
   if (item.cosmic) {
     setMetricLabels('DISTANCIA AL SOL', item.kind === 'star' ? 'TIPO ESPECTRAL' : 'EXTENSIÓN', 'DATOS', 'REFERENCIA');
-    $('#metric-altitude').textContent = formatDistance(item.distanceLy * LY_KM);
+    $('#metric-altitude').textContent = item.noLocation ? 'Sin distancia fiable' : formatDistance(item.distanceLy * LY_KM);
     $('#metric-speed').textContent = item.spect || (item.radiusLy ? formatDistance(item.radiusLy*2*LY_KM) : '—');
     $('#metric-inclination').textContent = item.evidence || (item.kind === 'star' ? 'HYG v4.1' : 'Aproximados');
     $('#metric-period').textContent = item.atlasLayer ? (item.solarRegion?'Heliocéntrica':'ICRS / galáctica') : item.kind === 'star' ? 'J2000' : 'Cosmológica';
@@ -271,12 +271,12 @@ function searchCatalog(query) {
   const resultsBox = $('#search-results');
   const normalized = normalize(query.trim());
   if (!normalized) { resultsBox.hidden = true; return; }
-  const special = [...scene.getFocusTargets().filter((item) => normalize(`${escapeHTML(item.name)} ${item.id}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,5),...scene.cosmos.atlas.search(normalized,5)].slice(0, 5);
+  const special = [...new Map([...scene.getFocusTargets().filter((item) => normalize(`${item.name} ${item.aliases||''} ${item.id}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,5),...scene.cosmos.atlas.search(normalized,5)].map(x=>[x.id,x])).values()].slice(0, 5);
   const records = state.records.filter((record) => normalize(`${record.name} ${record.aliases||''}`).includes(normalized)
     || record.id.includes(normalized) || record.internationalId.toUpperCase().includes(normalized)).slice(0, 9 - special.length);
   resultsBox.replaceChildren();
   for (const item of special) {
-    resultsBox.appendChild(makeResultButton(item, `${item.kind || item.type} · cambiar foco`, () => {
+    resultsBox.appendChild(makeResultButton(item, `${item.kind || item.type} · ${item.noLocation?'solo ficha celeste':'cambiar foco'}`, () => {
       scene.focusItem(item); showDetail(item); resultsBox.hidden = true; $('#catalog-search').value = item.name; closeMobilePanel();
     }));
   }
@@ -295,7 +295,7 @@ function searchCatalog(query) {
 
 function renderTargetMenu(query = '') {
   const normalized = normalize(query.trim());
-  const targets = [...scene.getFocusTargets().filter((item) => !normalized || normalize(`${escapeHTML(item.name)} ${item.id} ${item.kind}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,18), ...scene.cosmos.atlas.search(normalized,12)];
+  const targets = [...new Map([...scene.getFocusTargets().filter((item) => !normalized || normalize(`${item.name} ${item.aliases||''} ${item.id} ${item.kind}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,18), ...scene.cosmos.atlas.search(normalized,12)].map(x=>[x.id,x])).values()];
   const records = normalized ? state.records.filter((record) => `${record.name} ${record.aliases||''} ${record.id}`.toUpperCase().includes(normalized)).slice(0, 12) : [];
   const container = $('#target-results');
   container.replaceChildren();
@@ -390,6 +390,7 @@ function renderLibrary() {
   }));
   const query = normalize($('#library-search').value.trim());
   const candidates = [...encyclopedia];
+  if(['all','stars'].includes(state.libraryCategory))candidates.push(...(query?scene.cosmos.atlas.search(query,120):scene.cosmos.atlas.nebulaItems.slice(0,80)).map(entryFor));
   if(query && ['all','galaxies'].includes(state.libraryCategory)) candidates.push(...scene.cosmos.surveys.search(query,60).map(entryFor),...scene.cosmos.atlas.search(query,60).map(entryFor));
   if (state.libraryCategory === 'stars' || (query && state.libraryCategory === 'all')) {
     const stars = scene.cosmos.stars.filter(item=>!query || normalize(`${item.name} ${item.id} ${item.aliases||''}`).includes(query));
@@ -400,14 +401,14 @@ function renderLibrary() {
   const entries = [...new Map(candidates.map(e=>[e.id,e])).values()].filter(entry=>filter==='all'||(filter==='images'&&mediaFor(entry).length)||(filter==='located'&&!entry.noLocation)||(filter==='guides'&&entry.category==='methods')).filter((entry) => (state.libraryCategory === 'all' || entry.category === state.libraryCategory)
     && (!query || normalize(`${entry.id} ${escapeHTML(entry.title)} ${escapeHTML(entry.subtitle)} ${entry.short}`).includes(query)));
   state.libraryEntries=entries;
-  $('#library-result-count').textContent = `${entries.length} artículos · HYG: hasta 120 coincidencias por búsqueda`;
-  $('#library-grid').replaceChildren(...entries.map((entry) => {
+  $('#library-result-count').textContent = `${entries.length} coincidencias · se muestran hasta 120. Nebulosas: ${scene.cosmos.atlas.nebulaItems.length.toLocaleString('es-ES')} registros consultables; busca por nombre o catálogo.`;
+  $('#library-grid').replaceChildren(...entries.slice(0,120).map((entry,index) => {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'library-card';
     button.classList.toggle('active', state.librarySelected?.id === entry.id);
     button.style.setProperty('--entry-accent', entry.accent);
-    button.innerHTML = `<span class="entry-index">${String(entries.indexOf(entry)+1).padStart(2,'0')}</span><span><small class="entry-kind">${evidenceFor(entry)}</small><strong>${escapeHTML(entry.title)}</strong><small>${escapeHTML(entry.subtitle)}</small></span>`;
+    button.innerHTML = `<span class="entry-index">${String(index+1).padStart(2,'0')}</span><span><small class="entry-kind">${evidenceFor(entry)}</small><strong>${escapeHTML(entry.title)}</strong><small>${escapeHTML(entry.subtitle)}</small></span>`;
     button.addEventListener('click', () => showLibraryArticle(entry));
     return button;
   }));
@@ -420,7 +421,7 @@ function showLibraryArticle(entry) {
   const article = $('#library-article');
   article.style.setProperty('--entry-accent', entry.accent);
   const media=mediaFor(entry),category=ENCYCLOPEDIA_CATEGORIES.find(c=>c.id===entry.category)?.label||entry.category;
-  const figures=media.map((m,i)=>`<figure ${i?'hidden':''} data-figure="${i}"><img src="${import.meta.env.BASE_URL}${m.file}" alt="${escapeHTML(m.caption)}" loading="lazy"><figcaption>${escapeHTML(m.caption)}<small>${m.url?`<a href="${escapeHTML(m.url)}" target="_blank" rel="noreferrer">${escapeHTML(m.credit)} ↗</a>`:escapeHTML(m.credit)}</small></figcaption></figure>`).join('');
+  const figures=media.map((m,i)=>`<figure ${i?'hidden':''} data-figure="${i}"><img src="${escapeHTML(m.file.startsWith('https://')?m.file:import.meta.env.BASE_URL+m.file)}" alt="${escapeHTML(m.caption)}" loading="lazy"><figcaption>${escapeHTML(m.caption)}<small>${m.url?`<a href="${escapeHTML(m.url)}" target="_blank" rel="noreferrer">${escapeHTML(m.credit)} ↗</a>`:escapeHTML(m.credit)}</small></figcaption></figure>`).join('');
   article.innerHTML = `
     <div class="article-heading"><span class="dialog-kicker">${escapeHTML(category)} / ${evidenceFor(entry)}</span><h3>${escapeHTML(entry.title)}</h3><p class="article-subtitle">${escapeHTML(entry.subtitle)}</p></div>
     <div class="article-tabs" role="tablist" aria-label="Secciones del artículo"><button role="tab" aria-selected="true" data-article-tab="overview">Visión general</button><button role="tab" aria-selected="false" data-article-tab="data">Datos y escala</button><button role="tab" aria-selected="false" data-article-tab="sources">Fuentes</button></div>
@@ -709,13 +710,15 @@ function updateAtlasCredit(item=scene.focus.item){
  const atlas=scene.cosmos.atlas,sky=atlas.wavelength==='microwave'?{title:'WMAP · microondas',credit:'NASA / WMAP Science Team'}:atlasImages.maps.find(x=>x.id===atlas.wavelength),neb=atlasImages.nebulae.find(x=>x.id===item?.id);
  const near=scene.camera.position.clone().add(scene.focusOrigin).length()<LY_KM;
  const message=sky&&near?`${sky.title} · ${sky.credit}. Mapa angular observado desde el entorno solar; colores de visualización.`:neb?`${neb.credit} · CC BY 4.0 · Fotografía plana observada.`:item?.id==='abell2744-mass'?'Masa total proyectada: CATS / Jauzac et al. / HFF. Imágenes: NASA/ESA Hubble; STScI; DSS2; Chandra/CXC; CDS HiPS2FITS. Emisión X incluye plasma, fuentes puntuales y fondo.':item?.atlasLayer?`${item.source} · ${item.evidence||'Referencia'} · ${item.name}`:'';
- e.textContent=message;e.hidden=!message;
+ const detail=item?.catalogNebula?` · Imagen DSS2 / STScI / Caltech / UK Schmidt / CDS: ${atlas.nebulaImagePending.has(item.id)?'cargando…':atlas.nebulaImageErrors.has(item.id)?'no disponible; vuelve a localizar para reintentar':'campo óptico plano, perspectiva terrestre'}`:item?.id==='carina'?' · Imagen DSS2 / STScI / Caltech / UK Schmidt / CDS. Fotografía plana.':'';
+ e.textContent=message+detail;e.hidden=!(message+detail);
 }
 function syncAtlasControls(){
  const atlas=scene.cosmos.atlas;
  for(const spec of ATLAS_LAYERS){
   const input=$(`#atlas-${spec.id}`);if(input)input.checked=atlas.enabled[spec.id];
   const status=$(`#atlas-status-${spec.id}`);if(status)status.textContent=({pending:'Se carga a su escala',loading:'Cargando…',ready:spec.id==='desi'?`${atlas.countDesi||0} galaxias`:'Disponible',error:'No disponible · pulsa Ir para reintentar'})[atlas.states[spec.id]];
+  if(status&&spec.id==='nebulae'&&atlas.nebulaItems.length&&atlas.states.nebulae!=='error')status.textContent=`${atlas.nebulaItems.length.toLocaleString('es-ES')} fichas · ${atlas.nebulaLocated.length.toLocaleString('es-ES')} confirmadas en 3D · imágenes al localizar`;
  }
  const band=atlasImages.maps.find(x=>x.id===atlas.wavelength);
  $('#atlas-sky-status').textContent=atlas.wavelength==='optical'?'Fotografía ESO en la vecindad solar.':atlas.skyState==='loading'?'Cargando mapa observado…':atlas.skyState==='error'?'No se pudo cargar el mapa. Selecciona la banda para reintentar.':`${band?.title||'WMAP'} · mapa angular galáctico. Se oculta al abandonar la vecindad solar.`;

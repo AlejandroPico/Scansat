@@ -5,7 +5,13 @@ import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 import models from '../public/data/craft-models.json' with {type:'json'};
 const byId=new Map(models.flatMap(x=>x.ids.map(id=>[id,x])));
 const starlink={id:'starlink-family',extentMeters:11,credit:'Universal · representación esquemática de Starlink de primera generación',sourceUrl:'https://www.starlink.com/technology',note:'Modelo representativo común: cuerpo plano y un ala solar desplegada. No identifica la generación ni reproduce una variante V2/V3 concreta. Dimensiones aproximadas; actitud ilustrativa.'};
-export function craftSpec(item){if(!item||item.isDebris)return null;return byId.get(String(item.id))||(/^STARLINK(?:-|\s|$)/i.test(item.name||'')?starlink:null);}
+const surfaceMissions={D00807:'spirit',D00815:'opportunity',D00911:'curiosity',D01038:'perseverance',D00997:'insight'};
+export function craftSpec(item){
+ if(!item||item.isDebris||item.component||item.noLocation)return null;
+ const landing=/^gcat-landing-(D\d+)-/.exec(String(item.id));
+ const surface=landing&&item.body==='mars'?byId.get(surfaceMissions[landing[1]]):null;
+ return surface||byId.get(String(item.id))||(/^STARLINK(?:-|\s|$)/i.test(item.name||'')?starlink:null);
+}
 export function craftMinDistance(item){const spec=craftSpec(item);return spec?spec.extentMeters*.00065:null;}
 function starlinkModel(){
  const root=new THREE.Group(),bus=new THREE.MeshStandardMaterial({color:'#c3c8ca',metalness:.5,roughness:.45}),solar=new THREE.MeshStandardMaterial({color:'#162b49',metalness:.3,roughness:.55}),antenna=new THREE.MeshStandardMaterial({color:'#eceee6',roughness:.7});
@@ -36,6 +42,7 @@ export class CraftModels {
   const owner=this.owner,item=owner.focus.type==='object'?owner.focus.item:owner.selected,spec=craftSpec(item);
   this.active=null;for(const x of this.cache.values())x.group.visible=false;
   if(!this.enabled||!spec){this.notify('');return;}
+  if(item.landDate&&owner.simulationDate<new Date(item.landDate)){this.notify('');return;}
   if(item.satrec&&!owner.catalogReliable||item.body&&!owner.showSurface||!item.satrec&&!item.body&&!owner.showMissions){this.notify('');return;}
   if(item.snapshotAt&&Math.abs(owner.simulationDate-Date.parse(item.snapshotAt))>=2*86400000){this.notify('Modelo oculto: fecha fuera de la efeméride disponible.');return;}
   const absolute=owner.currentAbsolutePosition(item,owner.simulationDate);if(!absolute)return;

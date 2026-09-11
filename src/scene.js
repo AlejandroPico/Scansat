@@ -736,7 +736,8 @@ export class OrbitalScene {
   }
 
   focusItem(item, notify = true) {
-    if (!item) return false;
+    if (!item || item.noLocation) return false;
+    if(item.catalogNebula)this.cosmos.atlas.nebulaImageErrors.delete(item.id);
     if (!item.satrec) this.drawSelectedOrbit(null);
     if (item.satrec && !this.catalogReliable) return false;
     if (item.atlasLayer) this.cosmos.atlas.enable(item.atlasLayer);

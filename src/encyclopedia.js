@@ -62,6 +62,15 @@ export function entryFor(item) {
  if(item.redshift!==undefined)facts.push(['Corrimiento al rojo z',String(item.redshift)]);
  if(item.elements)facts.push(['Semieje mayor',`${item.elements.a} UA`],['Excentricidad',String(item.elements.e)],['Inclinación',`${item.elements.i}°`],['Época de elementos',`JD ${item.epoch}`]);
  if(item.source)facts.push(['Fuente',item.source]);
+ if(item.catalogNebula){
+  facts.push(['Ascensión recta J2000',`${item.raDeg}°`],['Declinación J2000',`${item.decDeg}°`],['Clasificación',item.classification]);
+  if(item.radiusArcsec)facts.push(['Radio angular de catálogo',`${item.radiusArcsec}″`]);
+  if(item.method)facts.push(['Método de distancia',item.method],['Referencia de distancia',item.author]);
+  if(item.errorPc!=null)facts.push(['Error de distancia publicado',`${item.errorPc} pc`]);
+  if(item.lowerPc!=null&&item.upperPc!=null)facts.push(['Intervalo de distancia 16–84%',`${item.lowerPc.toFixed(1)}–${item.upperPc.toFixed(1)} pc`]);
+  if(item.reliability!=null)facts.push(['Fiabilidad de asociación Gaia',`${(item.reliability*100).toFixed(2)} %`]);
+  if(item.noLocation)facts.push(['Ubicación 3D','No disponible: sin distancia aceptada']);
+ }
  if(item.positionKm)body+=' La posición corresponde a la época de la instantánea JPL. Se permite una interpolación lineal local de hasta dos días; fuera de ese intervalo se oculta. No es una trayectoria histórica completa.';
  if(item.parent&&item.periodHours)body+=' La trayectoria local es un modelo orbital aproximado, no una solución operacional de navegación.';
  const sourceUrl=item.sourceUrl || (item.positionKm?'https://ssd.jpl.nasa.gov/horizons/':item.radiusKm?'https://science.nasa.gov/solar-system/':item.satrec?'https://celestrak.org/':'https://science.nasa.gov/missions/');

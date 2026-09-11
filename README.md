@@ -1,8 +1,17 @@
 # Universal · Atlas del universo
 
-**Versión 0.9.0-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
+**Versión 0.9.1-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
 
 Exploración continua desde la Tierra y el tráfico orbital hasta las estrellas, las galaxias y el volumen del universo observable. La rueda recorre todas las escalas sin cambiar de aplicación. Los radios de los cuerpos y las distancias comparten una unidad física; los marcadores son ayudas de localización, no diámetros agrandados.
+
+## Novedades de 0.9.1 · Nebulosas y vehículos de superficie
+
+- **10.704 registros** de WISE H II v3.0 y Chornay & Walton (2021, Gaia EDR3/HASH), consultables por nombre e identificador. **1.972 confirmados** con distancia aceptada se dibujan como localizadores en la galaxia. Otros 90 registros candidatos tienen distancia aceptada y se pueden localizar individualmente; no se muestran por defecto. Los restantes conservan ficha y coordenadas celestes, sin profundidad inventada. No es un censo de todas las nebulosas conocidas ni una suma de objetos únicos entre catálogos.
+- **Carina / NGC 3372**, Roseta, Anillo, Mancuerna, Ojo de Gato, Saturno, Bola de Nieve Azul y NGC 2392 incorporan campos ópticos DSS2, además de Orión, Cangrejo y Hélice. Las imágenes conservan orientación celeste y tamaño angular, con bordes y fondo atenuados; son planos observados desde el Sol, no volúmenes 3D. El brillo del sondeo puede saturar regiones y no equivale a la visión humana.
+- Para otras nebulosas localizadas, la imagen óptica del campo se solicita a CDS HiPS2FITS bajo demanda, con un máximo de cuatro imágenes dinámicas retenidas. Depende de la disponibilidad del servicio; algunas nebulosas apenas se detectan en óptico o no se resuelven. La ficha conserva datos y fuentes aunque falle la imagen; volver a localizar permite reintentar.
+- WISE utiliza distancias individuales publicadas, con método y error; se descartan valores ≤100 pc para evitar el suelo del ajuste cinemático y no se heredan distancias de grupo. Gaia utiliza la mediana publicada solo con fiabilidad de asociación >0,8 y conserva intervalos 16–84%. Se excluye Jacoby SMC 16; Hélice mantiene su ficha fotográfica anterior. Los tamaños desconocidos no se presentan como medidas físicas.
+- Los modelos de Curiosity, Perseverance, InSight, Spirit y Opportunity se vinculan a sus identificadores GCAT reales; no a etapas descartadas. Se ocultan antes de la fecha de aterrizaje. El polvo interestelar se atenúa adicionalmente.
+- Archivo reproducible: `scripts/prepare-nebula-catalog.py`, esquema y hashes dentro de `public/data/atlas/nebula-catalog.json.gz`. Fuentes: [WISE / Anderson et al.](https://astro.phys.wvu.edu/wise/), [Chornay & Walton / CDS](https://cdsarc.cds.unistra.fr/viz-bin/cat/J/A+A/656/A110). Las fotografías se obtienen mediante [CDS HiPS2FITS](https://alasky.cds.unistra.fr/hips-image-services/hips2fits); créditos y condiciones originales del [DSS / STScI / Caltech / UK Schmidt](https://archive.stsci.edu/dss/acknowledging.html). Carina: distancia aproximada [NASA](https://science.nasa.gov/asset/hubble/carina-nebula/), centro de [OpenNGC / Mattia Verga, CC BY-SA 4.0](https://github.com/mattiaverga/OpenNGC). Datos y fotografías conservan sus condiciones originales; no se relicencian como código MIT.
 
 ## Novedades de 0.9.0 · Primera entrega de modelos de naves
 

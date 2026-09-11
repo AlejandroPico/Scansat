@@ -64,8 +64,9 @@ test('el plano observado mira al Sol y el cielo multibanda no viaja a otra galax
 test('un fallo de imagen conserva otras capas y un reintento no duplica planos',async()=>{
  const {atlas}=fixture();let calls=0;const texture=atlas.texture.bind(atlas);
  atlas.texture=async(file)=>{if(++calls===2)throw new Error('missing image');return texture(file);};
- await atlas.load('nebulae');assert.equal(atlas.states.nebulae,'error');assert.equal(atlas.nodes.filter(x=>x.layer==='nebulae'&&!x.marker).length,0);assert.ok(atlas.nodes.some(x=>x.layer==='clusters'&&!x.marker));
- atlas.texture=texture;await atlas.load('nebulae');assert.equal(atlas.states.nebulae,'ready');assert.equal(atlas.nodes.filter(x=>x.layer==='nebulae'&&!x.marker).length,3);
+ await atlas.load('nebulae');assert.equal(atlas.states.nebulae,'error');assert.equal(atlas.nodes.filter(x=>x.layer==='nebulae'&&x.node.isMesh).length,0);assert.ok(atlas.nodes.some(x=>x.layer==='clusters'&&!x.marker));
+ assert.equal(atlas.nebulaNode.geometry.attributes.position.count,1972);
+ atlas.texture=texture;await atlas.load('nebulae');assert.equal(atlas.states.nebulae,'ready');assert.equal(atlas.nodes.filter(x=>x.layer==='nebulae'&&x.node.isMesh).length,11);
 });
 
 test('las capas auxiliares empiezan apagadas y siguen disponibles al activarlas',async()=>{

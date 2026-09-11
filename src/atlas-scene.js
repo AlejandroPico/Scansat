@@ -4,6 +4,7 @@ import { LY_KM, PC_KM, equatorialPosition, galacticPosition } from './cosmic-dat
 import { AU_KM } from './solar-data.js';
 import { closestPointOnRay } from './picking.js';
 import imageManifest from '../public/data/atlas/image-manifest.json' with {type:'json'};
+import {nebulaItems,nebulaImageUrl} from './nebula-catalog.js';
 
 const base=()=>import.meta.env?.BASE_URL||'/';
 const vector=a=>new THREE.Vector3(...a);
@@ -19,6 +20,8 @@ export class LayerAtlas {
   this.createClusters();this.createFermi();this.createSolarRegions();
   this.states.minor='ready';
   for(const item of this.targets)this.addMarker(item);
+  this.nebulaItems=[];this.nebulaImages=new Map();this.nebulaImagePending=new Set();this.nebulaImageErrors=new Set();
+  if(typeof window!=='undefined')this.loadNebulaCatalog().catch(error=>{this.errors.nebulaCatalog=String(error);this.changed();});
  }
  changed(){if(typeof window!=='undefined')window.dispatchEvent(new CustomEvent('atlas-change'));}
  target(id){return this.targets.find(x=>x.id===id);}
@@ -84,7 +87,7 @@ export class LayerAtlas {
    compile(shader);
    shader.fragmentShader=shader.fragmentShader.replace('#include <map_particle_fragment>','vec2 q=gl_PointCoord*2.0-1.0;float r=dot(q,q);diffuseColor.a*=exp(-r*4.5)*(1.0-smoothstep(.55,1.0,r));');
   };
-  node.scale.setScalar(PC_KM);this.add(node,'dust',this.target('local-dust'),.18);
+  node.scale.setScalar(PC_KM);this.add(node,'dust',this.target('local-dust'),.12);
  }
  async loadStreams(){
   const data=await this.fetch('streams.json');
@@ -150,18 +153,46 @@ export class LayerAtlas {
   const inflow=vector(equatorialPosition(255/15,-5,1));shell.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),inflow);shell.scale.set(120*AU_KM,120*AU_KM,155*AU_KM);this.add(shell,'heliosphere',this.target('heliosphere'),.12);
   this.states.belts=this.states.oort=this.states.heliosphere='ready';
  }
- async texture(file){return new Promise((resolve,reject)=>{const t=this.owner.textureLoader.load(`${base()}${file}`,()=>resolve(t),undefined,reject);t.colorSpace=THREE.SRGBColorSpace;});}
+ async texture(file){return new Promise((resolve,reject)=>{const t=this.owner.textureLoader.load(file.startsWith('https://')?file:`${base()}${file}`,()=>resolve(t),undefined,reject);t.colorSpace=THREE.SRGBColorSpace;});}
  async imagePlane(item,file,opacity=1,order=0){
   const map=await this.texture(file);
   const node=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({map,transparent:true,depthTest:true,depthWrite:false,side:THREE.DoubleSide,toneMapped:false}));
   const b=equatorialBasis(item.position);node.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(vector(b.right),vector(b.up),vector(b.normal)));node.rotateZ(THREE.MathUtils.degToRad(item.northAngle||0));
   const width=2*item.distanceLy*LY_KM*Math.tan(item.fovDeg*Math.PI/360);node.scale.set(width,width,1);node.renderOrder=order;
+  if(item.dssImage||item.catalogNebula){
+   node.material.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\nvec2 edge=abs(vMapUv-0.5)*2.0;float border=1.0-smoothstep(0.72,1.0,max(edge.x,edge.y));float signal=max(diffuseColor.r,max(diffuseColor.g,diffuseColor.b));diffuseColor.a*=border*smoothstep(0.015,0.18,signal);');};
+  }
   this.add(node,item.atlasLayer,item,opacity);return node;
  }
+ async loadNebulaCatalog(){
+  if(this.nebulaItems.length)return;
+  if(this.nebulaCatalogPromise)return this.nebulaCatalogPromise;
+  this.nebulaCatalogPromise=(async()=>{
+   const buffer=await this.fetch('nebula-catalog.json.gz',true);
+   const data=await new Response(new Blob([buffer]).stream().pipeThrough(new DecompressionStream('gzip'))).json();
+   this.nebulaItems=nebulaItems(data);this.nebulaLocated=this.nebulaItems.filter(x=>!x.noLocation&&x.confirmed);
+   for(const item of this.nebulaItems.filter(x=>x.image&&!x.noLocation))this.register(item);
+   const p=this.nebulaLocated.flatMap(x=>x.position.map(v=>v/PC_KM));
+   const colors=this.nebulaLocated.flatMap(x=>{const c=new THREE.Color(x.color);return[c.r,c.g,c.b];});
+   const node=this.points(p,colors,3);node.scale.setScalar(PC_KM);this.nebulaNode=this.add(node,'nebulae',null,.65);
+   delete this.errors.nebulaCatalog;this.changed();
+  })();
+  try{await this.nebulaCatalogPromise;}finally{this.nebulaCatalogPromise=null;}
+ }
+ async loadNebulaImage(item){
+  if(this.nebulaImages.has(item.id)||this.nebulaImagePending.has(item.id)||this.nebulaImageErrors.has(item.id))return;
+  this.nebulaImagePending.add(item.id);
+  try{
+   const node=await this.imagePlane(item,nebulaImageUrl(item),.9);this.nebulaImages.set(item.id,node);
+   while(this.nebulaImages.size>4){const [id,old]=this.nebulaImages.entries().next().value;this.rollback([old]);this.nebulaImages.delete(id);}
+  }catch(error){this.nebulaImageErrors.add(item.id);}
+  finally{this.nebulaImagePending.delete(item.id);this.changed();}
+ }
  async loadNebulae(){
+  await this.loadNebulaCatalog();
   // Stage together: a failed request cannot leave duplicate partial planes on retry.
   const staged=[];
-  try{for(const item of this.targets.filter(x=>x.kind==='nebula'))staged.push(await this.imagePlane(item,item.image,1));}
+   try{for(const item of this.targets.filter(x=>x.kind==='nebula'&&x.image))staged.push(await this.imagePlane(item,item.image,1));}
   catch(error){this.rollback(staged);throw error;}
  }
  rollback(nodes){const removed=this.nodes.filter(x=>nodes.includes(x.node));this.nodes=this.nodes.filter(x=>!nodes.includes(x.node));for(const x of removed){this.owner.scene.remove(x.node);x.node.geometry?.dispose();x.node.material?.map?.dispose();x.node.material?.dispose();}}
@@ -217,6 +248,7 @@ export class LayerAtlas {
  }
  update(origin,distance){
   const observer=this.owner.camera.position.clone().add(origin),focus=this.owner.focus?.item,ly=distance/LY_KM;
+  if(focus?.catalogNebula&&!focus.image&&!focus.noLocation&&this.enabled.nebulae)this.loadNebulaImage(focus);
   for(const spec of ATLAS_LAYERS){
    if(this.enabled[spec.id]&&this.states[spec.id]==='pending'&&(focus?.atlasLayer===spec.id||ly>spec.minLy&&ly<spec.maxLy))this.load(spec.id);
   }
@@ -225,7 +257,7 @@ export class LayerAtlas {
    node.position.copy(item?vector(item.position):new THREE.Vector3()).sub(origin);
    const spec=ATLAS_LAYERS.find(x=>x.id===layer);let visible=this.enabled[layer]&&(focus?.atlasLayer===layer || ly>=spec.minLy&&ly<spec.maxLy);
    if(layer==='desi'&&focus?.catalogGalaxy)visible=this.enabled[layer];
-   if(item){const r=Math.max(item.radiusLy*LY_KM,1),range=observer.distanceTo(vector(item.position));visible=visible&&range<r*120;
+   if(item){const r=Math.max((item.radiusLy??item.distanceLy*Math.tan((item.fovDeg||.01)*Math.PI/360))*LY_KM,1),range=observer.distanceTo(vector(item.position));visible=visible&&range<r*120;
     if(marker)visible=visible&&this.owner.showLabels&&(focus?.id===item.id||distance>r*.2&&distance<r*25);
     else if(!item.solarRegion)visible=visible&&(focus?.atlasLayer===layer||ly<spec.maxLy);
    }else visible=visible&&ly<spec.maxLy&&(ly>spec.minLy||focus?.atlasLayer===layer||focus?.catalogGalaxy);
@@ -243,6 +275,6 @@ export class LayerAtlas {
   for(const [id,node] of Object.entries(this.skyMaps)){node.visible=id===this.wavelength&&inSolarVicinity;node.position.copy(this.owner.camera.position);node.scale.setScalar(Math.max(distance*3,LY_KM*100));}
   if(this.wavelength!=='optical'&&inSolarVicinity&&this.skyMaps[this.wavelength])this.cosmos.photos.sky.visible=false;
  }
- pick(camera,direction,angle){if(!this.desiNode?.visible)return null;return closestPointOnRay(this.desiItems,x=>x.position,camera,direction,angle);}
- search(query,limit=12){if(!query)return[];const q=query.replace(/^DESI[ -]?/,'');return this.desiItems.filter(x=>x.id.includes(q)).slice(0,limit);}
+ pick(camera,direction,angle){const items=[...(this.nebulaNode?.visible?this.nebulaLocated:[]),...(this.desiNode?.visible?this.desiItems:[])];return closestPointOnRay(items,x=>x.position,camera,direction,angle);}
+ search(query,limit=12){if(!query)return[];const norm=s=>s.normalize('NFD').replace(/[\u0300-\u036f\s-]/g,'').toUpperCase();const q=norm(query),d=query.replace(/^DESI[ -]?/,'');return [...this.nebulaItems.filter(x=>norm(`${x.name} ${x.aliases} ${x.id}`).includes(q)).slice(0,limit),...this.desiItems.filter(x=>x.id.includes(d)).slice(0,limit)].slice(0,limit);}
 }
