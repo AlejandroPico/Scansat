@@ -656,3 +656,31 @@ kbd { padding: 2px 6px; border: 1px solid var(--line); color: var(--faint); font
 .craft-status {position:absolute;bottom:12px;left:14px;max-width:min(600px,65vw);z-index:8;background:var(--panel);color:var(--muted);font-size:12px;line-height:1.4;padding:6px 9px;pointer-events:none;}
 .craft-status[hidden]{display:none;}
 @media(max-width:600px){.craft-status{max-width:calc(100vw - 28px);bottom:8px;}}
+
+/* Contextual object tree: children are built only when their branch opens. */
+.target-branch {margin:3px 0;border-top:1px solid var(--line);}
+.target-branch>summary {cursor:pointer;padding:10px 6px;font-size:14px;color:var(--text);}
+.target-children {margin-left:9px;padding-left:9px;border-left:1px solid var(--line-strong);}
+.target-results .tree-target {width:100%;text-align:left;min-height:40px;}
+.target-results {overflow:auto;overscroll-behavior:contain;max-height:calc(100dvh - 160px);}
+.target-results .tree-target strong {white-space:normal;overflow-wrap:anywhere;}
+@media(max-width:760px){
+ .topbar {position:fixed;inset:0 0 auto;height:48px;display:flex;flex-wrap:nowrap;z-index:80;}
+ .top-actions {position:absolute;inset:0 0 auto;display:flex;justify-content:space-evenly;gap:0;height:48px;padding:3px 4px;border-width:0 0 1px;}
+ .top-actions .icon-button,.top-actions #time-button,.top-actions #theme-button,.top-actions #library-button {width:calc((100vw - 8px)/7);max-width:64px;height:40px;margin:0;padding:0;border:0;}
+ .focus-picker {position:fixed;left:10px;top:58px;max-width:calc(100vw - 70px);height:36px;}
+ .view-label {top:103px;left:12px;max-width:calc(100vw - 70px);}
+ .scene-tools {top:58px;right:10px;}
+ .target-menu {top:100px;left:10px;width:calc(100vw - 20px);max-height:calc(100dvh - 112px);}
+ .target-results {max-height:calc(100dvh - 170px);}
+ .control-panel,.detail-panel {top:100px;bottom:max(8px,env(safe-area-inset-bottom));right:8px;left:auto;width:calc(100vw - 16px);max-height:calc(100dvh - 108px);}
+ .theme-menu {top:52px;right:8px;}
+ .dialog-shell {inset:54px 6px max(6px,env(safe-area-inset-bottom));}
+ .detail-head,.panel-heading {flex-shrink:0;}
+ .target-branch>summary {min-height:42px;display:list-item;}
+}
+@media(max-height:500px) and (max-width:950px){
+ .control-panel,.detail-panel {top:54px;max-height:calc(100dvh - 62px);width:min(430px,calc(100vw - 16px));}
+ .target-menu {top:100px;max-height:calc(100dvh - 108px);}
+ .target-results {max-height:calc(100dvh - 170px);}
+}

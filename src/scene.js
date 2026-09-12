@@ -1,3 +1,4 @@
+import {orbitAppearance} from './context-navigation.js';
 import {CraftModels,craftSpec,craftMinDistance} from './craft-models.js';
 import * as THREE from 'three';
 import { EarthTiles } from './earth-tiles.js';
@@ -254,10 +255,11 @@ function makeCoronaTexture() {
 }
 
 function makeOrbitLine(points, color = '#6f8896', opacity = 0.22) {
-  return new THREE.Line(
+  const line = new THREE.Line(
     new THREE.BufferGeometry().setFromPoints(points),
     new THREE.LineBasicMaterial({ color, transparent: true, opacity, depthWrite: false, toneMapped: false }),
   );
+  line.userData.orbitOpacity=opacity;line.userData.orbitColor=new THREE.Color(color);return line;
 }
 
 function surfacePosition(site, radiusKm) {
@@ -294,7 +296,7 @@ export class OrbitalScene {
     this.focus = { type: 'body', id: 'earth' };
     this.layer = 'satellite';
     this.showAtmosphere = true;
-    this.showOrbit = true;
+    this.showOrbit = true;this.orbitIntensity=.55;
     this.showCoverage = false;
     this.showDebris = true;
     this.showSurface = true;
@@ -527,7 +529,7 @@ export class OrbitalScene {
         points.push(eclipticToScene(relative));
       }
       const line = makeOrbitLine(points, '#768893', 0.2);
-      line.userData.parent = definition.parent;
+      line.userData.parent = definition.parent;line.userData.moonId=definition.id;
       this.scene.add(line);
       this.moonOrbitNodes.push(line);
     }
@@ -950,6 +952,7 @@ export class OrbitalScene {
     this.sunLight.position.copy(lightDirection.multiplyScalar(1e8));
     this.sunLight.target.position.set(0, 0, 0);
     this.sunLight.target.updateMatrixWorld();
+    this.updateMissionOrbit(date,force);
     this.updateVisibility();
     if (force) this.updateCatalogPositions(date, true);
   }
@@ -1018,12 +1021,34 @@ export class OrbitalScene {
     if (this.selected?.satrec) this.onFrame?.(this.selected, this.getStatus());
   }
 
+  updateMissionOrbit(date,force=false){
+    const item=this.selected;
+    if(!force&&this.missionOrbitId===item?.id&&performance.now()-(this.lastMissionOrbit||0)<5000){if(this.missionOrbit)this.missionOrbit.position.copy(this.missionOrbitOrigin).sub(this.focusOrigin);return;}
+    this.lastMissionOrbit=performance.now();this.missionOrbitId=item?.id;
+    if(this.missionOrbit){this.scene.remove(this.missionOrbit);this.missionOrbit.geometry.dispose();this.missionOrbit.material.dispose();this.missionOrbit=null;}
+    if(!item||item.satrec||item.body||item.cosmic||item.kind!=='spacecraft')return;
+    const points=[];let origin;
+    if(item.parent&&item.periodHours){
+      origin=this.rawPositions.get(item.parent)?.clone();if(!origin)return;
+      const bodyRadius=this.bodyNodes.get(item.parent)?.definition.radiusKm||0;
+      const peri=bodyRadius+(item.periapsisKm??item.altitudeKm??200),apo=bodyRadius+(item.apoapsisKm??item.altitudeKm??200),a=(peri+apo)/2,e=(apo-peri)/(apo+peri),inc=THREE.MathUtils.degToRad(item.inclination||0);
+      for(let i=0;i<=180;i++){const angle=i/180*Math.PI*2,r=a*(1-e*e)/(1+e*Math.cos(angle));points.push(new THREE.Vector3(Math.cos(angle)*r,Math.sin(angle)*r*Math.sin(inc),-Math.sin(angle)*r*Math.cos(inc)));}
+    }else if(item.positionKm&&item.velocityKmS&&item.snapshotAt&&Math.abs(date-Date.parse(item.snapshotAt))<86400000){
+      origin=eclipticToScene(item.positionKm);const now=(date-Date.parse(item.snapshotAt))/1000;
+      // Only the same local linear approximation used for the marker, never a fabricated full orbit.
+      for(let i=0;i<=32;i++)points.push(eclipticToScene(item.velocityKmS,now+(i/32-.5)*86400));
+    }else return;
+    this.missionOrbit=makeOrbitLine(points,item.color||'#a8d9ed',.75);this.missionOrbitOrigin=origin;this.missionOrbit.position.copy(origin).sub(this.focusOrigin);this.scene.add(this.missionOrbit);
+  }
+
   updateVisibility() {
+    this.styleOrbits();
     const cameraDistance = this.camera.position.length();
     const focusBody = this.focus.type === 'body' ? this.focus.id : null;
     const solarVisible = (!this.focus.item?.cosmic || this.focus.item?.solarRegion) && cameraDistance < LY_KM * .1;
-    this.planetOrbitRoot.visible = this.showPlanetOrbits && solarVisible;
-    if(this.selectedOrbit)this.selectedOrbit.visible = solarVisible && this.showOrbit && this.catalogReliable;
+    this.planetOrbitRoot.visible = this.showPlanetOrbits && solarVisible && this.orbitIntensity>0;
+    if(this.selectedOrbit)this.selectedOrbit.visible = solarVisible && this.showOrbit && this.catalogReliable && this.orbitIntensity>0;
+    if(this.missionOrbit)this.missionOrbit.visible=solarVisible&&this.showOrbit&&this.showMissions&&this.orbitIntensity>0;
     for (const body of this.bodyNodes.values()) body.root.visible = solarVisible && (!['dwarf','asteroid','minor'].includes(body.definition.type) || this.cosmos?.atlas.enabled.minor !== false);
     for (const line of this.planetOrbitRoot.children) {const body=this.bodyNodes.get(line.userData.planetId);line.visible=!body || !['dwarf','asteroid','minor'].includes(body.definition.type) || this.cosmos?.atlas.enabled.minor !== false;}
     this.activePoints.visible = solarVisible && this.catalogReliable && cameraDistance < 8e6;
@@ -1042,7 +1067,15 @@ export class OrbitalScene {
     }
     for (const line of this.moonOrbitNodes) {
       const parent = line.userData.parent;
-      line.visible = solarVisible && this.showPlanetOrbits && (focusBody === parent || cameraDistance > 80_000);
+      line.visible = solarVisible && this.orbitIntensity>0 && this.showPlanetOrbits && (focusBody === parent || cameraDistance > 80_000);
+    }
+  }
+
+  styleOrbits(){
+    for(const line of [...this.planetOrbitRoot.children,...this.moonOrbitNodes,this.selectedOrbit,this.missionOrbit].filter(Boolean)){
+      const selected=line===this.selectedOrbit||line===this.missionOrbit||[this.selected?.id,this.focus.id].includes(line.userData.planetId||line.userData.moonId);
+      const style=orbitAppearance(line.userData.orbitOpacity??.2,this.orbitIntensity,selected);
+      line.material.opacity=style.opacity;line.material.color.copy(line.userData.orbitColor||new THREE.Color('#aacddd')).lerp(new THREE.Color('#ffffff'),this.orbitIntensity*.45).multiplyScalar(style.brightness);
     }
   }
 

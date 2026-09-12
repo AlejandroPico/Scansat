@@ -1,3 +1,4 @@
+import {navigationRegion,nearestTargets} from './context-navigation.js';
 import {craftSpec} from './craft-models.js';
 import { ATLAS_LAYERS } from './atlas-data.js';
 import atlasImages from '../public/data/atlas/image-manifest.json' with {type:'json'};
@@ -233,7 +234,7 @@ function showDetail(item) {
   $('#metric-mean-motion').textContent = satellite ? `${formatNumber(item.meanMotion, 7)} rev/día` : '—';
   $('#metric-bstar').textContent = satellite ? Number(item.omm.BSTAR || 0).toExponential(3) : '—';
   $('.orbital-elements').hidden = !satellite;
-  $('#detail-summary').textContent = satellite ? describeRecord(item) : entryFor(item).body;
+  $('#detail-summary').textContent = (satellite ? describeRecord(item) : entryFor(item).body)+(item.positionKm&&item.velocityKmS?' La línea de esta instantánea es un tramo extrapolado de ±12 horas; no una órbita completa.':'');
   $('#focus-object').hidden = Boolean(item.noLocation);
   const libraryEntry = findLibraryEntry(item);
   $('#open-library-entry').hidden = !libraryEntry;
@@ -293,44 +294,62 @@ function searchCatalog(query) {
   resultsBox.hidden = false;
 }
 
+let targetRegion='earth';
+const treeOpen=new Map();
 function renderTargetMenu(query = '') {
-  const normalized = normalize(query.trim());
-  const targets = [...new Map([...scene.getFocusTargets().filter((item) => !normalized || normalize(`${item.name} ${item.aliases||''} ${item.id} ${item.kind}`).includes(normalized)), ...scene.cosmos.surveys.search(normalized,18), ...scene.cosmos.atlas.search(normalized,12)].map(x=>[x.id,x])).values()];
-  const records = normalized ? state.records.filter((record) => `${record.name} ${record.aliases||''} ${record.id}`.toUpperCase().includes(normalized)).slice(0, 12) : [];
-  const container = $('#target-results');
+  const normalized=normalize(query.trim()),container=$('#target-results');
+  const all=scene.getFocusTargets(),byId=new Map(all.map(x=>[x.id,x]));
+  const activate=item=>{if(item.satrec){if(!scene.selectRecord(item,true)){toast('Vuelve a ahora para usar el catálogo orbital actual.','warning');return;}}else{scene.focusItem(item);showDetail(item);}closeTargetMenu();};
+  const leaf=(item,description='')=>{const button=document.createElement('button');button.type='button';button.className='tree-target';
+    button.innerHTML=`<span class="target-glyph" style="--target-color:${item.color||'#80dfff'}"></span><span><strong>${escapeHTML(item.name)}</strong><small>${escapeHTML(description|| (item.noLocation?'Ficha sin distancia 3D':item.satrec?'NORAD '+item.id:item.kind||item.type))}</small></span>`;
+    button.addEventListener('click',()=>activate(item));return button;};
+  const branch=(id,label,items,open=false)=>{const d=document.createElement('details');d.className='target-branch';d.open=treeOpen.get(id)??open;const summary=document.createElement('summary');summary.textContent=label;d.append(summary);const content=document.createElement('div');content.className='target-children';d.append(content);let built=false;
+    const build=()=>{if(built)return;built=true;content.append(...items());};if(d.open)build();d.addEventListener('toggle',()=>{treeOpen.set(id,d.open);if(d.open)build();});return d;};
   container.replaceChildren();
-  const groups = [
-    ['Sistema solar', targets.filter((item) => item.solarRegion || (!item.cosmic && ['star', 'planet', 'moon', 'dwarf', 'asteroid', 'minor'].includes(item.kind)))],
-    ['Galaxias y universo', targets.filter((item) => item.cosmic && !item.solarRegion && item.kind !== 'star')],
-    ['Estrellas HYG · busca por nombre o HIP', targets.filter((item) => item.cosmic && item.kind === 'star')],
-    ['Misiones y puntos', targets.filter((item) => !item.cosmic && !['star', 'planet', 'moon', 'dwarf', 'asteroid', 'minor'].includes(item.kind))],
-    ['Catálogo terrestre', records],
-  ];
-  for (const [title, items] of groups) {
-    if (!items.length) continue;
-    const heading = document.createElement('div');
-    heading.className = 'target-heading';
-    heading.textContent = title;
-    container.appendChild(heading);
-    for (const item of items.slice(0, normalized ? 18 : 30)) {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.innerHTML = `<span class="target-glyph" style="--target-color:${item.color || '#80dfff'}"></span><span><strong>${escapeHTML(item.name)}</strong><small>${item.satrec ? `NORAD ${item.id}` : escapeHTML(item.aliases || item.agency || item.parent || item.kind)}</small></span>`;
-      button.addEventListener('click', () => {
-        if (item.satrec) {
-          if (!scene.selectRecord(item, true)) {
-            toast('El catálogo GP actual se oculta fuera de su periodo fiable.', 'warning');
-            return;
-          }
-        } else {
-          scene.focusItem(item);
-          showDetail(item);
-        }
-        closeTargetMenu();
-      });
-      container.appendChild(button);
-    }
+  if(normalized){
+    const matches=[...new Map([...all.filter(x=>normalize(`${x.name} ${x.aliases||''} ${x.id}`).includes(normalized)).slice(0,50),...scene.cosmos.surveys.search(normalized,20),...scene.cosmos.atlas.search(normalized,20),...state.records.filter(x=>normalize(`${x.name} ${x.aliases||''} ${x.id}`).includes(normalized)).sort((a,b)=>(b.id==='25544')-(a.id==='25544')).slice(0,30)].map(x=>[x.id,x])).values()];
+    container.append(...matches.slice(0,70).map(x=>leaf(x)));if(!matches.length)container.textContent='Sin coincidencias. Prueba un nombre o identificador.';return;
   }
+  const bodyItems=all.filter(x=>!x.cosmic&&x.radiusKm),focused=scene.focus.id||scene.focus.item?.id;
+  const rank=x=>x.orbitKm||x.elements?.a*149597870.7||scene.rawPositions.get(x.id)?.distanceTo(scene.rawPositions.get(x.parent||'sun'))||0;
+  const satellites=()=>{
+    const groups=new Map();for(const r of state.records.filter(x=>!x.isDebris)){if(!groups.has(r.group))groups.set(r.group,[]);groups.get(r.group).push(r);}
+    return [...groups].sort((a,b)=>(a[0]==='station'?-1:b[0]==='station'?1:a[0].localeCompare(b[0]))).map(([id,records])=>branch('sat-'+id,`${GROUP_STYLES[id]?.label||id} · ${records.length.toLocaleString('es-ES')}`,()=>{
+      const list=records.sort((a,b)=>(b.id==='25544')-(a.id==='25544')||a.meanAltitude-b.meanAltitude).slice(0,8).map(x=>leaf(x,`${formatDistance(x.meanAltitude)} de altitud`));
+      if(records.length>8){const more=document.createElement('button');more.type='button';more.textContent='Buscar en este grupo…';more.onclick=()=>{$('#target-search').value=id==='starlink'?'STARLINK':records[0].name.split(' ')[0];renderTargetMenu($('#target-search').value);$('#target-search').focus();};list.push(more);}return list;
+    }));
+  };
+  const bodyTree=item=>{
+    const children=bodyItems.filter(x=>x.parent===item.id).sort((a,b)=>rank(a)-rank(b));
+    const missions=all.filter(x=>!x.radiusKm&&!x.cosmic&&!x.component&&!x.noLocation&&(x.parent===item.id||x.body===item.id)).slice(0,30);
+    if(!children.length&&!missions.length&&item.id!=='earth')return leaf(item);
+    return branch('body-'+item.id,item.name,()=>[leaf(item,'Centrar vista'),...children.map(bodyTree),...(item.id==='earth'?[branch('earth-satellites','Satélites artificiales',satellites,focused==='earth')]:[]),...(missions.length?[branch('missions-'+item.id,'Misiones y superficie · '+missions.length,()=>missions.map(x=>leaf(x)))]:[])],item.id==='sun'&&['earth','solar'].includes(targetRegion)||item.id===focused);
+  };
+  const sol=byId.get('sun');
+  if(['earth','solar'].includes(targetRegion)){
+    const iss=state.records.find(x=>x.id==='25544');if(iss)container.append(leaf(iss,'Estación espacial · seguimiento y cámaras'));
+    if(sol)container.append(bodyTree(sol));
+    const others=all.filter(x=>!x.radiusKm&&!x.cosmic&&!x.body&&!x.parent);
+    container.append(branch('deep-missions','Sondas y puntos de Lagrange',()=>others.map(x=>leaf(x))));
+    container.append(branch('solar-regions','Regiones del sistema solar',()=>all.filter(x=>x.solarRegion).map(x=>leaf(x))));
+  }else if(targetRegion==='nearby'){
+    const center=scene.focus.item?.position||[0,0,0];
+    const stars=nearestTargets([...scene.cosmos.stars,...(sol?[{...sol,position:[0,0,0]}]:[])],center,40);
+    const title=document.createElement('p');title.className='catalog-note';title.textContent='Distancias desde '+(scene.focus.item?.cosmic?scene.focus.item.name:'el Sol');container.append(title);
+    for(const {item,d} of stars)container.append(item.id==='sun'?bodyTree(sol):leaf(item,formatDistance(d)));
+    container.append(branch('nearby-nebulae','Nebulosas y cúmulos cercanos al foco',()=>nearestTargets([...scene.cosmos.atlas.targets.filter(x=>['nebula','stellar-cluster'].includes(x.kind)),...scene.cosmos.atlas.nebulaLocated||[]],center,24).map(({item,d})=>leaf(item,formatDistance(d)))));
+  }else{
+    if(sol)container.append(branch('return-solar','Sistema solar',()=>[bodyTree(sol)]));
+    const center=scene.focus.item?.position||[0,0,0];
+    for(const [id,label,accept] of [['galaxies','Galaxias',x=>x.kind==='galaxy'],['structures','Grandes estructuras',x=>['cluster','structure','universe','cmb'].includes(x.kind)]])container.append(branch('cosmic-'+id,label,()=>nearestTargets(all.filter(accept),center,35).map(({item,d})=>leaf(item,formatDistance(d))),id==='galaxies'&&targetRegion!=='horizon'||id==='structures'&&targetRegion==='horizon'));
+  }
+}
+function syncNavigationContext(status){
+ const region=navigationRegion(status.distanceKm,status.focus);
+ if(region===targetRegion)return;
+ targetRegion=region;treeOpen.clear();
+ for(const d of $$('.layer-group'))d.open=d.id==='layer-group-'+region;
+ if(!$('#target-menu').hidden)renderTargetMenu($('#target-search').value);
 }
 
 function closeTargetMenu() {
@@ -369,6 +388,7 @@ function updateStatus(status) {
   $('#visible-count').textContent = formatNumber(status.visible);
   $('#scale-note').textContent = `${formatDistance(status.distanceKm)} al foco · escala física`;
   $('#view-eyebrow').textContent = status.scale.name.toUpperCase();
+  syncNavigationContext(status);
   $('#evidence-note').textContent = status.scale.evidence;
   const archiveStatus = $('#time-archive-status');
   archiveStatus.classList.toggle('warning', !state.catalogReliable);
@@ -746,6 +766,7 @@ function mountAtlasControls(){
   }
 
  }
+ $('#orbit-intensity').addEventListener('input',e=>{scene.orbitIntensity=Number(e.target.value);$('#orbit-intensity-value').textContent=Math.round(scene.orbitIntensity*100)+'%';scene.updateVisibility();});
  $('#atlas-opacity').addEventListener('input',e=>{scene.cosmos.atlas.opacity=Number(e.target.value);$('#atlas-opacity-value').textContent=Math.round(Number(e.target.value)*100)+'%';});
  $('#atlas-wave').addEventListener('change',e=>{
   if(e.target.value!=='optical')scene.focusBody('earth');

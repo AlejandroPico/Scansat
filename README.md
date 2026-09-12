@@ -1,8 +1,16 @@
 # Universal · Atlas del universo
 
-**Versión 0.9.1-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
+**Versión 0.10.0-alpha** · [Abrir Universal](https://alejandropico.github.io/Universal/) · [Portfolio](https://alejandropico.github.io/Portfolio/)
 
 Exploración continua desde la Tierra y el tráfico orbital hasta las estrellas, las galaxias y el volumen del universo observable. La rueda recorre todas las escalas sin cambiar de aplicación. Los radios de los cuerpos y las distancias comparten una unidad física; los marcadores son ayudas de localización, no diámetros agrandados.
+
+## Novedades de 0.10.0 · Navegación contextual
+
+- Árbol Sol → planetas, planetas enanos, lunas y misiones. Ramas de satélites por familia, con ocho entradas iniciales por grupo y búsqueda; no se crean miles de filas. Las ramas se construyen al abrirlas. Vecindad: hasta 40 estrellas ordenadas por distancia al foco; estructuras a mayor escala.
+- Las secciones de Capas se abren y cierran al cambiar de región de navegación. Los cambios manuales se respetan hasta la siguiente región. Universo profundo conserva Abell 2744 dentro de su contenido, sin usarlo como título general.
+- Intensidad de órbitas 0–100% en Presentación. Cero oculta líneas, valores altos aumentan contraste y prioridad del objeto seleccionado. Las misiones locales muestran su órbita de modelo; las instantáneas JPL con velocidad solo permiten un tramo lineal local de ±12 h, no una órbita completa.
+- ISS identificada por NORAD 25544 con nombre español, ISS, EEI y Zarya. Acceso destacado desde el árbol; propagación SGP4 a partir del catálogo vigente. No es telemetría directa.
+- Barra móvil fija arriba, selector del foco separado debajo, ventanas con límites de altura y controles accesibles.
 
 ## Novedades de 0.9.1 · Nebulosas y vehículos de superficie
 

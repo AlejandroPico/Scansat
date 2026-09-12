@@ -82,8 +82,8 @@ export function prepareRecord(omm, satrec, catalogKind = 'active') {
   const metrics = orbitalMetrics(omm);
   const group = classifyObject(name);
   return {
-    name: String(omm.NORAD_CAT_ID)==='20580' ? 'Hubble · Telescopio espacial (HST)' : name,
-    aliases: String(omm.NORAD_CAT_ID)==='20580' ? 'HST HUBBLE SPACE TELESCOPE TELESCOPIO ESPACIAL HUBBLE' : '',
+    name: String(omm.NORAD_CAT_ID)==='25544' ? 'Estación Espacial Internacional · ISS' : String(omm.NORAD_CAT_ID)==='20580' ? 'Hubble · Telescopio espacial (HST)' : name,
+    aliases: String(omm.NORAD_CAT_ID)==='25544' ? 'ISS EEI ESTACION ESPACIAL INTERNACIONAL INTERNATIONAL SPACE STATION ZARYA 25544' : String(omm.NORAD_CAT_ID)==='20580' ? 'HST HUBBLE SPACE TELESCOPE TELESCOPIO ESPACIAL HUBBLE' : '',
     id: String(omm.NORAD_CAT_ID || ''),
     internationalId: omm.OBJECT_ID || 'Sin designador',
     epoch: omm.EPOCH,
